@@ -1,0 +1,44 @@
+{
+    "name": "poc-p2p-energy-source",
+    "description": "Source API for IOTA P2P Energy PoC",
+    "version": "0.1.0",
+    "author": "Martyn Janes <martyn.janes@iota.org>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/iotaledger/poc-p2p-energy.git/tree/master/source"
+    },
+    "license": "MIT",
+    "private": true,
+    "scripts": {
+        "build-clean": "rimraf ./dist/*",
+        "build-compile": "tsc",
+        "build-watch": "tsc --watch",
+        "build-lint": "tslint -p ./tsconfig.json -c ./tslint.json -t verbose",
+        "build-config": "copyfiles -u 2 ./src/data/config*.json ./dist/data/",
+        "build": "npm-run-all build-clean build-compile build-lint build-config",
+        "serve-mon": "nodemon ./dist/index",
+        "start-dev": "run-p serve-mon build-watch",
+        "start": "node ./dist/index"
+    },
+    "engines": {
+        "node": "10.x.x"
+    },
+    "dependencies": {
+        "@iota/core": "^1.0.0-beta.11",
+        "axios": "github:axios/axios",
+        "node-schedule": "^1.3.2",
+        "poc-p2p-energy-grid-common": "file:../common"
+    },
+    "devDependencies": {
+        "@types/node": "^11.11.3",
+        "@types/node-schedule": "^1.2.3",
+        "copyfiles": "^2.1.0",
+        "nodemon": "^1.18.10",
+        "npm-run-all": "^4.1.5",
+        "rimraf": "^2.6.2",
+        "tslint": "^5.14.0",
+        "tslint-eslint-rules": "^5.4.0",
+        "tslint-microsoft-contrib": "^6.1.0",
+        "typescript": "^3.3.3333"
+    }
+}

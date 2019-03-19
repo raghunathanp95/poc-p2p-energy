@@ -1,0 +1,12 @@
+{
+    "name": "poc-p2p-energy",
+    "description": "IOTA P2P Energy PoC",
+    "version": "0.1.0",
+    "author": "Martyn Janes <martyn.janes@iota.org>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/iotaledger/poc-p2p-energy.git"
+    },
+    "license": "MIT",
+    "private": true
+}

@@ -1,0 +1,13 @@
+
+{
+    "node": {
+        "provider": "https://MYNODE/",
+        "depth": 3,
+        "mwm": 9
+    },
+    "gridApiEndpoint": "https://GRID-API-ENDPOINT",
+    "producer": {
+        "name": "PRODUCER-NAME",
+        "id": "PRODUCER-UNIQUE-ID"
+    }
+}
