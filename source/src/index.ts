@@ -1,4 +1,4 @@
-import { ConsoleLoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ApiStorageService, ConsoleLoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "./models/IConfiguration";
 import { SourceService } from "./services/sourceService";
 
@@ -10,6 +10,10 @@ const config: IConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
 ServiceFactory.register("logging", () => loggingService);
+ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
+    config.producerApiEndpoint,
+    config.source.id,
+    "config"));
 
 loggingService.log("app", `Source v${packageJson.version}`);
 loggingService.log("app", `Config '${configId}'`);
@@ -24,18 +28,9 @@ loggingService.log("app", `   Type: ${config.source.type}`);
 async function start(sourceService: SourceService): Promise<void> {
     await sourceService.intialise();
 
-    let lastOutputTime = Date.now();
-
-    for (let i = 0; i < 1; i++) {
-        const endTime = Date.now();
-        await sourceService.sendCommand({
-            command: "output",
-            startTime: lastOutputTime,
-            endTime: endTime,
-            // tslint:disable-next-line:insecure-random
-            output: Math.random() * 1000
-        });
-        lastOutputTime = endTime + 1;
+    for (let i = 0; i < 5; i++) {
+        // tslint:disable-next-line:insecure-random
+        await sourceService.sendOutputCommand(Math.random() * 1000);
     }
 
     await sourceService.closedown();

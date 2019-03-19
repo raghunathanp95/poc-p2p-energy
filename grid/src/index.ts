@@ -17,6 +17,7 @@ import {
 } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "./models/IConfiguration";
 import { GridService } from "./services/gridService";
+import { ProducerStoreService } from "./services/producerStoreService";
 
 const routes: IRoute<IConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
@@ -46,6 +47,7 @@ app.build(routes, async (_1, config, _2) => {
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("grid", () => gridService);
     ServiceFactory.register("storage", () => new AmazonS3StorageService(config.s3Connection, config.storageBucket));
+    ServiceFactory.register("producer-store", () => new ProducerStoreService(config.dynamoDbConnection));
 
     await registrationService.loadRegistrations();
 

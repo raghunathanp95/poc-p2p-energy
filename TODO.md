@@ -11,11 +11,7 @@
 
 ## Producer
 
-* Business logic to handle output from sources
-
-## Source
-
-* Business logic to produce output values
+* In Progress - Business logic to handle output from sources
 
 ## Consumer
 

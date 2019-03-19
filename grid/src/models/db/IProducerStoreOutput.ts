@@ -1,6 +1,7 @@
-import { IMamCommand } from "poc-p2p-energy-grid-common";
-
-export interface IProducerOutputCommand extends IMamCommand {
+/**
+ * Object definition for storing output from a producer.
+ */
+export interface IProducerStoreOutput {
     /**
      * The startTime for the producers output.
      */
@@ -17,7 +18,7 @@ export interface IProducerOutputCommand extends IMamCommand {
     output: number;
 
     /**
-     * The price the producer would like for this output.
+     * The price the producer would like for this output per kWh.
      */
     askingPrice: number;
 
@@ -25,4 +26,14 @@ export interface IProducerOutputCommand extends IMamCommand {
      * The payment address for this output.
      */
     paymentAddress: string;
+
+    /**
+     * The actual price the producer was paid for this output per kWh.
+     */
+    actualPrice?: number;
+
+    /**
+     * The payment bundle for the payment.
+     */
+    paymentBundle?: string;
 }

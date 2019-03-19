@@ -24,6 +24,8 @@ export * from "./models/db/IBundle";
 export * from "./models/db/ITransaction";
 export * from "./models/mam/IMamChannelConfiguration";
 export * from "./models/mam/IMamCommand";
+export * from "./models/mam/IProducerOutputCommand";
+export * from "./models/mam/ISourceOutputCommand";
 export * from "./models/services/ILoggingService";
 export * from "./models/services/IRegistrationService";
 export * from "./models/services/IStorageService";

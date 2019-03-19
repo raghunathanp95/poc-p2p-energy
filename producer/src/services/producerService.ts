@@ -1,17 +1,9 @@
-import {
-    ILoggingService,
-    IMamChannelConfiguration,
-    IMamCommand,
-    INodeConfiguration,
-    IRegistration,
-    IResponse,
-    MamCommandChannel,
-    RegistrationApiClient,
-    ServiceFactory,
-    StorageApiClient
-} from "poc-p2p-energy-grid-common";
+import { generateAddress } from "@iota/core";
+import { ILoggingService, IMamCommand, INodeConfiguration, IProducerOutputCommand, IRegistration, ISourceOutputCommand, IStorageService, MamCommandChannel, RegistrationApiClient, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ISourceStore } from "../models/db/ISourceStore";
+import { ISourceStoreOutput } from "../models/db/ISourceStoreOutput";
 import { IProducerConfiguration } from "../models/IProducerConfiguration";
-import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
+import { IProducerState } from "../models/IProducerState";
 
 /**
  * Class to maintain a Producer.
@@ -20,7 +12,7 @@ export class ProducerService {
     /**
      * Configuration for the producer.
      */
-    private readonly _producerConfig: IProducerConfiguration;
+    private readonly _config: IProducerConfiguration;
 
     /**
      * Configuration for the node.
@@ -38,9 +30,9 @@ export class ProducerService {
     private readonly _gridApiEndpoint: string;
 
     /**
-     * The channel configuration for the producer.
+     * The current state for the producer.
      */
-    private _producerChannelConfiguration?: IMamChannelConfiguration;
+    private _state?: IProducerState;
 
     /**
      * Create a new instance of ProducerService.
@@ -52,7 +44,7 @@ export class ProducerService {
         producerConfig: IProducerConfiguration,
         gridApiEndpoint: string,
         nodeConfig: INodeConfiguration) {
-        this._producerConfig = producerConfig;
+        this._config = producerConfig;
         this._nodeConfiguration = nodeConfig;
         this._gridApiEndpoint = gridApiEndpoint;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
@@ -63,47 +55,38 @@ export class ProducerService {
      */
     public async initialise(): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-        const storageApiClient = new StorageApiClient(this._gridApiEndpoint);
 
         this._loggingService.log("producer-init", "Registering with Grid");
 
         const response = await registrationApiClient.registrationSet({
-            registrationId: this._producerConfig.id,
-            itemName: this._producerConfig.name,
+            registrationId: this._config.id,
+            itemName: this._config.name,
             itemType: "producer"
         });
         this._loggingService.log("producer-init", `Registering with Grid: ${response.message}`);
 
-        this._loggingService.log("producer-init", `Getting Channel Config from Grid`);
-        const channelConfigResponse = await storageApiClient.storageGet({
-            registrationId: this._producerConfig.id,
-            context: "config",
-            id: "channel"
-        });
+        await this.loadState();
 
-        if (channelConfigResponse && channelConfigResponse.item) {
+        if (this._state.channel) {
             this._loggingService.log("producer-init", `Channel Config already exists`);
-            this._producerChannelConfiguration = channelConfigResponse.item;
         } else {
             this._loggingService.log("producer-init", `Channel Config not found`);
             this._loggingService.log("producer-init", `Creating Channel`);
 
             const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
 
-            this._producerChannelConfiguration = {};
-            await itemMamChannel.openWritable(this._producerChannelConfiguration);
+            this._state.channel = {};
+            await itemMamChannel.openWritable(this._state.channel);
 
             this._loggingService.log("producer-init", `Creating Channel Success`);
 
-            this._loggingService.log("producer-init", `Storing Channel Config`);
-            const storeResponse = await this.storeWritableChannelState();
-            this._loggingService.log("producer-init", `Storing Channel Config: ${storeResponse.message}`);
+            await this.storeState();
 
             this._loggingService.log("producer-init", `Updating Registration`);
             const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._producerConfig.id,
-                sideKey: this._producerChannelConfiguration.sideKey,
-                root: this._producerChannelConfiguration.initialRoot
+                registrationId: this._config.id,
+                sideKey: this._state.channel.sideKey,
+                root: this._state.channel.initialRoot
             });
             this._loggingService.log("producer-init", `Updating Registration: ${updateResponse.message}`);
         }
@@ -114,22 +97,20 @@ export class ProducerService {
      * Reset the producer channel.
      */
     public async reset(): Promise<void> {
-        if (this._producerChannelConfiguration) {
+        if (this._state && this._state.channel) {
             this._loggingService.log("producer-reset", `Send Channel Reset`);
 
             const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
-            await mamCommandChannel.reset(this._producerChannelConfiguration);
+            await mamCommandChannel.reset(this._state.channel);
 
-            this._loggingService.log("producer-reset", `Storing Channel Config`);
-            const storeResponse = await this.storeWritableChannelState();
-            this._loggingService.log("producer-reset", `Storing Channel Config: ${storeResponse.message}`);
+            await this.storeState();
 
             this._loggingService.log("producer-reset", `Updating Registration with Grid`);
             const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
             const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._producerConfig.id,
-                sideKey: this._producerChannelConfiguration.sideKey,
-                root: this._producerChannelConfiguration.initialRoot
+                registrationId: this._config.id,
+                sideKey: this._state.channel.sideKey,
+                root: this._state.channel.initialRoot
             });
             this._loggingService.log("producer-reset", `Updating Registration with Grid: ${updateResponse.message}`);
         }
@@ -141,22 +122,22 @@ export class ProducerService {
     public async closedown(): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
 
-        if (this._producerChannelConfiguration) {
+        if (this._state && this._state.channel) {
             this._loggingService.log("producer-closedown", `Sending Goodbye`);
 
             const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
 
-            await itemMamChannel.closeWritable(this._producerChannelConfiguration);
+            await itemMamChannel.closeWritable(this._state.channel);
 
             this._loggingService.log("producer-closedown", `Sending Goodbye Complete`);
 
-            this._producerChannelConfiguration = undefined;
+            this._state.channel = undefined;
         }
 
         this._loggingService.log("producer-closedown", `Unregistering from the Grid`);
 
         const response = await registrationApiClient.registrationDelete({
-            registrationId: this._producerConfig.id
+            registrationId: this._config.id
         });
 
         this._loggingService.log("producer-closedown", `Unregistering from the Grid: ${response.message}`);
@@ -165,22 +146,99 @@ export class ProducerService {
     /**
      * Combine the information from the sources and generate an output command.
      */
-    public async updateProducerOutput(): Promise<void> {
-        if (this._producerChannelConfiguration) {
-            const command: IProducerOutputCommand = {
-                command: "output",
-                startTime: Date.now() - 10000,
-                endTime: Date.now(),
-                askingPrice: 10000,
-                // tslint:disable-next-line:insecure-random
-                output: Math.random() * 1000,
-                paymentAddress: "A".repeat(81)
-            };
+    public async sendOutputCommand(): Promise<void> {
+        if (this._state && this._state.channel) {
+            const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
+            const paymentAddress = generateAddress(this._config.id, this._state.addressIndex, 2);
+            this._state.addressIndex++;
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
-            await itemMamChannel.sendCommand(this._producerChannelConfiguration, command);
+            let sources;
+            // What is the next block we want to collate
+            const startTime = this._state.lastOutputTime + 1;
+            const endTime = Date.now();
+            let totalOutput = 0;
+            const idsToRemove = [];
+            let page = 0;
+            do {
+                // Get the sources page at a time
+                sources = await sourceStoreService.page(undefined, page, 20);
+                if (sources && sources.items) {
+                    for (let i = 0; i < sources.items.length; i++) {
+                        const sourceStore = sources.items[i];
+                        const remaining: ISourceStoreOutput[] = [];
 
-            await this.storeWritableChannelState();
+                        // Are there output entries in the source
+                        if (sourceStore.output) {
+                            // Walk the outputs from the source
+                            for (let j = 0; j < sourceStore.output.length; j++) {
+                                // Does the output from the source overlap with our current collated block
+                                if (sourceStore.output[j].startTime < endTime) {
+                                    const totalTime = sourceStore.output[j].endTime - sourceStore.output[j].startTime;
+                                    // The time used end either at the end of the current collated block
+                                    // or the end of the source block
+                                    const totalTimeUsed =
+                                        Math.min(endTime, sourceStore.output[j].endTime) -
+                                        sourceStore.output[j].startTime;
+
+                                    // What percentage of the time have we used
+                                    const totalTimeUsedPercent = totalTimeUsed / totalTime;
+
+                                    // Calculate how much of the output is used for the time
+                                    const totalUsedOutput = totalTimeUsedPercent * sourceStore.output[j].output;
+
+                                    totalOutput += totalUsedOutput;
+
+                                    // Is there any time remaining in the block
+                                    if (totalTimeUsed < totalTime) {
+                                        // Added a new source block that starts after
+                                        // the current collated block and with the output reduced
+                                        // by the amount we have collated
+                                        remaining.push({
+                                            startTime: endTime + 1,
+                                            endTime: sourceStore.output[j].endTime,
+                                            output: sourceStore.output[j] - totalUsedOutput
+                                        });
+                                    }
+                                } else {
+                                    // No overlap so just store the block
+                                    remaining.push(sourceStore.output[j]);
+                                }
+                            }
+                        }
+                        if (remaining.length === 0) {
+                            // If there are no more outputs in the source remove the storage for it
+                            idsToRemove.push(sources.ids[i]);
+                        } else {
+                            // There are remaining source outputs so save them
+                            sourceStore.output = remaining;
+                            await sourceStoreService.set(sources.ids[i], sourceStore);
+                        }
+                    }
+                }
+                page++;
+            } while (sources && sources.items && sources.items.length > 0);
+
+            // Remove the sources that have no more output
+            for (let i = 0; i < idsToRemove.length; i++) {
+                await sourceStoreService.remove(idsToRemove[i]);
+            }
+
+            this._state.lastOutputTime = endTime;
+
+            if (totalOutput > 0) {
+                const command: IProducerOutputCommand = {
+                    command: "output",
+                    startTime,
+                    endTime,
+                    askingPrice: 1000,
+                    output: totalOutput,
+                    paymentAddress
+                };
+
+                await this.sendCommand(command);
+            } else {
+                await this.storeState();
+            }
         }
     }
 
@@ -198,9 +256,42 @@ export class ProducerService {
      * @param commands The commands to process.
      */
     public async handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void> {
-        // for (let i = 0; i < commands.length; i++) {
-        //     this._loggingService.log("producer", "Processing", commands);
-        // }
+        const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
+        let store = await sourceStoreService.get(registration.id);
+        let updatedStore = false;
+
+        for (let i = 0; i < commands.length; i++) {
+            this._loggingService.log("grid", "Processing", commands[i]);
+            if (commands[i].command === "hello" || commands[i].command === "goodbye") {
+                // This mam channel will have handled any mam operation
+                // at the moment there is nothing else for use to do
+            } else if (commands[i].command === "output") {
+                const outputCommand = <ISourceOutputCommand>commands[i];
+
+                if (!store) {
+                    store = {
+                        id: registration.id,
+                        output: []
+                    };
+                }
+
+                // Only store output commands that we havent already seen
+                if (!store.output.find(o => o.startTime === outputCommand.startTime)) {
+                    store.output.push({
+                        startTime: outputCommand.startTime,
+                        endTime: outputCommand.endTime,
+                        output: outputCommand.output
+                    });
+
+                    updatedStore = true;
+                }
+            }
+        }
+
+        if (updatedStore) {
+            await sourceStoreService.set(registration.id, store);
+        }
+
         this._loggingService.log(
             "producer",
             `Processed ${commands ? commands.length : 0} commands for '${registration.itemName}'`
@@ -208,17 +299,38 @@ export class ProducerService {
     }
 
     /**
-     * Store the state for the writable channel.
+     * Send a command to the channel.
      */
-    private async storeWritableChannelState(): Promise<IResponse> {
-        const storageApiClient = new StorageApiClient(this._gridApiEndpoint);
+    public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
+        const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
+        await mamCommandChannel.sendCommand(this._state.channel, command);
+        await this.storeState();
+    }
 
-        return storageApiClient.storageSet(
-            {
-                registrationId: this._producerConfig.id,
-                context: "config",
-                id: "channel"
-            },
-            this._producerChannelConfiguration);
+    /**
+     * Load the state for the producer.
+     */
+    private async loadState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
+
+        this._loggingService.log("producer-init", `Loading State`);
+        this._state = await storageConfigService.get("state");
+        this._loggingService.log("producer-init", `Loaded State`);
+
+        this._state = this._state || {
+            addressIndex: 0,
+            lastOutputTime: Date.now()
+        };
+    }
+
+    /**
+     * Store the state for the producer.
+     */
+    private async storeState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
+
+        this._loggingService.log("producer", `Storing State`);
+        await storageConfigService.set("state", this._state);
+        this._loggingService.log("producer", `Storing State Complete`);
     }
 }

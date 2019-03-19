@@ -48,7 +48,7 @@ export class App<T> {
         onComplete?: (app: Application, config: T, port: number) => Promise<void>
     ): Promise<Application> {
         // tslint:disable:no-var-requires no-require-imports non-literal-require
-        const packageJson = require(path.join(this._workingDirectory, "../../package.json"));
+        const packageJson = require(path.join(this._workingDirectory, "../package.json"));
         const configId = process.env.CONFIG_ID || "local";
         const config: T = require(path.join(this._workingDirectory, `./data/config.${configId}.json`));
 

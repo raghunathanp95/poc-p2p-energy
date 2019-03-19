@@ -42,6 +42,11 @@ app.build(routes, async (_1, config, _2) => {
         () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
     );
 
+    ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
+        config.gridApiEndpoint,
+        config.producer.id,
+        "config"));
+
     const producerService = new ProducerService(config.producer, config.gridApiEndpoint, config.node);
     const registrationService = new RegistrationService(
         config.node,
@@ -53,6 +58,11 @@ app.build(routes, async (_1, config, _2) => {
     ServiceFactory.register(
         "storage",
         () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
+    );
+
+    ServiceFactory.register(
+        "source-store",
+        () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "sources")
     );
 
     await producerService.initialise();
@@ -67,7 +77,7 @@ app.build(routes, async (_1, config, _2) => {
         {
             name: "Producer Output",
             schedule: "*/60 * * * * *",
-            func: async () => producerService.updateProducerOutput()
+            func: async () => producerService.sendOutputCommand()
         }
     ];
 
