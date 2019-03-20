@@ -1,4 +1,4 @@
-import { ApiStorageService, ConsoleLoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ConsoleLoggingService, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "./models/IConfiguration";
 import { SourceService } from "./services/sourceService";
 
@@ -10,10 +10,14 @@ const config: IConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
 ServiceFactory.register("logging", () => loggingService);
-ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
-    config.producerApiEndpoint,
-    config.source.id,
-    "config"));
+// ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
+//     config.producerApiEndpoint,
+//     config.source.id,
+//     "config"));
+
+ServiceFactory.register(
+    "storage-config",
+    () => new LocalFileStorageService<any>("../local-storage/source", "config"));
 
 loggingService.log("app", `Source v${packageJson.version}`);
 loggingService.log("app", `Config '${configId}'`);
@@ -33,7 +37,7 @@ async function start(sourceService: SourceService): Promise<void> {
         await sourceService.sendOutputCommand(Math.random() * 1000);
     }
 
-    await sourceService.closedown();
+    // await sourceService.closedown();
 }
 
 start(new SourceService(config.source, config.producerApiEndpoint, config.node))

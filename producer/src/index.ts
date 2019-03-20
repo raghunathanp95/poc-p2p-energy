@@ -1,10 +1,11 @@
 import {
-    ApiStorageService,
+    // ApiStorageService,
     App,
     ConsoleLoggingService,
     IRegistration,
     IRoute,
     ISchedule,
+    LocalFileStorageService,
     registrationDelete,
     RegistrationService,
     registrationSet,
@@ -37,15 +38,23 @@ app.build(routes, async (_1, config, _2) => {
     loggingService.log("app", `Tangle Provider ${config.node.provider}`);
 
     ServiceFactory.register("logging", () => loggingService);
+    // ServiceFactory.register(
+    //     "registration-storage",
+    //     () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
+    // );
     ServiceFactory.register(
         "registration-storage",
-        () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
+        () => new LocalFileStorageService<IRegistration>("../local-storage/producer", "registration")
     );
 
-    ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
-        config.gridApiEndpoint,
-        config.producer.id,
-        "config"));
+    // ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
+    //     config.gridApiEndpoint,
+    //     config.producer.id,
+    //     "config"));
+
+    ServiceFactory.register(
+        "storage-config",
+        () => new LocalFileStorageService<any>("../local-storage/producer", "config"));
 
     const producerService = new ProducerService(config.producer, config.gridApiEndpoint, config.node);
     const registrationService = new RegistrationService(
@@ -55,15 +64,21 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("producer", () => producerService);
+    // ServiceFactory.register(
+    //     "storage",
+    //     () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
+    // );
     ServiceFactory.register(
         "storage",
-        () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
-    );
+        () => new LocalFileStorageService<any>("../local-storage/producer", "storage"));
 
+    // ServiceFactory.register(
+    //     "source-store",
+    //     () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "sources")
+    // );
     ServiceFactory.register(
         "source-store",
-        () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "sources")
-    );
+        () => new LocalFileStorageService<any>("../local-storage/producer", "sources"));
 
     await producerService.initialise();
     await registrationService.loadRegistrations();
@@ -77,7 +92,10 @@ app.build(routes, async (_1, config, _2) => {
         {
             name: "Producer Output",
             schedule: "*/60 * * * * *",
-            func: async () => producerService.sendOutputCommand()
+            func: async () => producerService.sendOutputCommand((startTime, endTime, value) => {
+                // Calculate a cost for the output slice
+                return 1000;
+            })
         }
     ];
 
