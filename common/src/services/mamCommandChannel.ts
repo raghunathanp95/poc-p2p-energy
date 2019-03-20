@@ -142,7 +142,6 @@ export class MamCommandChannel {
                 do {
                     channelConfiguration.mostRecentRoot = nextRoot;
 
-                    console.log(channelConfiguration);
                     fetchResponse = await Mam.fetchSingle(nextRoot, "restricted", channelConfiguration.sideKey);
 
                     if (fetchResponse) {
