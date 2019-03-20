@@ -318,9 +318,9 @@ export class ProducerService {
     private async loadState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
 
-        this._loggingService.log("producer-init", `Loading State`);
+        this._loggingService.log("producer", `Loading State`);
         this._state = await storageConfigService.get("state");
-        this._loggingService.log("producer-init", `Loaded State`);
+        this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),

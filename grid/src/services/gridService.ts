@@ -212,7 +212,7 @@ export class GridService {
                         // No more unpaid entries so delete the producer output
                         toRemove.push(producer.id);
                     } else {
-                        // Update the item and save it
+                        // There are still unpaid outputs so update the item and save it
                         producer.output = unpaid;
                         await producerOutputService.set(producer.id, producer);
                     }
@@ -233,9 +233,9 @@ export class GridService {
     private async loadState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");
 
-        this._loggingService.log("grid-init", `Loading State`);
+        this._loggingService.log("grid", `Loading State`);
         this._state = await storageConfigService.get("state");
-        this._loggingService.log("grid-init", `Loaded State`);
+        this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash()
@@ -243,7 +243,7 @@ export class GridService {
     }
 
     /**
-     * Store the state for the producer.
+     * Store the state for the grid.
      */
     private async saveState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");

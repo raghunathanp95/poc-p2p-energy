@@ -155,9 +155,9 @@ export class SourceService {
     private async loadState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<ISourceState>>("storage-config");
 
-        this._loggingService.log("source-init", `Loading State`);
+        this._loggingService.log("source", `Loading State`);
         this._state = await storageConfigService.get("state");
-        this._loggingService.log("source-init", `Loaded State`);
+        this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
             lastOutputTime: Date.now()
