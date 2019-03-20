@@ -147,8 +147,10 @@ export class ProducerService {
 
     /**
      * Combine the information from the sources and generate an output command.
+     * @param calculatePrice Calculate the price for an output.
      */
-    public async sendOutputCommand(): Promise<void> {
+    public async sendOutputCommand(
+        calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void> {
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
             const paymentAddress = generateAddress(this._config.id, this._state.addressIndex, 2);
@@ -233,7 +235,7 @@ export class ProducerService {
                     command: "output",
                     startTime,
                     endTime,
-                    askingPrice: 1000,
+                    askingPrice: calculatePrice(startTime, endTime, totalOutput),
                     output: totalOutput,
                     paymentAddress
                 };
