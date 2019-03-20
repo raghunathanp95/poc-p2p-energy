@@ -56,16 +56,18 @@ export class ProducerService {
     public async initialise(): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
 
+        await this.loadState();
+
         this._loggingService.log("producer-init", "Registering with Grid");
 
         const response = await registrationApiClient.registrationSet({
             registrationId: this._config.id,
             itemName: this._config.name,
-            itemType: "producer"
+            itemType: "producer",
+            sideKey: this._state && this._state.channel && this._state.channel.sideKey,
+            root: this._state && this._state.channel && this._state.channel.initialRoot
         });
         this._loggingService.log("producer-init", `Registering with Grid: ${response.message}`);
-
-        await this.loadState();
 
         if (this._state.channel) {
             this._loggingService.log("producer-init", `Channel Config already exists`);
@@ -171,7 +173,8 @@ export class ProducerService {
                         if (sourceStore.output) {
                             // Walk the outputs from the source
                             for (let j = 0; j < sourceStore.output.length; j++) {
-                                // Does the output from the source overlap with our current collated block
+                                // Does the output from the source overlap
+                                // with our current collated block
                                 if (sourceStore.output[j].startTime < endTime) {
                                     const totalTime = sourceStore.output[j].endTime - sourceStore.output[j].startTime;
                                     // The time used end either at the end of the current collated block

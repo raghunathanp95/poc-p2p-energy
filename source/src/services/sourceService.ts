@@ -55,16 +55,18 @@ export class SourceService {
     public async intialise(): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._producerApiEndpoint);
 
+        await this.loadState();
+
         this._loggingService.log("source-init", "Registering with Producer");
 
         const response = await registrationApiClient.registrationSet({
             registrationId: this._config.id,
             itemName: this._config.name,
-            itemType: this._config.type
+            itemType: this._config.type,
+            sideKey: this._state && this._state.channel && this._state.channel.sideKey,
+            root: this._state && this._state.channel && this._state.channel.initialRoot
         });
         this._loggingService.log("source-init", `Registering with Producer: ${response.message}`);
-
-        await this.loadState();
 
         if (this._state.channel) {
             this._loggingService.log("source-init", `Channel Config already exists`);
