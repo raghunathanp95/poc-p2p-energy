@@ -24,10 +24,10 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
         ValidationHelper.string(request.itemType, "itemType");
     }
     if (request.root) {
-        ValidationHelper.trytes(request.sideKey, 81, "sideKey");
+        ValidationHelper.trytes(request.root, 81, "root");
     }
     if (request.sideKey) {
-        ValidationHelper.trytes(request.root, 81, "root");
+        ValidationHelper.trytes(request.sideKey, 81, "sideKey");
     }
 
     const registrationService = ServiceFactory.get<IRegistrationService>("registration-management");
