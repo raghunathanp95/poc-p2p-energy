@@ -4,6 +4,8 @@ node_modules
 
 /common/dist
 
+/local-storage
+
 /grid/src/data/config.local.json
 /grid/src/data/config.dev.json
 /grid/dist
