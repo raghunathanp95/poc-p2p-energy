@@ -11,6 +11,11 @@ export interface IConfiguration {
     node: INodeConfiguration;
 
     /**
+     * Local storage location.
+     */
+    localStorageFolder?: string;
+
+    /**
      * The endpoint where the producer api lives.
      */
     producerApiEndpoint: string;

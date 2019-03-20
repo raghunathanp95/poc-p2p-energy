@@ -1,5 +1,6 @@
-import { ConsoleLoggingService, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ApiStorageService, ConsoleLoggingService, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "./models/IConfiguration";
+import { ISourceState } from "./models/ISourceState";
 import { SourceService } from "./services/sourceService";
 
 // tslint:disable:no-var-requires no-require-imports
@@ -10,14 +11,16 @@ const config: IConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
 ServiceFactory.register("logging", () => loggingService);
-// ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
-//     config.producerApiEndpoint,
-//     config.source.id,
-//     "config"));
-
-ServiceFactory.register(
-    "storage-config",
-    () => new LocalFileStorageService<any>("../local-storage/source", "config"));
+if (config.localStorageFolder) {
+    ServiceFactory.register(
+        "storage-config",
+        () => new LocalFileStorageService<ISourceState>(config.localStorageFolder, config.source.id, "config"));
+} else {
+    ServiceFactory.register("storage-config", () => new ApiStorageService<ISourceState>(
+        config.producerApiEndpoint,
+        config.source.id,
+        "config"));
+}
 
 loggingService.log("app", `Source v${packageJson.version}`);
 loggingService.log("app", `Config '${configId}'`);

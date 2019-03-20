@@ -12,11 +12,21 @@ export async function init(config: IConfiguration): Promise<string[]> {
     loggingService.log("init", "Initializing");
 
     try {
-        await new BundleCacheService(config.dynamoDbConnection, config.node.provider).createTable(loggingService);
-        await new TransactionCacheService(config.dynamoDbConnection, config.node.provider).createTable(loggingService);
-        await new AmazonS3RegistrationService(config.dynamoDbConnection).createTable(loggingService);
-        await new AmazonS3Service(config.s3Connection, config.storageBucket).createBucket(loggingService);
-        await new ProducerStoreService(config.dynamoDbConnection).createTable(loggingService);
+        if (config.dynamoDbConnection) {
+            await new BundleCacheService(config.dynamoDbConnection, config.node.provider)
+                .createTable(loggingService);
+            await new TransactionCacheService(config.dynamoDbConnection, config.node.provider)
+                .createTable(loggingService);
+            await new AmazonS3RegistrationService(config.dynamoDbConnection)
+                .createTable(loggingService);
+            await new ProducerStoreService(config.dynamoDbConnection)
+                .createTable(loggingService);
+        }
+
+        if (config.s3Connection) {
+            await new AmazonS3Service(config.s3Connection, "storage")
+                .createBucket(loggingService);
+        }
 
         loggingService.log("init", `Initialization Complete`);
     } catch (err) {

@@ -81,7 +81,7 @@ export class SourceService {
 
             this._loggingService.log("source-init", `Creating Channel Success`);
 
-            await this.storeState();
+            await this.saveState();
 
             this._loggingService.log("source-init", `Updating Registration`);
             const updateResponse = await registrationApiClient.registrationSet({
@@ -146,7 +146,7 @@ export class SourceService {
     public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
         const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
         await mamCommandChannel.sendCommand(this._state.channel, command);
-        await this.storeState();
+        await this.saveState();
     }
 
     /**
@@ -167,7 +167,7 @@ export class SourceService {
     /**
      * Store the state for the source.
      */
-    private async storeState(): Promise<void> {
+    private async saveState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<ISourceState>>("storage-config");
 
         this._loggingService.log("source", `Storing State`);

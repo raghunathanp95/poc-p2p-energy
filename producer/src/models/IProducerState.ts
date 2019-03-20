@@ -5,9 +5,14 @@ import { IMamChannelConfiguration } from "poc-p2p-energy-grid-common";
  */
 export interface IProducerState {
     /**
+     * The seed used to generate payment addressses.
+     */
+    paymentSeed: string;
+
+    /**
      * The current address index to user for payments.
      */
-    addressIndex: number;
+    paymentAddressIndex: number;
 
     /**
      * The channel configuration for the producer.

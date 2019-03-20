@@ -1,24 +1,8 @@
-import {
-    //AmazonS3RegistrationService,
-    //AmazonS3StorageService,
-    App,
-    ConsoleLoggingService,
-    IRoute,
-    ISchedule,
-    LocalFileStorageService,
-    registrationDelete,
-    RegistrationService,
-    registrationSet,
-    ScheduleHelper,
-    ServiceFactory,
-    storageDelete,
-    storageGet,
-    storageList,
-    storageSet
-} from "poc-p2p-energy-grid-common";
+import { AmazonS3RegistrationService, AmazonS3StorageService, App, ConsoleLoggingService, IRoute, ISchedule, LocalFileStorageService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "./models/IConfiguration";
+import { IGridState } from "./models/IGridState";
 import { GridService } from "./services/gridService";
-// import { ProducerStoreService } from "./services/producerStoreService";
+import { ProducerStoreService } from "./services/producerStoreService";
 
 const routes: IRoute<IConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
@@ -37,11 +21,24 @@ app.build(routes, async (_1, config, _2) => {
     loggingService.log("app", `Tangle Provider ${config.node.provider}`);
 
     ServiceFactory.register("logging", () => loggingService);
-    //ServiceFactory.register("registration-storage", () => new AmazonS3RegistrationService(config.dynamoDbConnection));
-    ServiceFactory.register(
-        "registration-storage",
-        () => new LocalFileStorageService("../local-storage/grid", "registration")
+    if (config.localStorageFolder) {
+        ServiceFactory.register(
+            "registration-storage",
+            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "registration")
         );
+
+        ServiceFactory.register(
+            "storage-config",
+            () => new LocalFileStorageService<IGridState>(config.localStorageFolder, config.grid.id, "config"));
+    } else if (config.dynamoDbConnection) {
+        ServiceFactory.register(
+            "registration-storage",
+            () => new AmazonS3RegistrationService(config.dynamoDbConnection));
+
+        ServiceFactory.register(
+            "storage-config",
+            () => new AmazonS3StorageService(config.s3Connection, "config"));
+    }
 
     const gridService = new GridService();
     const registrationService = new RegistrationService(
@@ -51,11 +48,27 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("grid", () => gridService);
-    //ServiceFactory.register("storage", () => new AmazonS3StorageService(config.s3Connection, config.storageBucket));
-    ServiceFactory.register("storage", () => new LocalFileStorageService("../local-storage/grid", "storage"));
-    //ServiceFactory.register("producer-store", () => new ProducerStoreService(config.dynamoDbConnection));
-    ServiceFactory.register("producer-store", () => new LocalFileStorageService("../local-storage/grid", "producer"));
 
+    if (config.localStorageFolder) {
+        ServiceFactory.register(
+            "storage",
+            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "storage"));
+    } else if (config.s3Connection) {
+        ServiceFactory.register(
+            "storage",
+            () => new AmazonS3StorageService(config.s3Connection, "storage"));
+    }
+    if (config.localStorageFolder) {
+        ServiceFactory.register(
+            "producer-store",
+            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "producer"));
+    } else if (config.dynamoDbConnection) {
+        ServiceFactory.register(
+            "producer-store",
+            () => new ProducerStoreService(config.dynamoDbConnection));
+    }
+
+    await gridService.initialise();
     await registrationService.loadRegistrations();
 
     const schedules: ISchedule[] = [

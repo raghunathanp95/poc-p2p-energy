@@ -1,5 +1,5 @@
 import { generateAddress } from "@iota/core";
-import { ILoggingService, IMamCommand, INodeConfiguration, IProducerOutputCommand, IRegistration, ISourceOutputCommand, IStorageService, MamCommandChannel, RegistrationApiClient, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ILoggingService, IMamCommand, INodeConfiguration, IProducerOutputCommand, IRegistration, ISourceOutputCommand, IStorageService, MamCommandChannel, RegistrationApiClient, ServiceFactory, TrytesHelper } from "poc-p2p-energy-grid-common";
 import { ISourceStore } from "../models/db/ISourceStore";
 import { ISourceStoreOutput } from "../models/db/ISourceStoreOutput";
 import { IProducerConfiguration } from "../models/IProducerConfiguration";
@@ -82,7 +82,7 @@ export class ProducerService {
 
             this._loggingService.log("producer-init", `Creating Channel Success`);
 
-            await this.storeState();
+            await this.saveState();
 
             this._loggingService.log("producer-init", `Updating Registration`);
             const updateResponse = await registrationApiClient.registrationSet({
@@ -105,7 +105,7 @@ export class ProducerService {
             const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
             await mamCommandChannel.reset(this._state.channel);
 
-            await this.storeState();
+            await this.saveState();
 
             this._loggingService.log("producer-reset", `Updating Registration with Grid`);
             const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
@@ -153,8 +153,8 @@ export class ProducerService {
         calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void> {
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
-            const paymentAddress = generateAddress(this._config.id, this._state.addressIndex, 2);
-            this._state.addressIndex++;
+            const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
+            this._state.paymentAddressIndex++;
 
             let sources;
             // What is the next block we want to collate
@@ -242,7 +242,7 @@ export class ProducerService {
 
                 await this.sendCommand(command);
             } else {
-                await this.storeState();
+                await this.saveState();
             }
         }
     }
@@ -309,7 +309,7 @@ export class ProducerService {
     public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
         const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
         await mamCommandChannel.sendCommand(this._state.channel, command);
-        await this.storeState();
+        await this.saveState();
     }
 
     /**
@@ -323,7 +323,8 @@ export class ProducerService {
         this._loggingService.log("producer-init", `Loaded State`);
 
         this._state = this._state || {
-            addressIndex: 0,
+            paymentSeed: TrytesHelper.generateHash(),
+            paymentAddressIndex: 0,
             lastOutputTime: Date.now()
         };
     }
@@ -331,7 +332,7 @@ export class ProducerService {
     /**
      * Store the state for the producer.
      */
-    private async storeState(): Promise<void> {
+    private async saveState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
 
         this._loggingService.log("producer", `Storing State`);

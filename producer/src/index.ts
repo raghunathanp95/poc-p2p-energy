@@ -1,22 +1,7 @@
-import {
-    // ApiStorageService,
-    App,
-    ConsoleLoggingService,
-    IRegistration,
-    IRoute,
-    ISchedule,
-    LocalFileStorageService,
-    registrationDelete,
-    RegistrationService,
-    registrationSet,
-    ScheduleHelper,
-    ServiceFactory,
-    storageDelete,
-    storageGet,
-    storageList,
-    storageSet
-} from "poc-p2p-energy-grid-common";
+import { ApiStorageService, App, ConsoleLoggingService, IRegistration, IRoute, ISchedule, LocalFileStorageService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
+import { ISourceStore } from "./models/db/ISourceStore";
 import { IConfiguration } from "./models/IConfiguration";
+import { IProducerState } from "./models/IProducerState";
 import { ProducerService } from "./services/producerService";
 
 const routes: IRoute<IConfiguration>[] = [
@@ -38,23 +23,28 @@ app.build(routes, async (_1, config, _2) => {
     loggingService.log("app", `Tangle Provider ${config.node.provider}`);
 
     ServiceFactory.register("logging", () => loggingService);
-    // ServiceFactory.register(
-    //     "registration-storage",
-    //     () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
-    // );
-    ServiceFactory.register(
-        "registration-storage",
-        () => new LocalFileStorageService<IRegistration>("../local-storage/producer", "registration")
-    );
 
-    // ServiceFactory.register("storage-config", () => new ApiStorageService<any>(
-    //     config.gridApiEndpoint,
-    //     config.producer.id,
-    //     "config"));
+    if (config.localStorageFolder) {
+        ServiceFactory.register(
+            "registration-storage",
+            () => new LocalFileStorageService<IRegistration>(
+                config.localStorageFolder, config.producer.id, "registration")
+        );
 
-    ServiceFactory.register(
-        "storage-config",
-        () => new LocalFileStorageService<any>("../local-storage/producer", "config"));
+        ServiceFactory.register(
+            "storage-config",
+            () => new LocalFileStorageService<IProducerState>(config.localStorageFolder, config.producer.id, "config"));
+    } else {
+        ServiceFactory.register(
+            "registration-storage",
+            () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
+        );
+
+        ServiceFactory.register("storage-config", () => new ApiStorageService<IProducerState>(
+            config.gridApiEndpoint,
+            config.producer.id,
+            "config"));
+    }
 
     const producerService = new ProducerService(config.producer, config.gridApiEndpoint, config.node);
     const registrationService = new RegistrationService(
@@ -64,21 +54,26 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("producer", () => producerService);
-    // ServiceFactory.register(
-    //     "storage",
-    //     () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
-    // );
-    ServiceFactory.register(
-        "storage",
-        () => new LocalFileStorageService<any>("../local-storage/producer", "storage"));
 
-    // ServiceFactory.register(
-    //     "source-store",
-    //     () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "sources")
-    // );
-    ServiceFactory.register(
-        "source-store",
-        () => new LocalFileStorageService<any>("../local-storage/producer", "sources"));
+    if (config.localStorageFolder) {
+        ServiceFactory.register(
+            "storage",
+            () => new LocalFileStorageService<any>(config.localStorageFolder, config.producer.id, "storage"));
+
+        ServiceFactory.register(
+            "source-store",
+            () => new LocalFileStorageService<ISourceStore>(
+                config.localStorageFolder, config.producer.id, "source-output"));
+    } else {
+        ServiceFactory.register(
+            "storage",
+            () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
+        );
+        ServiceFactory.register(
+            "source-store",
+            () => new ApiStorageService<ISourceStore>(config.gridApiEndpoint, config.producer.id, "source-output")
+        );
+    }
 
     await producerService.initialise();
     await registrationService.loadRegistrations();

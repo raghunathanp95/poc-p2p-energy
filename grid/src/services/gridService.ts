@@ -1,5 +1,6 @@
-import { ILoggingService, IMamCommand, IProducerOutputCommand, IRegistration, IStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ILoggingService, IMamCommand, IProducerOutputCommand, IRegistration, IStorageService, ServiceFactory, TrytesHelper } from "poc-p2p-energy-grid-common";
 import { IProducerStore } from "../models/db/IProducerStore";
+import { IGridState } from "../models/IGridState";
 
 /**
  * Service to handle the grid.
@@ -11,10 +12,23 @@ export class GridService {
     private readonly _loggingService: ILoggingService;
 
     /**
+     * The current state for the producer.
+     */
+    private _state?: IGridState;
+
+    /**
      * Create a new instance of GridService.
      */
     constructor() {
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+    }
+
+    /**
+     * Intialise the grid.
+     */
+    public async initialise(): Promise<void> {
+        await this.loadState();
+        await this.saveState();
     }
 
     /**
@@ -73,5 +87,31 @@ export class GridService {
             "grid",
             `Processed ${commands ? commands.length : 0} commands for '${registration.itemName}'`
         );
+    }
+
+    /**
+     * Load the state for the grid.
+     */
+    private async loadState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");
+
+        this._loggingService.log("grid-init", `Loading State`);
+        this._state = await storageConfigService.get("state");
+        this._loggingService.log("grid-init", `Loaded State`);
+
+        this._state = this._state || {
+            paymentSeed: TrytesHelper.generateHash()
+        };
+    }
+
+    /**
+     * Store the state for the producer.
+     */
+    private async saveState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");
+
+        this._loggingService.log("grid", `Storing State`);
+        await storageConfigService.set("state", this._state);
+        this._loggingService.log("grid", `Storing State Complete`);
     }
 }

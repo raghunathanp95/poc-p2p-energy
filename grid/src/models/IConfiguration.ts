@@ -1,4 +1,5 @@
 import { IAWSDynamoDbConfiguration, IAWSS3Configuration, INodeConfiguration } from "poc-p2p-energy-grid-common";
+import { IGridConfiguration } from "./IGridConfiguration";
 
 /**
  * Definition of configuration file.
@@ -10,17 +11,22 @@ export interface IConfiguration {
     node: INodeConfiguration;
 
     /**
+     * Local storage location.
+     */
+    localStorageFolder?: string;
+
+    /**
      * The dynamic db connection.
      */
-    dynamoDbConnection: IAWSDynamoDbConfiguration;
+    dynamoDbConnection?: IAWSDynamoDbConfiguration;
 
     /**
      * S3 storage connection.
      */
-    s3Connection: IAWSS3Configuration;
+    s3Connection?: IAWSS3Configuration;
 
     /**
-     * Storage bucket.
+     * Config for the grid.
      */
-    storageBucket: string;
+    grid: IGridConfiguration;
 }

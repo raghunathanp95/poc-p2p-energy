@@ -16,5 +16,8 @@
         "secretAccessKey": "AWS-SECRET-ACCESS-KEY",
         "bucketPrefix": "BUCKET-PREFIX"
     },
-    "storageBucket": "storage"
+    "grid": {
+        "name": "GRID-NAME",
+        "id": "GRID-UNIQUE-ID"
+    }
 }

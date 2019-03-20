@@ -6,9 +6,10 @@ export class ValidationHelper {
      * Does the string have some content.
      * @param str The string to validate.
      * @param name The parameter name.
+     * @param minLength The minimum length of the string.
      */
-    public static string(str: string, name: string): void {
-        if (str === undefined || str === null || str.trim().length === 0) {
+    public static string(str: string, name: string, minLength: number = 0): void {
+        if (str === undefined || str === null || str.trim().length < minLength) {
             throw new Error(`The parameter '${name}' has an invalid value.`);
         }
     }

@@ -16,7 +16,7 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
     Promise<IRegistrationSetResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
     if (request.itemName) {
         ValidationHelper.string(request.itemName, "itemName");
     }
@@ -57,7 +57,7 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
 export async function registrationDelete(config: any, request: IRegistrationDeleteRequest): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
 
     loggingService.log("registration", "Delete", request.registrationId);
     const registrationService = ServiceFactory.get<IRegistrationService>("registration-management");

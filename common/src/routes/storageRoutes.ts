@@ -18,7 +18,7 @@ import { ValidationHelper } from "../utils/validationHelper";
 export async function storageGet(config: any, request: IStorageGetRequest): Promise<IStorageGetResponse<any>> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
     ValidationHelper.string(request.context, "context");
     ValidationHelper.string(request.id, "id");
 
@@ -48,7 +48,7 @@ export async function storageGet(config: any, request: IStorageGetRequest): Prom
 export async function storageSet(config: any, request: IStorageSetRequest, body: any): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
     ValidationHelper.string(request.context, "context");
     ValidationHelper.string(request.id, "id");
 
@@ -76,7 +76,7 @@ export async function storageSet(config: any, request: IStorageSetRequest, body:
 export async function storageDelete(config: any, request: IStorageDeleteRequest): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
     if (request.context) {
         ValidationHelper.string(request.context, "context");
     }
@@ -108,7 +108,7 @@ export async function storageDelete(config: any, request: IStorageDeleteRequest)
 export async function storageList(config: any, request: IStorageListRequest): Promise<IStorageListResponse<any>> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    ValidationHelper.trytes(request.registrationId, 81, "registrationId");
+    ValidationHelper.string(request.registrationId, "registrationId", 8);
     ValidationHelper.string(request.context, "context");
 
     const registrationService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
