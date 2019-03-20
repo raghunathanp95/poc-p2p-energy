@@ -71,9 +71,11 @@ export class RegistrationService implements IRegistrationService {
      * @param sideKey The client mam channel side key.
      */
     public async addRegistration(registration: IRegistration, root: string, sideKey: string): Promise<void> {
+        this._loggingService.log("registration", "add", registration, root, sideKey);
         const existingRegistration = await this._registrationStorageService.get(registration.id);
 
         if (existingRegistration) {
+            this._loggingService.log("registration", "exists", existingRegistration);
             registration.itemName = registration.itemName || existingRegistration.itemName;
             registration.itemType = registration.itemType || existingRegistration.itemType;
             registration.itemMamChannel = existingRegistration.itemMamChannel;
