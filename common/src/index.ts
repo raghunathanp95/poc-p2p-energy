@@ -39,6 +39,7 @@ export * from "./services/amazonS3StorageService";
 export * from "./services/apiStorageService";
 export * from "./services/bundleCacheService";
 export * from "./services/consoleLoggingService";
+export * from "./services/localFileStorageService";
 export * from "./services/mamCommandChannel";
 export * from "./services/registrationApiClient";
 export * from "./services/registrationService";
