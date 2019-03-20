@@ -28,7 +28,7 @@ export class TransactionCacheService extends AmazonDynamoDbService<ITransaction>
      */
     public async get(id: string): Promise<ITransaction> {
         try {
-            const iota: any = composeAPI({
+            const iota = composeAPI({
                 provider: this._provider
             });
 

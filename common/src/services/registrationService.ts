@@ -23,11 +23,6 @@ export class RegistrationService implements IRegistrationService {
     private readonly _shouldCreateReturnChannel: (registration: IRegistration) => boolean;
 
     /**
-     * Handle a mam command for the registration.
-     */
-    private readonly _handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>;
-
-    /**
      * Service to log output to.
      */
     private readonly _loggingService: ILoggingService;
@@ -51,15 +46,12 @@ export class RegistrationService implements IRegistrationService {
      * Initialise a new instance of RegistrationService.
      * @param nodeConfiguration The configuration.
      * @param shouldCreateReturnChannel The callback to determine when to create return mam channel.
-     * @param handleCommands The callback for handling command from the mam channel.
      */
     constructor(
         nodeConfiguration: INodeConfiguration,
-        shouldCreateReturnChannel: (registration: IRegistration) => boolean,
-        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>) {
+        shouldCreateReturnChannel: (registration: IRegistration) => boolean) {
         this._nodeConfiguration = nodeConfiguration;
         this._shouldCreateReturnChannel = shouldCreateReturnChannel;
-        this._handleCommands = handleCommands;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
     }
@@ -132,9 +124,11 @@ export class RegistrationService implements IRegistrationService {
     }
 
     /**
-     * Update the registrations, processing one registration on each pass.
+     * Look for new command for each registration.
+     * @param handleCommands Handle any new commands found from the registration.
      */
-    public async updateRegistrations(): Promise<void> {
+    public async pollCommands(
+        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
         if (this._allRegistrations.length > 0) {
             if (this._registrationsQueue.length === 0) {
                 this._registrationsQueue = this._allRegistrations.slice(0);
@@ -142,7 +136,7 @@ export class RegistrationService implements IRegistrationService {
 
             if (this._registrationsQueue.length > 0) {
                 const nextRegistration = this._registrationsQueue.shift();
-                await this.getNewCommands(nextRegistration);
+                await this.getNewCommands(nextRegistration, handleCommands);
             }
         }
     }
@@ -211,7 +205,9 @@ export class RegistrationService implements IRegistrationService {
      * @param registration The registration to update.
      * @returns Log of process.
      */
-    private async getNewCommands(registration: IRegistration): Promise<void> {
+    private async getNewCommands(
+        registration: IRegistration,
+        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
         if (registration.itemMamChannel) {
             const mamChannel = new MamCommandChannel(this._nodeConfiguration);
 
@@ -227,7 +223,7 @@ export class RegistrationService implements IRegistrationService {
                 // for the updated mam channel, this will also save the reset details
                 await this._registrationStorageService.set(registration.id, registration);
 
-                await this._handleCommands(registration, commands);
+                await handleCommands(registration, commands);
             }
         }
     }

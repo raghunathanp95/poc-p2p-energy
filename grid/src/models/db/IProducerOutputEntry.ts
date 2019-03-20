@@ -1,7 +1,7 @@
 /**
  * Object definition for storing output from a producer.
  */
-export interface IProducerStoreOutput {
+export interface IProducerOutputEntry {
     /**
      * The startTime for the producers output.
      */
@@ -20,7 +20,7 @@ export interface IProducerStoreOutput {
     /**
      * The price the producer would like for this output per kWh.
      */
-    askingPrice: number;
+    producerAskingPrice: number;
 
     /**
      * The payment address for this output.
@@ -28,12 +28,7 @@ export interface IProducerStoreOutput {
     paymentAddress: string;
 
     /**
-     * The actual price the producer was paid for this output per kWh.
+     * The price the grid is actually going to pay for output per kWh.
      */
-    actualPrice?: number;
-
-    /**
-     * The payment bundle for the payment.
-     */
-    paymentBundle?: string;
+    gridActualPrice?: number;
 }

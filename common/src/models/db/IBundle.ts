@@ -6,5 +6,5 @@ export interface IBundle {
     /**
      * The transaction hashes contained in the bundle.
      */
-    transactionHashes: string[];
+    transactionHashes: ReadonlyArray<string>;
 }

@@ -2,6 +2,7 @@ import { AmazonS3RegistrationService, AmazonS3StorageService, App, ConsoleLoggin
 import { IConfiguration } from "./models/IConfiguration";
 import { IGridState } from "./models/IGridState";
 import { GridService } from "./services/gridService";
+import { ProducerOutputPaymentService } from "./services/producerOutputPaymentService";
 import { ProducerStoreService } from "./services/producerStoreService";
 
 const routes: IRoute<IConfiguration>[] = [
@@ -40,11 +41,8 @@ app.build(routes, async (_1, config, _2) => {
             () => new AmazonS3StorageService(config.s3Connection, "config"));
     }
 
-    const gridService = new GridService();
-    const registrationService = new RegistrationService(
-        config.node,
-        gridService.shouldCreateReturnChannel,
-        gridService.handleCommands);
+    const gridService = new GridService(config.node);
+    const registrationService = new RegistrationService(config.node, gridService.shouldCreateReturnChannel);
 
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("grid", () => gridService);
@@ -60,22 +58,42 @@ app.build(routes, async (_1, config, _2) => {
     }
     if (config.localStorageFolder) {
         ServiceFactory.register(
-            "producer-store",
+            "producer-output",
             () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "producer"));
+        ServiceFactory.register(
+            "producer-output-payment",
+            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "producer-paid"));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
-            "producer-store",
+            "producer-output",
             () => new ProducerStoreService(config.dynamoDbConnection));
-    }
+        ServiceFactory.register(
+            "producer-output-payment",
+            () => new ProducerOutputPaymentService(config.dynamoDbConnection));
+        }
 
     await gridService.initialise();
     await registrationService.loadRegistrations();
 
     const schedules: ISchedule[] = [
         {
-            name: "Grid Registrations",
+            name: "Poll for Commands",
             schedule: "*/15 * * * * *",
-            func: async () => registrationService.updateRegistrations()
+            func: async () => registrationService.pollCommands(
+                (registration, commands) => gridService.handleCommands(registration, commands))
+        },
+        {
+            name: "Calculate asking prices",
+            schedule: "*/15 * * * * *",
+            func: async () => gridService.calculateAskingPrices((startTime, endTime, output, askingPrice) => {
+                // Calculate a price for the output based on its details and the asking price
+                return Math.floor(askingPrice * 0.95);
+            })
+        },
+        {
+            name: "Check Payments",
+            schedule: "*/15 * * * * *",
+            func: async () => gridService.checkPayments()
         }
     ];
 

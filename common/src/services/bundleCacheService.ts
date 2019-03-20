@@ -28,7 +28,7 @@ export class BundleCacheService extends AmazonDynamoDbService<IBundle> {
      */
     public async get(id: string): Promise<IBundle> {
         try {
-            const iota: any = composeAPI({
+            const iota = composeAPI({
                 provider: this._provider
             });
 

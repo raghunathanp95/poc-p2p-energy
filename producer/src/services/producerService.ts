@@ -149,7 +149,7 @@ export class ProducerService {
      * Combine the information from the sources and generate an output command.
      * @param calculatePrice Calculate the price for an output.
      */
-    public async sendOutputCommand(
+    public async collateSources(
         calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void> {
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");

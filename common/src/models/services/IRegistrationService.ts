@@ -1,3 +1,4 @@
+import { IMamCommand } from "../mam/IMamCommand";
 import { IRegistration } from "./registration/IRegistration";
 
 /**
@@ -24,7 +25,9 @@ export interface IRegistrationService {
     loadRegistrations(): Promise<void>;
 
     /**
-     * Update the registrations, processing one registration on each pass.
+     * Look for new commands for each registration.
+     * @param handleCommands Handle any new commands found from the registration.
      */
-    updateRegistrations(): Promise<void>;
+    pollCommands(
+        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void>;
 }

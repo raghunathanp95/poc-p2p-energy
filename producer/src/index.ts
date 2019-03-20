@@ -47,10 +47,7 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     const producerService = new ProducerService(config.producer, config.gridApiEndpoint, config.node);
-    const registrationService = new RegistrationService(
-        config.node,
-        producerService.shouldCreateReturnChannel,
-        producerService.handleCommands);
+    const registrationService = new RegistrationService(config.node, producerService.shouldCreateReturnChannel);
 
     ServiceFactory.register("registration-management", () => registrationService);
     ServiceFactory.register("producer", () => producerService);
@@ -80,15 +77,16 @@ app.build(routes, async (_1, config, _2) => {
 
     const schedules: ISchedule[] = [
         {
-            name: "Producer Consumer Registrations",
+            name: "Poll for Commands",
             schedule: "*/15 * * * * *",
-            func: async () => registrationService.updateRegistrations()
+            func: async () => registrationService.pollCommands(
+                (registration, commands) => producerService.handleCommands(registration, commands))
         },
         {
-            name: "Producer Output",
+            name: "Collate Sources",
             schedule: "*/60 * * * * *",
-            func: async () => producerService.sendOutputCommand((startTime, endTime, value) => {
-                // Calculate a cost for the output slice
+            func: async () => producerService.collateSources((startTime, endTime, value) => {
+                // Calculate a cost for the output slice, you could base this on time of day, value etc
                 return 1000;
             })
         }

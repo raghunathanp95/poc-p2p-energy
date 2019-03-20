@@ -1,9 +1,9 @@
-import { IProducerStoreOutput } from "./IProducerStoreOutput";
+import { IProducerOutputEntry } from "./IProducerOutputEntry";
 
 /**
  * Object definition for storing output from a producer.
  */
-export interface IProducerStore {
+export interface IProducerOutput {
     /**
      * The id of the producers.
      */
@@ -12,5 +12,5 @@ export interface IProducerStore {
     /**
      * The output records from the producer.
      */
-    output: IProducerStoreOutput[];
+    output: IProducerOutputEntry[];
 }

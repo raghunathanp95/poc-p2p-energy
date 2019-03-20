@@ -1,20 +1,20 @@
 import { AmazonDynamoDbService, IAWSDynamoDbConfiguration } from "poc-p2p-energy-grid-common";
-import { IProducerOutput } from "../models/db/IProducerOutput";
+import { IProducerOutputPayment } from "../models/db/IProducerOutputPayment";
 
 /**
  * Service to handle the producer store.
  */
-export class ProducerStoreService extends AmazonDynamoDbService<IProducerOutput> {
+export class ProducerOutputPaymentService extends AmazonDynamoDbService<IProducerOutputPayment> {
     /**
      * The name of the database table.
      */
-    public static readonly TABLE_NAME: string = "producerStore";
+    public static readonly TABLE_NAME: string = "producerOutputPayment";
 
     /**
      * Create a new instance of ProducerStoreService.
      * @param config Configuration for DB.
      */
     constructor(config: IAWSDynamoDbConfiguration) {
-        super(config, ProducerStoreService.TABLE_NAME, "id");
+        super(config, ProducerOutputPaymentService.TABLE_NAME, "id");
     }
 }

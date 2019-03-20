@@ -1,5 +1,6 @@
 import { AmazonS3RegistrationService, AmazonS3Service, BundleCacheService, ILoggingService, ServiceFactory, TransactionCacheService } from "poc-p2p-energy-grid-common";
 import { IConfiguration } from "../models/IConfiguration";
+import { ProducerOutputPaymentService } from "../services/producerOutputPaymentService";
 import { ProducerStoreService } from "../services/producerStoreService";
 
 /**
@@ -20,6 +21,8 @@ export async function init(config: IConfiguration): Promise<string[]> {
             await new AmazonS3RegistrationService(config.dynamoDbConnection)
                 .createTable(loggingService);
             await new ProducerStoreService(config.dynamoDbConnection)
+                .createTable(loggingService);
+            await new ProducerOutputPaymentService(config.dynamoDbConnection)
                 .createTable(loggingService);
         }
 
