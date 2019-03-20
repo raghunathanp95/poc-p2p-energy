@@ -22,8 +22,8 @@ export class ApiStorageService<T> implements IStorageService<T> {
 
     /**
      * Create a new instance of ApiStorageService
-     * @param registrationId The registration id.
      * @param apiEndpoint The api configuration.
+     * @param registrationId The registration id.
      * @param contextName The name of the context to store with.
      */
     constructor(apiEndpoint: string, registrationId: string, contextName: string) {
