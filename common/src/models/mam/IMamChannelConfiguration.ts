@@ -3,7 +3,7 @@
  */
 export interface IMamChannelConfiguration {
     /**
-     * The see used to generate the channel.
+     * The seed used to generate the channel.
      */
     seed?: string;
 

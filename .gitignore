@@ -20,3 +20,7 @@ node_modules
 /source/src/data/config.dev.json
 /source/dist
 
+/consumer/src/data/config.local.json
+/consumer/src/data/config.dev.json
+/consumer/dist
+

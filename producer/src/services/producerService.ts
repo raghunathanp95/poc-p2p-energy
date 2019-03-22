@@ -17,7 +17,7 @@ export class ProducerService {
     /**
      * Configuration for the node.
      */
-    private readonly _nodeConfiguration: INodeConfiguration;
+    private readonly _nodeConfig: INodeConfiguration;
 
     /**
      * Service to log output to.
@@ -45,7 +45,7 @@ export class ProducerService {
         gridApiEndpoint: string,
         nodeConfig: INodeConfiguration) {
         this._config = producerConfig;
-        this._nodeConfiguration = nodeConfig;
+        this._nodeConfig = nodeConfig;
         this._gridApiEndpoint = gridApiEndpoint;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
@@ -75,14 +75,12 @@ export class ProducerService {
             this._loggingService.log("producer-init", `Channel Config not found`);
             this._loggingService.log("producer-init", `Creating Channel`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
 
             this._state.channel = {};
             await itemMamChannel.openWritable(this._state.channel);
 
             this._loggingService.log("producer-init", `Creating Channel Success`);
-
-            await this.saveState();
 
             this._loggingService.log("producer-init", `Updating Registration`);
             const updateResponse = await registrationApiClient.registrationSet({
@@ -93,6 +91,8 @@ export class ProducerService {
             this._loggingService.log("producer-init", `Updating Registration: ${updateResponse.message}`);
         }
         this._loggingService.log("producer-init", `Registration Complete`);
+
+        await this.saveState();
     }
 
     /**
@@ -102,7 +102,7 @@ export class ProducerService {
         if (this._state && this._state.channel) {
             this._loggingService.log("producer-reset", `Send Channel Reset`);
 
-            const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
+            const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
             await mamCommandChannel.reset(this._state.channel);
 
             await this.saveState();
@@ -127,7 +127,7 @@ export class ProducerService {
         if (this._state && this._state.channel) {
             this._loggingService.log("producer-closedown", `Sending Goodbye`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
 
             await itemMamChannel.closeWritable(this._state.channel);
 
@@ -307,7 +307,7 @@ export class ProducerService {
      * Send a command to the channel.
      */
     public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
-        const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
+        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
     }

@@ -5,7 +5,7 @@ import { IMamChannelConfiguration } from "poc-p2p-energy-grid-common";
  */
 export interface ISourceState {
     /**
-     * The channel configuration for the producer.
+     * The channel configuration for the source.
      */
     channel?: IMamChannelConfiguration;
 

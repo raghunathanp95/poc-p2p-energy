@@ -13,7 +13,7 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
     },
     "producerApiEndpoint": "https://PRODUCER-ENDPOINT",  /* Endpoint for the producer api */
     "source": {
-        "id": "SOURCE-UNIQUE-ID",                        /* 81 Trytes hash to use as unique id */
+        "id": "SOURCE-UNIQUE-ID",                        /* Unique ID, has no format */
         "name": "SOURCE-NAME",                           /* The name of this source */
         "type": "SOURCE-TYPE"                            /* Type of this source e.g. solar, wind */
     }

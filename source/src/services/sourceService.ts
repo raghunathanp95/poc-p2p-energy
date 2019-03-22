@@ -18,7 +18,7 @@ export class SourceService {
     /**
      * Configuration for the tangle node.
      */
-    private readonly _nodeConfiguration: INodeConfiguration;
+    private readonly _nodeConfig: INodeConfiguration;
 
     /**
      * Logging service.
@@ -44,7 +44,7 @@ export class SourceService {
         nodeConfig: INodeConfiguration) {
         this._config = sourceConfig;
         this._producerApiEndpoint = producerApiEndpoint;
-        this._nodeConfiguration = nodeConfig;
+        this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
 
@@ -74,14 +74,12 @@ export class SourceService {
             this._loggingService.log("source-init", `Channel Config not found`);
             this._loggingService.log("source-init", `Creating Channel`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
 
             this._state.channel = {};
             await itemMamChannel.openWritable(this._state.channel);
 
             this._loggingService.log("source-init", `Creating Channel Success`);
-
-            await this.saveState();
 
             this._loggingService.log("source-init", `Updating Registration`);
             const updateResponse = await registrationApiClient.registrationSet({
@@ -92,12 +90,12 @@ export class SourceService {
             this._loggingService.log("source-init", `Updating Registration: ${updateResponse.message}`);
         }
         this._loggingService.log("source-init", `Registration Complete`);
+
+        await this.saveState();
     }
 
     /**
      * Unregister the source from the Producer.
-     * @param configuration The configuration to use.
-     * @param mamChannelConfig The mam channel to close.
      */
     public async closedown(): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._producerApiEndpoint);
@@ -105,7 +103,7 @@ export class SourceService {
         if (this._state && this._state.channel) {
             this._loggingService.log("source", `Sending Goodbye`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
 
             await itemMamChannel.closeWritable(this._state.channel);
 
@@ -144,7 +142,7 @@ export class SourceService {
      * Send a command to the channel.
      */
     public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
-        const mamCommandChannel = new MamCommandChannel(this._nodeConfiguration);
+        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
     }

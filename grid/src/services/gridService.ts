@@ -21,14 +21,14 @@ export class GridService {
     /**
      * Node configuration.
      */
-    private readonly _nodeConfiguration?: INodeConfiguration;
+    private readonly _nodeConfig?: INodeConfiguration;
 
     /**
      * Create a new instance of GridService.
-     * @param nodeConfiguration Configuration for tangle communication.
+     * @param nodeConfig Configuration for tangle communication.
      */
-    constructor(nodeConfiguration?: INodeConfiguration) {
-        this._nodeConfiguration = nodeConfiguration;
+    constructor(nodeConfig: INodeConfiguration) {
+        this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
 
@@ -152,7 +152,7 @@ export class GridService {
             "producer-output-payment");
 
         const iota = composeAPI({
-            provider: this._nodeConfiguration.provider
+            provider: this._nodeConfig.provider
         });
 
         const toRemove = [];

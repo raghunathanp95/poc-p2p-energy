@@ -15,7 +15,7 @@ export class RegistrationService implements IRegistrationService {
     /**
      * Configuration for the tangle node.
      */
-    private readonly _nodeConfiguration: INodeConfiguration;
+    private readonly _nodeConfig: INodeConfiguration;
 
     /**
      * Should we create return channels for registrations.
@@ -44,13 +44,13 @@ export class RegistrationService implements IRegistrationService {
 
     /**
      * Initialise a new instance of RegistrationService.
-     * @param nodeConfiguration The configuration.
+     * @param nodeConfig The configuration.
      * @param shouldCreateReturnChannel The callback to determine when to create return mam channel.
      */
     constructor(
-        nodeConfiguration: INodeConfiguration,
+        nodeConfig: INodeConfiguration,
         shouldCreateReturnChannel: (registration: IRegistration) => boolean) {
-        this._nodeConfiguration = nodeConfiguration;
+        this._nodeConfig = nodeConfig;
         this._shouldCreateReturnChannel = shouldCreateReturnChannel;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
@@ -162,7 +162,7 @@ export class RegistrationService implements IRegistrationService {
                     sideKey: itemSideKey
                 };
 
-                const itemMamChannel = new MamCommandChannel(this._nodeConfiguration);
+                const itemMamChannel = new MamCommandChannel(this._nodeConfig);
                 const openSuccess = await itemMamChannel.openReadable(itemMamChannelConfiguration);
 
                 if (!openSuccess) {
@@ -178,7 +178,7 @@ export class RegistrationService implements IRegistrationService {
             if (registration.returnMamChannel === undefined && this._shouldCreateReturnChannel(registration)) {
                 this._loggingService.log("registration", `Generating return channel hello`);
 
-                const returnMamChannel = new MamCommandChannel(this._nodeConfiguration);
+                const returnMamChannel = new MamCommandChannel(this._nodeConfig);
 
                 registration.returnMamChannel = {};
                 await returnMamChannel.openWritable(registration.returnMamChannel);
@@ -194,7 +194,7 @@ export class RegistrationService implements IRegistrationService {
      */
     private async closeMamChannels(registration: IRegistration): Promise<void> {
         if (registration.returnMamChannel) {
-            const gridMamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const gridMamChannel = new MamCommandChannel(this._nodeConfig);
             await gridMamChannel.closeWritable(registration.returnMamChannel);
             registration.returnMamChannel = undefined;
         }
@@ -209,7 +209,7 @@ export class RegistrationService implements IRegistrationService {
         registration: IRegistration,
         handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
         if (registration.itemMamChannel) {
-            const mamChannel = new MamCommandChannel(this._nodeConfiguration);
+            const mamChannel = new MamCommandChannel(this._nodeConfig);
 
             const commands = await mamChannel.receiveCommands(registration.itemMamChannel);
 
