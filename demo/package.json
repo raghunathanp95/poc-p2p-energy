@@ -1,0 +1,49 @@
+{
+    "name": "poc-p2p-energy-demo",
+    "description": "Demo UI for IOTA PoC Energy",
+    "version": "0.1.0",
+    "author": "Martyn Janes <martyn.janes@iota.org>",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.18.0",
+        "classnames": "^2.2.6",
+        "iota-css-theme": "github:iotaledger/iota-css-theme",
+        "iota-react-components": "github:iotaledger/iota-react-components",
+        "react": "^16.8.5",
+        "react-dom": "^16.8.5",
+        "react-router-dom": "^4.3.1",
+        "react-scripts": "^2.1.8"
+    },
+    "engines": {
+        "node": "10.x.x"
+    },
+    "scripts": {
+        "start": "cross-env PORT=3000 react-scripts start",
+        "lint": "tslint --project ./tsconfig.json",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "sass-lint": "sass-lint -v -c ./.sass-lint.yml"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ],
+    "devDependencies": {
+        "@types/classnames": "^2.2.6",
+        "@types/node": "^11.11.6",
+        "@types/react": "^16.8.8",
+        "@types/react-dom": "^16.8.3",
+        "@types/react-router-dom": "^4.3.1",
+        "cross-env": "^5.2.0",
+        "node-sass": "^4.11.0",
+        "sass-lint": "^1.12.1",
+        "tslint": "^5.14.0",
+        "tslint-eslint-rules": "^5.4.0",
+        "tslint-microsoft-contrib": "^6.0.0",
+        "tslint-react": "^3.6.0",
+        "typescript": "^3.3.4000"
+    }
+}

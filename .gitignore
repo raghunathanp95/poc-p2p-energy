@@ -24,3 +24,7 @@ node_modules
 /consumer/src/data/config.dev.json
 /consumer/dist
 
+/demo/public/data/config.local.json
+/demo/public/data/config.dev.json
+/demo/build
+
