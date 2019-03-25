@@ -10,4 +10,4 @@
 
 ## Consumer
 
-* Not yet started
+* Usage and Payments logic
