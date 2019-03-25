@@ -2,7 +2,8 @@
 
 ## Demo (React Front-end)
 
-* Not yet started
+* Shell created
+* UI for grid/producers/sources/consumers
 
 ## Grid
 
