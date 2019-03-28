@@ -1,13 +1,10 @@
-import { ApiStorageService, ConsoleLoggingService, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "./models/IConfiguration";
-import { IConsumerState } from "./models/IConsumerState";
-import { ConsumerService } from "./services/consumerService";
+import { ApiStorageService, ConsoleLoggingService, ConsumerService, IConsumerServiceConfiguration, IConsumerState, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
 
 // tslint:disable:no-var-requires no-require-imports
 const packageJson = require("../package.json");
 const configId = process.env.CONFIG_ID || "local";
 // tslint:disable-next-line:non-literal-require
-const config: IConfiguration = require(`./data/config.${configId}.json`);
+const config: IConsumerServiceConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
 ServiceFactory.register("logging", () => loggingService);

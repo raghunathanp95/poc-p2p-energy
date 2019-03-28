@@ -1,10 +1,6 @@
-import { ApiStorageService, App, ConsoleLoggingService, IRegistration, IRoute, ISchedule, LocalFileStorageService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
-import { ISourceStore } from "./models/db/ISourceStore";
-import { IConfiguration } from "./models/IConfiguration";
-import { IProducerState } from "./models/IProducerState";
-import { ProducerService } from "./services/producerService";
+import { ApiStorageService, App, ConsoleLoggingService, IProducerServiceConfiguration, IProducerState, IRegistration, IRoute, ISchedule, ISourceStore, LocalFileStorageService, ProducerService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
 
-const routes: IRoute<IConfiguration>[] = [
+const routes: IRoute<IProducerServiceConfiguration>[] = [
     { path: "/initialise", method: "get", func: "initialise" },
     { path: "/closedown", method: "get", func: "closedown" },
     { path: "/reset", method: "get", func: "reset" },
@@ -17,7 +13,7 @@ const routes: IRoute<IConfiguration>[] = [
 ];
 
 const loggingService = new ConsoleLoggingService();
-const app = new App<IConfiguration>(4001, loggingService, __dirname);
+const app = new App<IProducerServiceConfiguration>(4001, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
     loggingService.log("app", `Tangle Provider ${config.node.provider}`);

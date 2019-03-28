@@ -1,11 +1,9 @@
-import { ILoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "../models/IConfiguration";
-import { ProducerService } from "../services/producerService";
+import { ILoggingService, IProducerServiceConfiguration, ProducerService, ServiceFactory } from "poc-p2p-energy-grid-common";
 
 /**
  * Initialise the producer.
  */
-export async function initialise(config: IConfiguration): Promise<string[]> {
+export async function initialise(config: IProducerServiceConfiguration): Promise<string[]> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
     loggingService.startCapture(["init", "producer-init"]);

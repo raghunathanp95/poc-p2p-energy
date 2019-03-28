@@ -1,12 +1,9 @@
-import { AmazonS3RegistrationService, AmazonS3Service, BundleCacheService, ILoggingService, ServiceFactory, TransactionCacheService } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "../models/IConfiguration";
-import { ProducerOutputPaymentService } from "../services/producerOutputPaymentService";
-import { ProducerStoreService } from "../services/producerStoreService";
+import { AmazonS3RegistrationService, AmazonS3Service, BundleCacheService, IGridServiceConfiguration, ILoggingService, ProducerOutputPaymentService, ProducerStoreService, ServiceFactory, TransactionCacheService } from "poc-p2p-energy-grid-common";
 
 /**
- * Initialise the database.
+ * Initialise the components for the Grid.
  */
-export async function init(config: IConfiguration): Promise<string[]> {
+export async function init(config: IGridServiceConfiguration): Promise<string[]> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
     loggingService.startCapture(["init", "dynamoDb", "s3"]);

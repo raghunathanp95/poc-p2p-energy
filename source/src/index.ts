@@ -1,13 +1,10 @@
-import { ApiStorageService, ConsoleLoggingService, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "./models/IConfiguration";
-import { ISourceState } from "./models/ISourceState";
-import { SourceService } from "./services/sourceService";
+import { ApiStorageService, ConsoleLoggingService, ISourceServiceConfiguration, ISourceState, LocalFileStorageService, ServiceFactory, SourceService } from "poc-p2p-energy-grid-common";
 
 // tslint:disable:no-var-requires no-require-imports
 const packageJson = require("../package.json");
 const configId = process.env.CONFIG_ID || "local";
 // tslint:disable-next-line:non-literal-require
-const config: IConfiguration = require(`./data/config.${configId}.json`);
+const config: ISourceServiceConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
 ServiceFactory.register("logging", () => loggingService);
@@ -40,6 +37,7 @@ async function start(sourceService: SourceService): Promise<void> {
         await sourceService.sendOutputCommand(Math.random() * 1000);
     }
 
+    // Don't close down unless you want to remove the registration
     // await sourceService.closedown();
 }
 

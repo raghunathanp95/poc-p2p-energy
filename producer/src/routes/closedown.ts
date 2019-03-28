@@ -1,11 +1,9 @@
-import { ILoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "../models/IConfiguration";
-import { ProducerService } from "../services/producerService";
+import { ILoggingService, IProducerServiceConfiguration, ProducerService, ServiceFactory } from "poc-p2p-energy-grid-common";
 
 /**
  * Closedown the producer.
  */
-export async function closedown(config: IConfiguration): Promise<string[]> {
+export async function closedown(config: IProducerServiceConfiguration): Promise<string[]> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
     loggingService.startCapture(["closedown", "producer-closedown"]);

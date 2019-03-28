@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "es5",
     "lib": [
       "dom",
@@ -17,5 +18,8 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "inlineSourceMap": true
-  }
+  },
+  "include": [
+    "src"
+  ]
 }

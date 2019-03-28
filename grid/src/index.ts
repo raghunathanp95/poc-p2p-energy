@@ -1,11 +1,6 @@
-import { AmazonS3RegistrationService, AmazonS3StorageService, App, ConsoleLoggingService, IRoute, ISchedule, LocalFileStorageService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
-import { IConfiguration } from "./models/IConfiguration";
-import { IGridState } from "./models/IGridState";
-import { GridService } from "./services/gridService";
-import { ProducerOutputPaymentService } from "./services/producerOutputPaymentService";
-import { ProducerStoreService } from "./services/producerStoreService";
+import { AmazonS3RegistrationService, AmazonS3StorageService, App, ConsoleLoggingService, GridService, IGridServiceConfiguration, IGridState, IRoute, ISchedule, LocalFileStorageService, ProducerOutputPaymentService, ProducerStoreService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
 
-const routes: IRoute<IConfiguration>[] = [
+const routes: IRoute<IGridServiceConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
     { path: "/storage/:registrationId/:context", method: "get", inline: storageList },
     { path: "/storage/:registrationId/:context/:id", method: "put", inline: storageSet, dataBody: true },
@@ -16,7 +11,7 @@ const routes: IRoute<IConfiguration>[] = [
 ];
 
 const loggingService = new ConsoleLoggingService();
-const app = new App<IConfiguration>(4000, loggingService, __dirname);
+const app = new App<IGridServiceConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
     loggingService.log("app", `Tangle Provider ${config.node.provider}`);
