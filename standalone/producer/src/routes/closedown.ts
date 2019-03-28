@@ -1,4 +1,7 @@
-import { ILoggingService, IProducerServiceConfiguration, ProducerService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
+import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
+import { ProducerService } from "p2p-energy-common/dist/services/producerService";
 
 /**
  * Closedown the producer.

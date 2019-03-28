@@ -6,6 +6,7 @@ You should copy `./public/data/config.template.json` to `./public/data/config.de
 
 ```js
 {
+    "apiEndpoint": "API-ENDPOINT",               /* URL of the demo API */
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"   /* Optional, google analytics id */
 }
 ```

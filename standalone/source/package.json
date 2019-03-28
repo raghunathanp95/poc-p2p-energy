@@ -26,8 +26,9 @@
     "dependencies": {
         "@iota/core": "^1.0.0-beta.11",
         "axios": "github:axios/axios",
+        "mam.client.js": "github:iotaledger/mam.client.js",
         "node-schedule": "^1.3.2",
-        "poc-p2p-energy-grid-common": "file:../common"
+        "p2p-energy-common": "file:../../common"
     },
     "devDependencies": {
         "@types/node": "^11.11.3",

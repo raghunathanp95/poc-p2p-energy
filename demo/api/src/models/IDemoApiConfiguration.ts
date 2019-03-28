@@ -1,4 +1,4 @@
-import { IAWSS3Configuration } from "poc-p2p-energy-grid-common";
+import { IAWSS3Configuration } from "p2p-energy-common/dist/models/config/IAWSS3Configuration";
 /**
  * Definition of configuration file.
  */

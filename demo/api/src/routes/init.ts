@@ -1,4 +1,7 @@
-import { AmazonS3Service, IGridServiceConfiguration, ILoggingService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
+import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
+import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
 
 /**
  * Initialise the components for the demo api.

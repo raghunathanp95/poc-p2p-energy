@@ -1,6 +1,10 @@
 import { Button, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
 import React, { Component, ReactNode } from "react";
 import { ServiceFactory } from "../../factories/serviceFactory";
+import { IGrid } from "../../models/api/IGrid";
+import { IConfiguration } from "../../models/config/IConfiguration";
+import { ConfigurationService } from "../../services/configurationService";
+import { DemoApiClient } from "../../services/demoApiClient";
 import { LocalStorageService } from "../../services/localStorageService";
 import { GridState } from "./GridState";
 
@@ -8,6 +12,11 @@ import { GridState } from "./GridState";
  * Component which will show the users grid.
  */
 class Grid extends Component<any, GridState> {
+    /**
+     * The api client.
+     */
+    private readonly _apiClient: DemoApiClient;
+
     /**
      * Access local storage in the browser.
      */
@@ -21,8 +30,11 @@ class Grid extends Component<any, GridState> {
         super(props);
         this._localStorageService = ServiceFactory.get<LocalStorageService>("localStorage");
 
+        const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
+        this._apiClient = new DemoApiClient(config.apiEndpoint);
+
         this.state = {
-            gridName: undefined,
+            gridName: "",
             status: ""
         };
     }
@@ -34,7 +46,7 @@ class Grid extends Component<any, GridState> {
         const gridName = this._localStorageService.get<string>("gridName");
 
         if (gridName) {
-            await this.loadGrid();
+            this.setState({ gridName }, async () => this.loadGrid());
         }
     }
 
@@ -46,20 +58,17 @@ class Grid extends Component<any, GridState> {
         return (
             <React.Fragment>
                 <Heading level={1}>Grid</Heading>
-                {this.state.gridData && (
+                {this.state.grid && (
                     <React.Fragment>
-                        <p>{this.state.gridData.name}</p>
+                        <p>{this.state.gridName}</p>
                         <Button
-                            onClick={() => this.setState({
-                                gridName: undefined,
-                                gridData: undefined
-                            })}
+                            onClick={() => this.newGrid()}
                         >
                             New Grid
                         </Button>
                     </React.Fragment>
                 )}
-                {!this.state.gridData && (
+                {!this.state.grid && (
                     <React.Fragment>
                         <p>No grid configuration found, please enter the name of an existing grid or create a new one.</p>
                         <Form>
@@ -67,15 +76,15 @@ class Grid extends Component<any, GridState> {
                                 <label>Grid Name</label>
                                 <input
                                     type="text"
-                                    placeholder="Please enter a name for the grid > 5 characters"
+                                    placeholder="Name for the grid with a least 5 characters"
                                     value={this.state.gridName}
                                     onChange={(e) => this.setState({ gridName: e.target.value }, () => this.validateData())}
                                     readOnly={this.state.isBusy}
                                 />
                             </Fieldset>
                             <FormActions>
-                                <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.createGrid()}>Create</Button>
                                 <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.loadGrid()}>Load</Button>
+                                <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.createGrid()}>Create</Button>
                             </FormActions>
                             <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} />
                         </Form>
@@ -89,22 +98,93 @@ class Grid extends Component<any, GridState> {
      * Validate the form data.
      */
     private validateData(): void {
-        const isValid = this.state.gridName && this.state.gridName.trim().length > 5 ? true : false;
+        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 ? true : false;
 
         this.setState({ isValid });
     }
 
     /**
-     * Create or load a grid the api.
+     * Create a grid using the api.
      */
     private async createGrid(): Promise<void> {
+        this.setState(
+            {
+                isBusy: true,
+                status: "Creating Grid, please wait...",
+                isErrored: false
+            },
+            async () => {
+                const grid: IGrid = {
+                    blah: "goo"
+                };
+                const response = await this._apiClient.gridCreate({
+                    name: this.state.gridName || "",
+                    grid
+                });
 
+                if (response.success) {
+                    await this._localStorageService.set("gridName", this.state.gridName);
+
+                    this.setState({
+                        isBusy: false,
+                        status: "",
+                        isErrored: false,
+                        grid
+                    });
+                } else {
+                    this.setState({
+                        isBusy: false,
+                        status: response.message,
+                        isErrored: true
+                    });
+                }
+            });
     }
 
     /**
      * Load a grid from the api.
      */
     private async loadGrid(): Promise<void> {
+        this.setState(
+            {
+                isBusy: true,
+                status: "Loading Grid, please wait...",
+                isErrored: false
+            },
+            async () => {
+                const response = await this._apiClient.gridGet({
+                    name: this.state.gridName || ""
+                });
+
+                if (response.success) {
+                    await this._localStorageService.set("gridName", this.state.gridName);
+
+                    this.setState({
+                        isBusy: false,
+                        status: "",
+                        isErrored: false,
+                        grid: response.grid
+                    });
+                } else {
+                    this.setState({
+                        isBusy: false,
+                        status: response.message,
+                        isErrored: true
+                    });
+                }
+            });
+    }
+
+    /**
+     * Create a new grid.
+     */
+    private async newGrid(): Promise<void> {
+        await this._localStorageService.remove("gridName");
+
+        this.setState({
+            gridName: undefined,
+            grid: undefined
+        });
     }
 }
 

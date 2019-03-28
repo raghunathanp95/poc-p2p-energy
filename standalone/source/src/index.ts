@@ -1,4 +1,10 @@
-import { ApiStorageService, ConsoleLoggingService, ISourceServiceConfiguration, ISourceState, LocalFileStorageService, ServiceFactory, SourceService } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { ISourceServiceConfiguration } from "p2p-energy-common/dist/models/config/source/ISourceServiceConfiguration";
+import { ISourceState } from "p2p-energy-common/dist/models/state/ISourceState";
+import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { SourceService } from "p2p-energy-common/dist/services/sourceService";
+import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 
 // tslint:disable:no-var-requires no-require-imports
 const packageJson = require("../package.json");

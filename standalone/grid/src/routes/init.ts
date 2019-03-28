@@ -1,4 +1,12 @@
-import { AmazonS3RegistrationService, AmazonS3Service, BundleCacheService, IGridServiceConfiguration, ILoggingService, ProducerOutputPaymentService, ProducerStoreService, ServiceFactory, TransactionCacheService } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
+import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
+import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
+import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
+import { BundleCacheService } from "p2p-energy-common/dist/services/db/bundleCacheService";
+import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
+import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
+import { TransactionCacheService } from "p2p-energy-common/dist/services/db/transactionCacheService";
 
 /**
  * Initialise the components for the Grid.

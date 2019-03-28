@@ -9,6 +9,7 @@
         "classnames": "^2.2.6",
         "iota-css-theme": "github:iotaledger/iota-css-theme",
         "iota-react-components": "github:iotaledger/iota-react-components",
+        "p2p-energy-common": "file:../../common",
         "react": "^16.8.5",
         "react-dom": "^16.8.5",
         "react-router-dom": "^4.3.1",

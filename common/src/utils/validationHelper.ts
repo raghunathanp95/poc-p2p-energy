@@ -37,4 +37,15 @@ export class ValidationHelper {
             throw new Error(`The parameter '${name}' has an invalid value.`);
         }
     }
+
+    /**
+     * Is the value an object.
+     * @param obj The object to validate.
+     * @param name The parameter name.
+     */
+    public static object(obj: any, name: string): void {
+        if (obj === undefined || obj === null || typeof obj !== "object") {
+            throw new Error(`The parameter '${name}' has an invalid value.`);
+        }
+    }
 }

@@ -1,8 +1,16 @@
-import { AmazonS3StorageService, App, ConsoleLoggingService, IRoute, LocalFileStorageService, ServiceFactory } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
+import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { App } from "p2p-energy-common/dist/utils/app";
 import { IDemoApiConfiguration } from "./models/IDemoApiConfiguration";
 
 const routes: IRoute<IDemoApiConfiguration>[] = [
-    { path: "/init", method: "get", func: "init" }
+    { path: "/init", method: "get", func: "init" },
+    { path: "/grid", method: "post", folder: "grid", func: "gridPost" },
+    { path: "/grid/:name", method: "get", folder: "grid", func: "gridGet" },
+    { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" }
 ];
 
 const loggingService = new ConsoleLoggingService();
@@ -13,12 +21,12 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "storage",
-            () => new LocalFileStorageService(config.localStorageFolder, "demo-api", "storage")
+            () => new LocalFileStorageService(config.localStorageFolder, "grids", "")
         );
     } else if (config.s3Connection) {
         ServiceFactory.register(
             "storage",
-            () => new AmazonS3StorageService(config.s3Connection, "demo-api"));
+            () => new AmazonS3StorageService(config.s3Connection, "grids"));
     }
 }).catch(err => {
     loggingService.error("app", `Failed during app build`, err);

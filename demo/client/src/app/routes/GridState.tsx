@@ -1,4 +1,4 @@
-import { GridData } from "../../models/api/gridData";
+import { IGrid } from "../../models/api/IGrid";
 
 export interface GridState {
     /**
@@ -9,7 +9,7 @@ export interface GridState {
     /**
      * The grid data.
      */
-    gridData?: GridData;
+    grid?: IGrid;
 
     /**
      * Is the form data valid.

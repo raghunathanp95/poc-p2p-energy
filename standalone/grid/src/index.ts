@@ -1,4 +1,20 @@
-import { AmazonS3RegistrationService, AmazonS3StorageService, App, ConsoleLoggingService, GridService, IGridServiceConfiguration, IGridState, IRoute, ISchedule, LocalFileStorageService, ProducerOutputPaymentService, ProducerStoreService, registrationDelete, RegistrationService, registrationSet, ScheduleHelper, ServiceFactory, storageDelete, storageGet, storageList, storageSet } from "poc-p2p-energy-grid-common";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
+import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
+import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
+import { IGridState } from "p2p-energy-common/dist/models/state/IGridState";
+import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
+import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
+import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
+import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
+import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
+import { GridService } from "p2p-energy-common/dist/services/gridService";
+import { RegistrationService } from "p2p-energy-common/dist/services/registrationService";
+import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { App } from "p2p-energy-common/dist/utils/app";
+import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
 
 const routes: IRoute<IGridServiceConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
@@ -65,7 +81,7 @@ app.build(routes, async (_1, config, _2) => {
         ServiceFactory.register(
             "producer-output-payment",
             () => new ProducerOutputPaymentService(config.dynamoDbConnection));
-        }
+    }
 
     await gridService.initialise();
     await registrationService.loadRegistrations();

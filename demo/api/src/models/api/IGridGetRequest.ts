@@ -1,4 +1,4 @@
-export interface GridData {
+export interface IGridGetRequest {
     /**
      * The name of the grid.
      */
