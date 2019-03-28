@@ -7,7 +7,9 @@ import contentHomePage from "../content/contentHomePage.json";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IConfiguration } from "../models/config/IConfiguration";
 import { ConfigurationService } from "../services/configurationService";
+import { LocalStorageService } from "../services/localStorageService";
 import { AppState } from "./AppState";
+import Grid from "./routes/Grid";
 import Introduction from "./routes/Introduction";
 
 /**
@@ -44,6 +46,7 @@ class App extends Component<RouteComponentProps, AppState> {
             const config = await configService.load(`/data/config.${configId}.json`);
 
             ServiceFactory.register("configuration", () => configService);
+            ServiceFactory.register("localStorage", () => new LocalStorageService());
 
             this._configuration = config;
 
@@ -78,6 +81,7 @@ class App extends Component<RouteComponentProps, AppState> {
                 />
                 <nav className="tablet-down-hidden">
                     <Link className="link" to="/">Introduction</Link>
+                    <Link className="link" to="/grid">Grid</Link>
                 </nav>
                 <SideMenu
                     isMenuOpen={this.state.isSideMenuOpen}
@@ -93,6 +97,10 @@ class App extends Component<RouteComponentProps, AppState> {
                                         {
                                             name: "Introduction",
                                             link: "/"
+                                        },
+                                        {
+                                            name: "Grid",
+                                            link: "/grid"
                                         }
                                     ]
                                 }
@@ -108,6 +116,7 @@ class App extends Component<RouteComponentProps, AppState> {
                         {!this.state.status && (
                             <Switch>
                                 <Route exact={true} path="/" component={() => (<Introduction hash={Date.now()} />)} />
+                                <Route exact={true} path="/grid" component={() => (<Grid hash={Date.now()} />)} />
                             </Switch>
                         )}
                     </LayoutAppSingle>

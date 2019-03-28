@@ -28,6 +28,10 @@
                 {
                     "href": "/",
                     "text": "Introduction"
+                },
+                {
+                    "href": "/grid",
+                    "text": "Grid"
                 }
             ]
         },

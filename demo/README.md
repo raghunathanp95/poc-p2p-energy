@@ -1,25 +1,16 @@
-# IOTA P2P Energy Demonstration
+# IOTA P2P Energy PoC Demonstration
 
-This package provides a React Web UI to demonstrate the use of P2P Energy components.
+The demonstration is composed of 2 packages `client` and `api`
 
-## Pre-requisites
+## Client
 
-```shell
-npm install
-```
+The Demo is a React Web UI which shows an overview of the p2p energy entities interacting.
 
-## Development
+See [./client/README.md](./client/README.md) for more details.
 
-This will run the Web UI at <http://localhost:3000>
+## Api
 
-```shell
-npm run start
-```
+The api facilitates all the services required by `client`.
+It is a set of services running on NodeJS connecting to the Amazon S3.
 
-## Deployment
-
-See [./DEPLOYMENT.md](./DEPLOYMENT.md) for more details.
-
-## Demonstration
-
-There is a demonstration available to view at <https://poc-p2p-energy-demo.dag.sh>
+See [./api/README.md](./api/README.md) for more details.
