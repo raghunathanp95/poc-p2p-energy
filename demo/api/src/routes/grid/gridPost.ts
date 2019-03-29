@@ -22,7 +22,10 @@ export async function gridPost(
     const grid = await storageService.get(request.name);
 
     if (grid) {
-        throw new Error(`The grid '${request.name}' already exists.`);
+        throw new Error(
+            `The grid '${request.name}' already exists.
+Please choose a different name or load it instead.`
+        );
     }
 
     await storageService.set(request.name, request.grid);

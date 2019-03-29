@@ -70,7 +70,7 @@ class Grid extends Component<any, GridState> {
                 )}
                 {!this.state.grid && (
                     <React.Fragment>
-                        <p>No grid configuration found, please enter the name of an existing grid or create a new one.</p>
+                        <p>Please enter the name of an existing grid to load, or generate a name to create a new one.</p>
                         <Form>
                             <Fieldset>
                                 <label>Grid Name</label>
@@ -181,10 +181,12 @@ class Grid extends Component<any, GridState> {
     private async newGrid(): Promise<void> {
         await this._localStorageService.remove("gridName");
 
-        this.setState({
-            gridName: undefined,
-            grid: undefined
-        });
+        this.setState(
+            {
+                gridName: undefined,
+                grid: undefined
+            },
+            () => this.validateData());
     }
 }
 
