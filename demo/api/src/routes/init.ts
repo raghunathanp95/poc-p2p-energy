@@ -14,7 +14,7 @@ export async function init(config: IGridServiceConfiguration): Promise<string[]>
 
     try {
         if (config.s3Connection) {
-            await new AmazonS3Service(config.s3Connection, "storage")
+            await new AmazonS3Service(config.s3Connection, "grids")
                 .createBucket(loggingService);
         }
 
