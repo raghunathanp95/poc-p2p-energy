@@ -14,21 +14,21 @@ export async function gridPost(
     request: IGridPostRequest):
     Promise<IResponse> {
 
-    ValidationHelper.string(request.name, "name", 5);
     ValidationHelper.object(request.grid, "grid");
+    ValidationHelper.string(request.grid.name, "name", 5);
 
     const storageService = ServiceFactory.get<IStorageService<IGrid>>("storage");
 
-    const grid = await storageService.get(request.name);
+    const grid = await storageService.get(request.grid.name);
 
     if (grid) {
         throw new Error(
-            `The grid '${request.name}' already exists.
+            `The grid '${request.grid.name}' already exists.
 Please choose a different name or load it instead.`
         );
     }
 
-    await storageService.set(request.name, request.grid);
+    await storageService.set(request.grid.name, request.grid);
 
     return {
         success: true,

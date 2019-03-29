@@ -30,4 +30,9 @@ export interface GridState {
      * Status of form operations.
      */
     status: string;
+
+    /**
+     * The view to show when there is a grid.
+     */
+    view: string;
 }

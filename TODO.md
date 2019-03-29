@@ -2,8 +2,8 @@
 
 ## Demo (React Front-end)
 
-* Shell created
-* UI for grid/producers/sources/consumers
+* Live UI for grid/producers/sources/consumers
+* Configuration UI for grid/producers/sources/consumers
 
 ## Demo API (React Front-end)
 

@@ -1,4 +1,5 @@
-import { Button, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
+import { Button, ButtonContainer, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
+import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { ServiceFactory } from "../../factories/serviceFactory";
 import { IGrid } from "../../models/api/IGrid";
@@ -6,6 +7,8 @@ import { IConfiguration } from "../../models/config/IConfiguration";
 import { ConfigurationService } from "../../services/configurationService";
 import { DemoApiClient } from "../../services/demoApiClient";
 import { LocalStorageService } from "../../services/localStorageService";
+import GridConfigure from "../components/GridConfigure";
+import GridLive from "../components/GridLive";
 import { GridState } from "./GridState";
 
 /**
@@ -35,7 +38,8 @@ class Grid extends Component<any, GridState> {
 
         this.state = {
             gridName: "",
-            status: ""
+            status: "",
+            view: "live"
         };
     }
 
@@ -45,8 +49,8 @@ class Grid extends Component<any, GridState> {
     public async componentDidMount(): Promise<void> {
         const gridName = this._localStorageService.get<string>("gridName");
 
-        if (gridName) {
-            this.setState({ gridName }, async () => this.loadGrid());
+        if (gridName && gridName.length >= 5) {
+            this.setState({ gridName, isValid: true }, async () => this.loadGrid());
         }
     }
 
@@ -57,19 +61,24 @@ class Grid extends Component<any, GridState> {
     public render(): ReactNode {
         return (
             <React.Fragment>
-                <Heading level={1}>Grid</Heading>
                 {this.state.grid && (
                     <React.Fragment>
-                        <p>{this.state.gridName}</p>
-                        <Button
-                            onClick={() => this.newGrid()}
-                        >
-                            New Grid
-                        </Button>
+                        <ButtonContainer>
+                            <Button size="small" color="secondary" onClick={() => this.liveView()}>Live</Button>
+                            <Button size="small" color="secondary" onClick={() => this.configureView()}>Configure</Button>
+                            <Button size="small" color="secondary" onClick={() => this.newGrid()}>Create New Grid</Button>
+                        </ButtonContainer>
+                        {this.state.view === "configure" && (
+                            <GridConfigure grid={this.state.grid} />
+                        )}
+                        {this.state.view === "live" && (
+                            <GridLive grid={this.state.grid} />
+                        )}
                     </React.Fragment>
                 )}
                 {!this.state.grid && (
                     <React.Fragment>
+                        <Heading level={1}>Grid</Heading>
                         <p>Please enter the name of an existing grid to load, or populate a name to create a new one.</p>
                         <Form>
                             <Fieldset>
@@ -115,10 +124,13 @@ class Grid extends Component<any, GridState> {
             },
             async () => {
                 const grid: IGrid = {
-                    blah: "goo"
-                };
-                const response = await this._apiClient.gridCreate({
+                    id: TrytesHelper.generateHash(27),
                     name: this.state.gridName || "",
+                    producers: [],
+                    consumers: []
+                };
+
+                const response = await this._apiClient.gridCreate({
                     grid
                 });
 
@@ -176,6 +188,24 @@ class Grid extends Component<any, GridState> {
     }
 
     /**
+     * Show the live view of the grid.
+     */
+    private liveView(): void {
+        this.setState({
+            view: "live"
+        });
+    }
+
+    /**
+     * Show the configure view of the grid.
+     */
+    private configureView(): void {
+        this.setState({
+            view: "configure"
+        });
+    }
+
+    /**
      * Create a new grid.
      */
     private async newGrid(): Promise<void> {
@@ -184,7 +214,8 @@ class Grid extends Component<any, GridState> {
         this.setState(
             {
                 gridName: undefined,
-                grid: undefined
+                grid: undefined,
+                view: "live"
             },
             () => this.validateData());
     }
