@@ -7,8 +7,6 @@
 
 ## Demo API (React Front-end)
 
-* CRUD operations for demo grids
-
 ## Grid
 
 * Business logic to handle usage/payment from consumer

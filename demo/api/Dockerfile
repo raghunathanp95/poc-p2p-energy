@@ -17,6 +17,7 @@ RUN git config --global url."https://${GITHUB_TOKEN}:@github.com/".insteadOf "ht
 
 # Add the common package in
 RUN git clone https://github.com/iotaledger/poc-p2p-energy.git poc-p2p-energy
+RUN cd poc-p2p-energy/common && npm install && npm run build
 RUN sed -i 's/..\/..\/common/poc-p2p-energy\/common/g' package.json
 
 # Running required steps to prepare the api prod build
@@ -25,8 +26,8 @@ RUN npm run build
 
 # Remove unneccesary so the docker image doesn't exceeds max size
 RUN apk del git python make g++
-RUN rm -rf node_modules
-RUN rm -rf poc-p2p-energy
+RUN npm prune --production
+RUN rm -rf poc-p2p-energy/common/node_modules
 
 EXPOSE 4000:4000
 

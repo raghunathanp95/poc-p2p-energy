@@ -70,7 +70,7 @@ class Grid extends Component<any, GridState> {
                 )}
                 {!this.state.grid && (
                     <React.Fragment>
-                        <p>Please enter the name of an existing grid to load, or generate a name to create a new one.</p>
+                        <p>Please enter the name of an existing grid to load, or populate a name to create a new one.</p>
                         <Form>
                             <Fieldset>
                                 <label>Grid Name</label>
