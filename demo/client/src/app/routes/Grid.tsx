@@ -39,7 +39,7 @@ class Grid extends Component<any, GridState> {
         this.state = {
             gridName: "",
             status: "",
-            view: "live"
+            view: "configure"
         };
     }
 
@@ -64,12 +64,12 @@ class Grid extends Component<any, GridState> {
                 {this.state.grid && (
                     <React.Fragment>
                         <ButtonContainer>
-                            <Button size="small" color="secondary" onClick={() => this.liveView()}>Live</Button>
-                            <Button size="small" color="secondary" onClick={() => this.configureView()}>Configure</Button>
+                            <Button size="small" color={this.state.view === "live" ? "primary" : "secondary"} onClick={() => this.liveView()}>Live</Button>
+                            <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
                             <Button size="small" color="secondary" onClick={() => this.newGrid()}>Create New Grid</Button>
                         </ButtonContainer>
                         {this.state.view === "configure" && (
-                            <GridConfigure grid={this.state.grid} />
+                            <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({grid})} />
                         )}
                         {this.state.view === "live" && (
                             <GridLive grid={this.state.grid} />
@@ -213,7 +213,7 @@ class Grid extends Component<any, GridState> {
 
         this.setState(
             {
-                gridName: undefined,
+                gridName: "",
                 grid: undefined,
                 view: "live"
             },

@@ -13,7 +13,7 @@ class GridLive extends Component<GridLiveProps, any> {
     public render(): ReactNode {
         return (
             <React.Fragment>
-                <Heading level={1}>Live</Heading>
+                <Heading level={2}>Live</Heading>
                 <p>{this.props.grid.name}</p>
                 <p>{this.props.grid.id}</p>
             </React.Fragment >

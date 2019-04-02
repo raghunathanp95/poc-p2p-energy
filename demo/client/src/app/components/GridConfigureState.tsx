@@ -1,15 +1,15 @@
-import { IGrid } from "../../models/api/IGrid";
+import { IProducer } from "../../models/api/IProducer";
 
-export interface GridState {
+export interface GridConfigureState {
     /**
      * The grid name.
      */
     gridName: string;
 
     /**
-     * The grid data.
+     * The producers to configure.
      */
-    grid?: IGrid;
+    producers: IProducer[];
 
     /**
      * Is the form data valid.
@@ -27,12 +27,17 @@ export interface GridState {
     isErrored?: boolean;
 
     /**
+     * Is the operation successful.
+     */
+    isSuccess?: boolean;
+
+    /**
      * Status of form operations.
      */
     status: string;
 
     /**
-     * The view to show when there is a grid.
+     * The producer to configure.
      */
-    view: string;
+    configureProducer?: IProducer;
 }
