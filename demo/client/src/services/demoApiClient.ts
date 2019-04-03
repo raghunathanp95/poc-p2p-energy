@@ -7,6 +7,7 @@ import { IGridPasswordPutRequest } from "../models/api/IGridPasswordPutRequest";
 import { IGridPostRequest } from "../models/api/IGridPostRequest";
 import { IGridPutRequest } from "../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../models/api/IGridPutResponse";
+import { IGridDeleteRequest } from "../models/api/IGridDeleteRequest";
 
 /**
  * Class to handle api communications.
@@ -82,6 +83,31 @@ export class DemoApiClient {
 
         try {
             const axiosResponse = await ax.put<IGridPutResponse>(
+                ApiHelper.joinParams(`grid`, [request.name]),
+                ApiHelper.removeKeys(request, ["name"]));
+
+            response = axiosResponse.data;
+        } catch (err) {
+            response = {
+                success: false,
+                message: `There was a problem communicating with the API.\n${err}`
+            };
+        }
+
+        return response;
+    }
+
+    /**
+     * Delete a grid with the api.
+     * @param request The request to send.
+     * @returns The response from the request.
+     */
+    public async gridDelete(request: IGridDeleteRequest): Promise<IResponse> {
+        const ax = axios.create({ baseURL: this._endpoint });
+        let response: IGridPutResponse;
+
+        try {
+            const axiosResponse = await ax.delete<IResponse>(
                 ApiHelper.joinParams(`grid`, [request.name]),
                 ApiHelper.removeKeys(request, ["name"]));
 

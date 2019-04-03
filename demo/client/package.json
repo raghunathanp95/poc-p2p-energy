@@ -5,7 +5,7 @@
     "author": "Martyn Janes <martyn.janes@iota.org>",
     "license": "MIT",
     "dependencies": {
-        "axios": "^0.18.0",
+        "axios": "github:axios/axios",
         "classnames": "^2.2.6",
         "iota-css-theme": "github:iotaledger/iota-css-theme",
         "iota-react-components": "github:iotaledger/iota-react-components",

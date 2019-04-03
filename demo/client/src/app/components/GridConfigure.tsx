@@ -1,6 +1,7 @@
-import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Table, TableBody, TableBodyRow, TableBodyRowData, TableHead, TableHeadRow, TableHeadRowHeader } from "iota-react-components";
+import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal, ScrollHelper, Table, TableBody, TableBodyRow, TableBodyRowData, TableHead, TableHeadRow, TableHeadRowHeader } from "iota-react-components";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
+import { Redirect } from "react-router-dom";
 import { ServiceFactory } from "../../factories/serviceFactory";
 import { IProducer } from "../../models/api/IProducer";
 import { IConfiguration } from "../../models/config/IConfiguration";
@@ -42,7 +43,9 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
             passwordConfigure: "",
             status: "",
             producers: [],
-            passwordSupplied: props.grid.password ? false : true
+            passwordSupplied: props.grid.password ? false : true,
+            showDelete: false,
+            redirect: false
         };
     }
 
@@ -50,7 +53,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this.reset();
+        this.resetGrid();
     }
 
     /**
@@ -58,6 +61,10 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * @returns The node to render.
      */
     public render(): ReactNode {
+        if (this.state.redirect) {
+            return (<Redirect to="/grid" />);
+        }
+
         return (
             <Form>
                 {!this.state.configureProducer && (
@@ -106,7 +113,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     />
                                 </Fieldset>
                                 <hr />
-                                <Heading level={3}>Producers</Heading>
+                                <Heading level={3} id="producers">Producers</Heading>
                                 <Table>
                                     <TableHead>
                                         <TableHeadRow>
@@ -145,8 +152,9 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     </TableBody>
                                 </Table>
                                 <FormActions>
-                                    <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.save()}>Save</Button>
-                                    <Button disabled={this.state.isBusy} onClick={async () => this.reset()}>Reset</Button>
+                                    <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
+                                    <Button disabled={this.state.isBusy} onClick={async () => this.resetGrid()}>Reset</Button>
+                                    <Button disabled={this.state.isBusy} onClick={async () => this.gridDelete()}>Delete</Button>
                                 </FormActions>
                                 <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
                             </React.Fragment>
@@ -155,6 +163,42 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 )}
                 {this.state.configureProducer && (
                     <ProducerConfigure producer={this.state.configureProducer} onChange={(p) => this.producerUpdate(p)} />
+                )}
+                {this.state.deleteProducer && (
+                    <Modal
+                        title="Confirmation"
+                        onClose={(id) => this.producerDeleteConfirmation(id)}
+                        buttons={[
+                            {
+                                id: "yes",
+                                label: "Yes"
+                            },
+                            {
+                                id: "no",
+                                label: "No"
+                            }
+                        ]}
+                    >
+                        Are you sure you want to delete producer '{this.state.deleteProducer.name}' ?
+                    </Modal>
+                )}
+                {this.state.showDelete && (
+                    <Modal
+                        title="Confirmation"
+                        onClose={(id) => this.gridDeleteConfirmation(id)}
+                        buttons={[
+                            {
+                                id: "yes",
+                                label: "Yes"
+                            },
+                            {
+                                id: "no",
+                                label: "No"
+                            }
+                        ]}
+                    >
+                        Are you sure you want to delete the grid ?
+                    </Modal>
                 )}
             </Form>
         );
@@ -200,7 +244,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     /**
      * Create a grid using the api.
      */
-    private async save(): Promise<void> {
+    private async gridSave(): Promise<void> {
         this.setState(
             {
                 isBusy: true,
@@ -237,6 +281,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         isSuccess: true,
                         passwordConfigure: response.password || ""
                     });
+
+                    setTimeout(() => this.setState({ status: "" }), 3000);
                 } else {
                     this.setState({
                         isBusy: false,
@@ -249,9 +295,65 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     }
 
     /**
+     * Delete a grid using the api.
+     */
+    private async gridDelete(): Promise<void> {
+        this.setState({
+            showDelete: true
+        });
+    }
+
+    /**
+     * Delete a grid using the api.
+     * @param id The modal result.
+     */
+    private async gridDeleteConfirmation(id?: string): Promise<void> {
+        this.setState(
+            {
+                showDelete: false
+            },
+            () => {
+                if (id === "yes") {
+                    this.setState(
+                        {
+                            isBusy: true,
+                            status: "Deleting Grid, please wait...",
+                            isErrored: false,
+                            isSuccess: false
+                        },
+                        async () => {
+                            const response = await this._apiClient.gridDelete({
+                                name: this.props.grid.name,
+                                password: this.state.passwordConfigure
+                            });
+
+                            if (response.success) {
+                                await this._localStorageService.remove("gridName");
+
+                                this.setState({
+                                    isBusy: false,
+                                    status: response.message,
+                                    isErrored: false,
+                                    isSuccess: true,
+                                    redirect: true
+                                });
+                            } else {
+                                this.setState({
+                                    isBusy: false,
+                                    status: response.message,
+                                    isErrored: true,
+                                    isSuccess: false
+                                });
+                            }
+                        });
+                }
+            });
+    }
+
+    /**
      * Reset the form data.
      */
-    private async reset(): Promise<void> {
+    private async resetGrid(): Promise<void> {
         this.setState(
             {
                 gridName: this.props.grid.name,
@@ -264,6 +366,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * Add a new producer.
      */
     private producerAdd(): void {
+        ScrollHelper.scrollRoot();
+
         this.setState({
             configureProducer: {
                 id: "",
@@ -278,6 +382,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * @param producer The producer to configure.
      */
     private producerConfigure(producer: IProducer): void {
+        ScrollHelper.scrollRoot();
+
         this.setState({
             configureProducer: producer
         });
@@ -288,11 +394,29 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * @param producer The producer to configure.
      */
     private producerDelete(producer: IProducer): void {
-        const producers = this.state.producers;
-        producers.splice(producers.findIndex(p => p.id === producer.id), 1);
-        this.setState({
-            producers
-        });
+        this.setState({ deleteProducer: producer });
+    }
+
+    /**
+     * Confirmation of delete a producer from the grid.
+     * @param id The producer to configure.
+     */
+    private producerDeleteConfirmation(id?: string): void {
+        if (id === "yes") {
+            const producers = this.state.producers;
+            const findProducer = this.state.deleteProducer;
+            if (findProducer) {
+                producers.splice(producers.findIndex(p => p.id === findProducer.id), 1);
+            }
+            this.setState({
+                producers,
+                deleteProducer: undefined
+            });
+        } else {
+            this.setState({
+                deleteProducer: undefined
+            });
+        }
     }
 
     /**
@@ -309,14 +433,15 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 producers.splice(producers.findIndex(p => p.id === producer.id), 1, producer);
             }
 
-            this.setState({
-                configureProducer: undefined,
-                producers
-            });
+            this.setState(
+                {
+                    configureProducer: undefined,
+                    producers
+                },
+                () => ScrollHelper.scrollIntoViewBySelector("#producers"));
         } else {
-            this.setState({ configureProducer: undefined });
+            this.setState({ configureProducer: undefined }, () => ScrollHelper.scrollIntoViewBySelector("#producers"));
         }
-
     }
 }
 

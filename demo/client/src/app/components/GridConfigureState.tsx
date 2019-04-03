@@ -55,4 +55,19 @@ export interface GridConfigureState {
      * The producer to configure.
      */
     configureProducer?: IProducer;
+
+    /**
+     * The producer to delete.
+     */
+    deleteProducer?: IProducer;
+
+    /**
+     * The delete modal.
+     */
+    showDelete: boolean;
+
+    /**
+     * Redirect back to main page.
+     */
+    redirect: boolean;
 }

@@ -11,6 +11,7 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid", method: "post", folder: "grid", func: "gridPost" },
     { path: "/grid/:name", method: "get", folder: "grid", func: "gridGet" },
     { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" },
+    { path: "/grid/:name", method: "delete", folder: "grid", func: "gridDelete" },
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" }
 ];
 
