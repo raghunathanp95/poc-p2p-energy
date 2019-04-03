@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
@@ -26,6 +27,10 @@ export async function gridPost(
             `The grid '${request.grid.name}' already exists.
 Please choose a different name or load it instead.`
         );
+    }
+
+    if (request.grid.password) {
+        request.grid.password = crypto.createHash("sha256").update(request.grid.password).digest("base64");
     }
 
     await storageService.set(request.grid.name, request.grid);

@@ -1,5 +1,6 @@
 import { IConsumer } from "./IConsumer";
 import { IProducer } from "./IProducer";
+
 export interface IGrid {
     /**
      * The id of the grid.
@@ -10,6 +11,11 @@ export interface IGrid {
      * The name of the grid.
      */
     name: string;
+
+    /**
+     * Password to protect the configuration.
+     */
+    password?: string;
 
     /**
      * The list of producers.

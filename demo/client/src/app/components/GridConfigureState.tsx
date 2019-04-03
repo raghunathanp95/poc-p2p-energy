@@ -7,6 +7,16 @@ export interface GridConfigureState {
     gridName: string;
 
     /**
+     * The grid password.
+     */
+    password: string;
+
+    /**
+     * The grid password for configuring.
+     */
+    passwordConfigure: string;
+
+    /**
      * The producers to configure.
      */
     producers: IProducer[];
@@ -35,6 +45,11 @@ export interface GridConfigureState {
      * Status of form operations.
      */
     status: string;
+
+    /**
+     * Do we need a password to configure the grid.
+     */
+    passwordSupplied?: boolean;
 
     /**
      * The producer to configure.

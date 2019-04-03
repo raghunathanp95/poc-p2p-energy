@@ -7,6 +7,11 @@ export interface IGridPutRequest {
     name: string;
 
     /**
+     * The password to match for the update of the grid.
+     */
+    password?: string;
+
+    /**
      * The data for the grid to update.
      */
     grid: IGrid;

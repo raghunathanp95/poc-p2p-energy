@@ -10,7 +10,8 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
     { path: "/grid", method: "post", folder: "grid", func: "gridPost" },
     { path: "/grid/:name", method: "get", folder: "grid", func: "gridGet" },
-    { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" }
+    { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" },
+    { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" }
 ];
 
 const loggingService = new ConsoleLoggingService();

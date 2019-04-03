@@ -1,6 +1,4 @@
-import { IGrid } from "./IGrid";
-
-export interface IGridPutRequest {
+export interface IGridPasswordPutRequest {
     /**
      * The name of the grid.
      */
@@ -10,9 +8,4 @@ export interface IGridPutRequest {
      * The password to match for the update of the grid.
      */
     password?: string;
-
-    /**
-     * The data for the grid to update.
-     */
-    grid: IGrid;
 }
