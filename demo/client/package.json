@@ -5,6 +5,7 @@
     "author": "Martyn Janes <martyn.janes@iota.org>",
     "license": "MIT",
     "dependencies": {
+        "@iota/mam": "github:iotaledger/mam.client.js",
         "axios": "github:axios/axios",
         "classnames": "^2.2.6",
         "iota-css-theme": "github:iotaledger/iota-css-theme",

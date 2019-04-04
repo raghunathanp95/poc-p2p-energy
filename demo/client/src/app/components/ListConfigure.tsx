@@ -43,15 +43,22 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
             <React.Fragment>
                 {!this.state.configuring && (
                     <React.Fragment>
-                        <Heading level={3} id={this.props.pluralName.toLowerCase()}>{this.props.pluralName}</Heading>
+                        <Heading level={3} id={this.props.pluralName.toLowerCase()}>
+                            {this.props.pluralName}
+                            &nbsp;<Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add</Button>
+                        </Heading>
+
                         <Table>
                             <TableHead>
                                 <TableHeadRow>
                                     <TableHeadRowHeader>{this.props.itemName}</TableHeadRowHeader>
                                     {this.state.items.length > 0 && (
-                                        <TableHeadRowHeader align="right">
-                                            Actions
-                                </TableHeadRowHeader>
+                                        <React.Fragment>
+                                            <TableHeadRowHeader>ID</TableHeadRowHeader>
+                                            <TableHeadRowHeader align="right">
+                                                Actions
+                                            </TableHeadRowHeader>
+                                        </React.Fragment>
                                     )}
                                 </TableHeadRow>
                             </TableHead>
@@ -60,25 +67,21 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                                     <TableBodyRow>
                                         <TableBodyRowData>
                                             There are currently no {this.props.pluralName.toLowerCase()}.
-                                </TableBodyRowData>
+                                        </TableBodyRowData>
                                     </TableBodyRow>
                                 )}
                                 {this.state.items.map((item, idx) => (
                                     <TableBodyRow key={item.id}>
                                         <TableBodyRowData>{item.name}</TableBodyRowData>
+                                        <TableBodyRowData>{item.id}</TableBodyRowData>
                                         <TableBodyRowData align="right">
-                                            <div className="no-vertical-margin">
+                                            <div className="small-vertical-margin">
                                                 <Button size="small" color="secondary" onClick={() => this.itemConfigure(item)}>Configure</Button>
                                                 <Button size="small" color="secondary" onClick={() => this.itemDelete(item)}>Delete</Button>
                                             </div>
                                         </TableBodyRowData>
                                     </TableBodyRow>
                                 ))}
-                                <TableBodyRow>
-                                    <TableBodyRowData>
-                                        <Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add {this.props.itemName}</Button>
-                                    </TableBodyRowData>
-                                </TableBodyRow>
                             </TableBody>
                         </Table>
                     </React.Fragment>

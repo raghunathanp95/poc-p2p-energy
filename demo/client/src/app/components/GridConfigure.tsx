@@ -28,6 +28,11 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     private readonly _localStorageService: LocalStorageService;
 
     /**
+     * The component was unmounted.
+     */
+    private _unmounted: boolean;
+
+    /**
      * Create a new instance of Grid.
      * @param props The props to create the component with.
      */
@@ -35,11 +40,13 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
         super(props);
         this._localStorageService = ServiceFactory.get<LocalStorageService>("localStorage");
 
+        this._unmounted = false;
+
         const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
         this._apiClient = new DemoApiClient(config.apiEndpoint);
 
         this.state = {
-            gridName: "",
+            gridName: this.props.grid.name,
             password: "",
             passwordConfigure: "",
             status: "",
@@ -52,10 +59,17 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     }
 
     /**
-     * The component mounted.
+     * The component was mounted.
      */
-    public async componentDidMount(): Promise<void> {
-        this.resetGrid();
+    public componentDidMount(): void {
+        this.validateData();
+    }
+
+    /**
+     * The component will unmount from the dom.
+     */
+    public componentWillUnmount(): void {
+        this._unmounted = true;
     }
 
     /**
@@ -97,7 +111,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                     <React.Fragment>
                         {!this.state.configureConsumer && !this.state.configureProducer && (
                             <React.Fragment>
-                                <p>Please enter the details for your grid.</p>
+                                <p>Please enter the details for the grid.</p>
                                 <Fieldset>
                                     <label>Name</label>
                                     <input
@@ -119,7 +133,9 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                         readOnly={this.state.isBusy}
                                     />
                                 </Fieldset>
+                                <br />
                                 <hr />
+                                <br />
                             </React.Fragment>
                         )}
                         {!this.state.configureConsumer && (
@@ -133,6 +149,13 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     this.setState({ configureProducer: props });
                                 }}
                             />
+                        )}
+                        {!this.state.configureConsumer && !this.state.configureProducer && (
+                            <React.Fragment>
+                                <br />
+                                <hr />
+                                <br />
+                            </React.Fragment>
                         )}
                         {!this.state.configureProducer && (
                             <ConsumerList
@@ -148,10 +171,12 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         )}
                         {!this.state.configureConsumer && !this.state.configureProducer && (
                             <React.Fragment>
+                                <br />
+                                <hr />
+                                <br />
                                 <FormActions>
                                     <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
-                                    <Button disabled={this.state.isBusy} onClick={async () => this.resetGrid()}>Reset</Button>
-                                    <Button disabled={this.state.isBusy} onClick={async () => this.gridDelete()}>Delete</Button>
+                                    <Button disabled={this.state.isBusy} color="secondary" onClick={async () => this.gridDelete()}>Delete</Button>
                                 </FormActions>
                                 <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
                             </React.Fragment>
@@ -280,7 +305,13 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         passwordConfigure: response.password || ""
                     });
 
-                    setTimeout(() => this.setState({ status: "" }), 3000);
+                    setTimeout(
+                        () => {
+                            if (!this._unmounted) {
+                                this.setState({ status: "" });
+                            }
+                        },
+                        3000);
                 } else {
                     this.setState({
                         isBusy: false,
@@ -346,19 +377,6 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         });
                 }
             });
-    }
-
-    /**
-     * Reset the form data.
-     */
-    private async resetGrid(): Promise<void> {
-        this.setState(
-            {
-                gridName: this.props.grid.name,
-                producers: this.props.grid.producers.slice(0),
-                consumers: this.props.grid.consumers.slice(0)
-            },
-            () => this.validateData());
     }
 }
 

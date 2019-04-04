@@ -1,11 +1,5 @@
-export interface IConsumer {
-    /**
-     * The id of the consumer.
-     */
-    id: string;
+import { IIdItem } from "./IIdItem";
 
-    /**
-     * The name of the consumer.
-     */
-    name: string;
+// tslint:disable-next-line:no-empty-interface
+export interface IConsumer extends IIdItem {
 }

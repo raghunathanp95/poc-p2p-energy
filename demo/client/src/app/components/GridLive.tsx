@@ -14,16 +14,28 @@ class GridLive extends Component<GridLiveProps, any> {
         return (
             <React.Fragment>
                 <Heading level={2}>Live</Heading>
-                <p>{this.props.grid.name}</p>
-                <p>{this.props.grid.id}</p>
-                <Heading level={3}>Producers</Heading>
-                {this.props.grid.producers.map((p, idx) => (
-                    <div key={idx}>{p.name}</div>
-                ))}
-                <Heading level={3}>Consumers</Heading>
-                {this.props.grid.consumers.map((c, idx) => (
-                    <div key={idx}>{c.name}</div>
-                ))}
+                <ul>
+                    <li>Grid: {this.props.grid.name} [{this.props.grid.id}]</li>
+                    <ul>
+                        {this.props.grid.producers.map((p, idx) => (
+                            <React.Fragment key={idx}>
+                                <li>Producer: {p.name} [{p.id}]</li>
+                                {p.sources.length > 0 && (
+                                    <ul>
+                                        {p.sources.map((s, idx2) => (
+                                            <li key={idx2}>&nbsp;&nbsp;&nbsp;Source: {s.name} [{s.id}] [{s.type}]</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </ul>
+                    <ul>
+                        {this.props.grid.consumers.map((c, idx) => (
+                            <li key={idx}>Consumer: {c.name} [{c.id}]</li>
+                        ))}
+                    </ul>
+                </ul>
             </React.Fragment >
         );
     }

@@ -1,16 +1,7 @@
+import { IIdItem } from "./IIdItem";
 import { ISource } from "./ISource";
 
-export interface IProducer {
-    /**
-     * The id of the producer.
-     */
-    id: string;
-
-    /**
-     * The name of the producer.
-     */
-    name: string;
-
+export interface IProducer extends IIdItem {
     /**
      * The list of sources.
      */

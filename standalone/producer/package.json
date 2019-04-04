@@ -25,10 +25,10 @@
     },
     "dependencies": {
         "@iota/core": "^1.0.0-beta.11",
+        "@iota/mam": "github:iotaledger/mam.client.js",
         "axios": "github:axios/axios",
         "body-parser": "^1.18.3",
         "express": "^4.16.4",
-        "mam.client.js": "github:iotaledger/mam.client.js",
         "node-schedule": "^1.3.2",
         "p2p-energy-common": "file:../../common"
     },

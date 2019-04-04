@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@iota/core": "^1.0.0-beta.11",
+        "@iota/mam": "github:iotaledger/mam.client.js",
         "aws-sdk": "^2.431.0",
         "body-parser": "^1.18.3",
         "express": "^4.16.4",

@@ -1,4 +1,4 @@
-import Mam from "mam.client.js";
+import Mam from "@iota/mam";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";

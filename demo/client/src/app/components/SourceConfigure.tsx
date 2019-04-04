@@ -1,21 +1,22 @@
-import { Button, Fieldset, FormActions, Heading } from "iota-react-components";
+import { Button, Fieldset, FormActions, Heading, Select } from "iota-react-components";
 import React, { Component, ReactNode } from "react";
-import { ConsumerConfigureProps } from "./ConsumerConfigureProps";
-import { ConsumerConfigureState } from "./ConsumerConfigureState";
+import { SourceConfigureProps } from "./SourceConfigureProps";
+import { SourceConfigureState } from "./SourceConfigureState";
 
 /**
- * Component which allows the consumer to be configured.
+ * Component which allows the source to be configured.
  */
-class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfigureState> {
+class SourceConfigure extends Component<SourceConfigureProps, SourceConfigureState> {
     /**
-     * Create a new instance of Consumer.
+     * Create a new instance of Source.
      * @param props The props to create the component with.
      */
-    constructor(props: ConsumerConfigureProps) {
+    constructor(props: SourceConfigureProps) {
         super(props);
 
         this.state = {
-            name: this.props.item.name
+            name: this.props.item.name,
+            type: this.props.item.type || "Solar"
         };
     }
 
@@ -33,17 +34,29 @@ class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfig
     public render(): ReactNode {
         return (
             <React.Fragment>
-                <Heading level={2}>Consumer</Heading>
-                <p>Please enter the details for the consumer.</p>
+                <Heading level={2}>Source</Heading>
+                <p>Please enter the details for the source.</p>
                 <Fieldset>
                     <label>Name</label>
                     <input
                         type="text"
-                        placeholder="Name for the consumer between 5 and 30 characters"
+                        placeholder="Name for the source between 5 and 30 characters"
                         value={this.state.name}
                         onChange={(e) => this.setState({ name: e.target.value }, () => this.validateData())}
                         maxLength={30}
                     />
+                </Fieldset>
+                <Fieldset>
+                    <label>Type</label>
+                    <Select
+                        value={this.state.type}
+                        onChange={(e) => this.setState({ type: e.target.value }, () => this.validateData())}
+                    >
+                        <option>Solar</option>
+                        <option>Wind</option>
+                        <option>Geothermal</option>
+                        <option>Biomass</option>
+                    </Select>
                 </Fieldset>
                 <FormActions>
                     <Button disabled={!this.state.isValid} onClick={async () => this.ok()}>OK</Button>
@@ -68,7 +81,8 @@ class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfig
     private async ok(): Promise<void> {
         const updated = {
             ...this.props.item,
-            name: this.state.name
+            name: this.state.name,
+            type: this.state.type
         };
 
         if (this.props.onChange) {
@@ -86,4 +100,4 @@ class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfig
     }
 }
 
-export default ConsumerConfigure;
+export default SourceConfigure;

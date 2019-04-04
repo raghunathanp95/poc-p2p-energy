@@ -1,14 +1,6 @@
-export interface ISource {
-    /**
-     * The id of the source.
-     */
-    id: string;
+import { IIdItem } from "./IIdItem";
 
-    /**
-     * The name of the source.
-     */
-    name: string;
-
+export interface ISource extends IIdItem {
     /**
      * The type of the source.
      */
