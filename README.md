@@ -23,4 +23,4 @@ See [./standalone/README.md](./standalone/README.md) for more details.
 
 ## Common
 
-Both the `demonstration` and the `standalone` packages share a large percentage of their code which can be found in the `common` library.
+Both the `demonstration` and the `standalone` packages share a large percentage of their code, the shared code can be found in the `common` library.
