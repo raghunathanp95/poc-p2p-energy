@@ -81,7 +81,7 @@ class Grid extends Component<any, GridState> {
                         <Heading level={1}>Grid</Heading>
                         <p>Please enter the name of an existing grid to load, or fill in a name to create a new one.
                             <br/>
-                            An existing grid named '<strong>Demonstration Grid</strong>' is already available to load.
+                            An existing grid named '<strong>Demonstration</strong>' is already available to load.
                         </p>
                         <Form>
                             <Fieldset>
