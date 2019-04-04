@@ -85,10 +85,9 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
             <Form>
                 {!this.state.configureConsumer && !this.state.configureProducer && (
                     <React.Fragment>
-                        <Heading level={2}>Grid</Heading>
                         {!this.state.passwordSupplied && (
                             <React.Fragment>
-                                <p>The grid is password protected, please enter the password configure it.</p>
+                                <p>The grid '{this.props.grid.name}' is password protected, please enter the password configure it.</p>
                                 <Fieldset>
                                     <label>Password</label>
                                     <input
@@ -111,7 +110,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                     <React.Fragment>
                         {!this.state.configureConsumer && !this.state.configureProducer && (
                             <React.Fragment>
-                                <p>Please enter the details for the grid.</p>
+                                <Heading level={3}>Grid</Heading>
                                 <Fieldset>
                                     <label>Name</label>
                                     <input
@@ -176,6 +175,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 <br />
                                 <FormActions>
                                     <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
+                                    <Button disabled={this.state.isBusy} color="secondary" onClick={() => this.setState({redirect: true})}>Cancel</Button>
                                     <Button disabled={this.state.isBusy} color="secondary" onClick={async () => this.gridDelete()}>Delete</Button>
                                 </FormActions>
                                 <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
@@ -220,7 +220,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                             }
                         ]}
                     >
-                        Are you sure you want to delete the grid ?
+                        Are you sure you want to delete the grid '{this.state.gridName}' ?
                     </Modal>
                 )}
             </Form>

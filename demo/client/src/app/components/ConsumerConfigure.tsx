@@ -34,7 +34,6 @@ class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfig
         return (
             <React.Fragment>
                 <Heading level={2}>Consumer</Heading>
-                <p>Please enter the details for the consumer.</p>
                 <Fieldset>
                     <label>Name</label>
                     <input

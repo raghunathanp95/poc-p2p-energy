@@ -35,7 +35,6 @@ class SourceConfigure extends Component<SourceConfigureProps, SourceConfigureSta
         return (
             <React.Fragment>
                 <Heading level={2}>Source</Heading>
-                <p>Please enter the details for the source.</p>
                 <Fieldset>
                     <label>Name</label>
                     <input

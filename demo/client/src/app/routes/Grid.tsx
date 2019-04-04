@@ -64,9 +64,9 @@ class Grid extends Component<any, GridState> {
                 {this.state.grid && (
                     <React.Fragment>
                         <ButtonContainer>
+                            <Button size="small" color="secondary" onClick={() => this.loadCreateGrid()}>Load/Create Grid</Button>
                             <Button size="small" color={this.state.view === "live" ? "primary" : "secondary"} onClick={() => this.liveView()}>Live</Button>
                             <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
-                            <Button size="small" color="secondary" onClick={() => this.createLoadGrid()}>Create/Load Grid</Button>
                         </ButtonContainer>
                         {this.state.view === "configure" && (
                             <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({grid})} />
@@ -78,7 +78,7 @@ class Grid extends Component<any, GridState> {
                 )}
                 {!this.state.grid && (
                     <React.Fragment>
-                        <Heading level={1}>Grid</Heading>
+                        <Heading level={1}>Load/Create Grid</Heading>
                         <p>Please enter the name of an existing grid to load, or fill in a name to create a new one.
                             <br/>
                             An existing grid named '<strong>Demonstration</strong>' is already available to load.
@@ -212,7 +212,7 @@ class Grid extends Component<any, GridState> {
     /**
      * Create a new grid.
      */
-    private async createLoadGrid(): Promise<void> {
+    private async loadCreateGrid(): Promise<void> {
         await this._localStorageService.remove("gridName");
 
         this.setState(

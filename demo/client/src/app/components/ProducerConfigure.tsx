@@ -39,7 +39,6 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
                 {!this.state.configureSource && (
                     <React.Fragment>
                         <Heading level={2}>Producer</Heading>
-                        <p>Please enter the details for the producer.</p>
                         <Fieldset>
                             <label>Name</label>
                             <input
@@ -50,6 +49,9 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
                                 maxLength={30}
                             />
                         </Fieldset>
+                        <br />
+                        <hr />
+                        <br />
                     </React.Fragment>
                 )}
                 <SourceList
@@ -62,14 +64,16 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
                         this.setState({ configureSource: props });
                     }}
                 />
-                <br />
-                <hr />
-                <br />
                 {!this.state.configureSource && (
-                    <FormActions>
-                        <Button disabled={!this.state.isValid} onClick={async () => this.ok()}>OK</Button>
-                        <Button color="secondary" onClick={async () => this.cancel()}>Cancel</Button>
-                    </FormActions>
+                    <React.Fragment>
+                        <br />
+                        <hr />
+                        <br />
+                        <FormActions>
+                            <Button disabled={!this.state.isValid} onClick={async () => this.ok()}>OK</Button>
+                            <Button color="secondary" onClick={async () => this.cancel()}>Cancel</Button>
+                        </FormActions>
+                    </React.Fragment>
                 )}
                 {this.state.configureSource && (
                     <SourceConfigure
