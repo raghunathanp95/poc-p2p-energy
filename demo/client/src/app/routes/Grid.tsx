@@ -39,7 +39,7 @@ class Grid extends Component<any, GridState> {
         this.state = {
             gridName: "",
             status: "",
-            view: "configure"
+            view: "live"
         };
     }
 
@@ -66,7 +66,7 @@ class Grid extends Component<any, GridState> {
                         <ButtonContainer>
                             <Button size="small" color={this.state.view === "live" ? "primary" : "secondary"} onClick={() => this.liveView()}>Live</Button>
                             <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
-                            <Button size="small" color="secondary" onClick={() => this.newGrid()}>Create New Grid</Button>
+                            <Button size="small" color="secondary" onClick={() => this.createLoadGrid()}>Create/Load Grid</Button>
                         </ButtonContainer>
                         {this.state.view === "configure" && (
                             <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({grid})} />
@@ -79,7 +79,10 @@ class Grid extends Component<any, GridState> {
                 {!this.state.grid && (
                     <React.Fragment>
                         <Heading level={1}>Grid</Heading>
-                        <p>Please enter the name of an existing grid to load, or populate a name to create a new one.</p>
+                        <p>Please enter the name of an existing grid to load, or fill in a name to create a new one.
+                            <br/>
+                            An existing grid named '<strong>Demonstration Grid</strong>' is already available to load.
+                        </p>
                         <Form>
                             <Fieldset>
                                 <label>Grid Name</label>
@@ -209,7 +212,7 @@ class Grid extends Component<any, GridState> {
     /**
      * Create a new grid.
      */
-    private async newGrid(): Promise<void> {
+    private async createLoadGrid(): Promise<void> {
         await this._localStorageService.remove("gridName");
 
         this.setState(

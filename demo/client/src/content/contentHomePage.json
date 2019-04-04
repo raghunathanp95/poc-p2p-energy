@@ -32,6 +32,14 @@
                 {
                     "href": "/grid",
                     "text": "Grid"
+                },
+                {
+                    "href": "https://docs.iota.org/docs/blueprints/0.1/p2p-energy/overview",
+                    "text": "Blueprint"
+                },
+                {
+                    "href": "https://github.com/iotaledger/poc-p2p-energy",
+                    "text": "GitHub"
                 }
             ]
         },

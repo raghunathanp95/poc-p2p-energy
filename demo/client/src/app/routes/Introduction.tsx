@@ -14,15 +14,20 @@ class Introduction extends Component<any, any> {
         return (
             <React.Fragment>
                 <Heading level={1}>Introduction</Heading>
-                <p>Welcome to the P2P Grid PoC Demonstration.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent auctor augue viverra ullamcorper fermentum.
-                Ut malesuada lorem a pharetra dignissim. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis id
-                lectus massa. Duis ut enim tempor, lobortis sapien sed, facilisis dolor. Maecenas pellentesque sem quis lorem
-                sagittis eleifend. Aliquam mattis eros sit amet magna interdum efficitur. Lorem ipsum dolor sit amet, consectetur
-                adipiscing elit. Quisque sodales felis nisl, ac cursus nibh vulputate ut. In fermentum turpis sed mauris aliquet
-                pharetra. Nullam nibh lectus, pharetra sit amet mi eu, luctus convallis ligula. Curabitur et sem orci. Integer
-                commodo fringilla dictum.</p>
-                <p>To see the demonstration in action visit the <Link className="link" to="/grid">Grid</Link> page.</p>
+                <p>Although the supply of energy is often automated, the payment system still requires a high cost to integrate
+                    and manual intervention along the way. By creating a peer-to-peer energy grid with IOTA, we can automate the
+                     transfer of power and the payment for that power, allowing for more dynamic changes to infrastructure such
+                      as distribution and costing.</p>
+                <p>The presented PoC demonstrates how the entities of a peer-to-peer (P2P) energy grid can trade energy, by both
+                     supplying power and receiving payment for it. The distributed and machine-based nature of the P2P energy grid
+                      make this an ideal use case for IOTA. Using IOTA technologies we can develop a solution that creates an infrastructure
+                       where even low-powered devices can communicate with the grid in a traceable and immutable fashion.</p>
+                <p>IOTA is an ideal candidate to implement this PoC because it's feeless, scalable, and designed to work with the M2M economy.</p>
+                <p>To see the demonstration in action visit the <Link className="link" to="/grid">Grid</Link> page to load an existing grid or create a new one.</p>
+                <hr />
+                <p>To find out more details on how this was implemented, please read the Blueprint on the docs
+                site <a href="https://docs.iota.org/docs/blueprints/0.1/p2p-energy/overview" target="_blank" rel="noopener noreferrer">P2P Energy Grid Blueprint</a> or
+                view the source code on <a href="https://github.com/iotaledger/poc-p2p-energy" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
             </React.Fragment >
         );
     }
