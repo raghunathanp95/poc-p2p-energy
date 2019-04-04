@@ -5,7 +5,7 @@
     "author": "Martyn Janes <martyn.janes@iota.org>",
     "repository": {
         "type": "git",
-        "url": "https://github.com/iotaledger/poc-p2p-energy.git/tree/master/producer"
+        "url": "https://github.com/iotaledger/poc-p2p-energy/tree/master/standalone/producer"
     },
     "license": "MIT",
     "private": true,

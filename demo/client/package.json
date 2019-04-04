@@ -3,6 +3,10 @@
     "description": "Demo UI for IOTA PoC Energy",
     "version": "0.1.0",
     "author": "Martyn Janes <martyn.janes@iota.org>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/iotaledger/poc-p2p-energy/tree/master/demo/client"
+    },
     "license": "MIT",
     "dependencies": {
         "@iota/mam": "github:iotaledger/mam.client.js",
