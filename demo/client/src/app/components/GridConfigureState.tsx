@@ -1,4 +1,7 @@
+import { IConsumer } from "../../models/api/IConsumer";
 import { IProducer } from "../../models/api/IProducer";
+import { ConsumerConfigureProps } from "./ConsumerConfigureProps";
+import { ProducerConfigureProps } from "./ProducerConfigureProps";
 
 export interface GridConfigureState {
     /**
@@ -20,6 +23,11 @@ export interface GridConfigureState {
      * The producers to configure.
      */
     producers: IProducer[];
+
+    /**
+     * The consumers to configure.
+     */
+    consumers: IConsumer[];
 
     /**
      * Is the form data valid.
@@ -54,12 +62,12 @@ export interface GridConfigureState {
     /**
      * The producer to configure.
      */
-    configureProducer?: IProducer;
+    configureProducer?: ProducerConfigureProps;
 
     /**
-     * The producer to delete.
+     * The consumer to configure.
      */
-    deleteProducer?: IProducer;
+    configureConsumer?: ConsumerConfigureProps;
 
     /**
      * The delete modal.

@@ -1,16 +1,17 @@
-import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal, ScrollHelper, Table, TableBody, TableBodyRow, TableBodyRowData, TableHead, TableHeadRow, TableHeadRowHeader } from "iota-react-components";
-import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
+import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal } from "iota-react-components";
 import React, { Component, ReactNode } from "react";
 import { Redirect } from "react-router-dom";
 import { ServiceFactory } from "../../factories/serviceFactory";
-import { IProducer } from "../../models/api/IProducer";
 import { IConfiguration } from "../../models/config/IConfiguration";
 import { ConfigurationService } from "../../services/configurationService";
 import { DemoApiClient } from "../../services/demoApiClient";
 import { LocalStorageService } from "../../services/localStorageService";
+import ConsumerConfigure from "./ConsumerConfigure";
+import ConsumerList from "./ConsumerList";
 import { GridConfigureProps } from "./GridConfigureProps";
 import { GridConfigureState } from "./GridConfigureState";
 import ProducerConfigure from "./ProducerConfigure";
+import ProducerList from "./ProducerList";
 
 /**
  * Component which allows the grid to be configured.
@@ -42,7 +43,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
             password: "",
             passwordConfigure: "",
             status: "",
-            producers: [],
+            producers: props.grid.producers.slice(0),
+            consumers: props.grid.consumers.slice(0),
             passwordSupplied: props.grid.password ? false : true,
             showDelete: false,
             redirect: false
@@ -67,7 +69,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
 
         return (
             <Form>
-                {!this.state.configureProducer && (
+                {!this.state.configureConsumer && !this.state.configureProducer && (
                     <React.Fragment>
                         <Heading level={2}>Grid</Heading>
                         {!this.state.passwordSupplied && (
@@ -89,17 +91,22 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
                             </React.Fragment>
                         )}
-                        {this.state.passwordSupplied && (
+                    </React.Fragment>
+                )}
+                {this.state.passwordSupplied && (
+                    <React.Fragment>
+                        {!this.state.configureConsumer && !this.state.configureProducer && (
                             <React.Fragment>
                                 <p>Please enter the details for your grid.</p>
                                 <Fieldset>
                                     <label>Name</label>
                                     <input
                                         type="text"
-                                        placeholder="Name for the grid with a least 5 characters"
+                                        placeholder="Name for the grid between 5 and 30 characters"
                                         value={this.state.gridName}
                                         onChange={(e) => this.setState({ gridName: e.target.value }, () => this.validateData())}
                                         readOnly={this.state.isBusy}
+                                        maxLength={30}
                                     />
                                 </Fieldset>
                                 <Fieldset>
@@ -113,44 +120,34 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     />
                                 </Fieldset>
                                 <hr />
-                                <Heading level={3} id="producers">Producers</Heading>
-                                <Table>
-                                    <TableHead>
-                                        <TableHeadRow>
-                                            <TableHeadRowHeader>Producer</TableHeadRowHeader>
-                                            {this.state.producers.length > 0 && (
-                                                <TableHeadRowHeader align="right">
-                                                    Actions
-                                                </TableHeadRowHeader>
-                                            )}
-                                        </TableHeadRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {this.state.producers.length === 0 && (
-                                            <TableBodyRow>
-                                                <TableBodyRowData>
-                                                    There are currently no producers.
-                                                </TableBodyRowData>
-                                            </TableBodyRow>
-                                        )}
-                                        {this.state.producers.map((p, idx) => (
-                                            <TableBodyRow key={p.id}>
-                                                <TableBodyRowData>{p.name}</TableBodyRowData>
-                                                <TableBodyRowData align="right">
-                                                    <div className="no-vertical-margin">
-                                                        <Button size="small" color="secondary" onClick={() => this.producerConfigure(p)}>Configure</Button>
-                                                        <Button size="small" color="secondary" onClick={() => this.producerDelete(p)}>Delete</Button>
-                                                    </div>
-                                                </TableBodyRowData>
-                                            </TableBodyRow>
-                                        ))}
-                                        <TableBodyRow>
-                                            <TableBodyRowData>
-                                                <Button size="small" color="secondary" onClick={() => this.producerAdd()}>Add Producer</Button>
-                                            </TableBodyRowData>
-                                        </TableBodyRow>
-                                    </TableBody>
-                                </Table>
+                            </React.Fragment>
+                        )}
+                        {!this.state.configureConsumer && (
+                            <ProducerList
+                                itemName="Producer"
+                                pluralName="Producers"
+                                newInstance={() => ({ id: "", name: "", sources: [] })}
+                                items={this.state.producers}
+                                onChange={(producers) => this.setState({ producers })}
+                                configure={(props) => {
+                                    this.setState({ configureProducer: props });
+                                }}
+                            />
+                        )}
+                        {!this.state.configureProducer && (
+                            <ConsumerList
+                                itemName="Consumer"
+                                pluralName="Consumers"
+                                newInstance={() => ({ id: "", name: "" })}
+                                items={this.state.consumers}
+                                onChange={(consumers) => this.setState({ consumers })}
+                                configure={(props) => {
+                                    this.setState({ configureConsumer: props });
+                                }}
+                            />
+                        )}
+                        {!this.state.configureConsumer && !this.state.configureProducer && (
+                            <React.Fragment>
                                 <FormActions>
                                     <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
                                     <Button disabled={this.state.isBusy} onClick={async () => this.resetGrid()}>Reset</Button>
@@ -162,25 +159,26 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                     </React.Fragment>
                 )}
                 {this.state.configureProducer && (
-                    <ProducerConfigure producer={this.state.configureProducer} onChange={(p) => this.producerUpdate(p)} />
-                )}
-                {this.state.deleteProducer && (
-                    <Modal
-                        title="Confirmation"
-                        onClose={(id) => this.producerDeleteConfirmation(id)}
-                        buttons={[
-                            {
-                                id: "yes",
-                                label: "Yes"
-                            },
-                            {
-                                id: "no",
-                                label: "No"
+                    <ProducerConfigure
+                        item={this.state.configureProducer.item}
+                        onChange={(item) => {
+                            if (this.state.configureProducer) {
+                                this.state.configureProducer.onChange(item);
+                                this.setState({ configureProducer: undefined });
                             }
-                        ]}
-                    >
-                        Are you sure you want to delete producer '{this.state.deleteProducer.name}' ?
-                    </Modal>
+                        }}
+                    />
+                )}
+                {this.state.configureConsumer && (
+                    <ConsumerConfigure
+                        item={this.state.configureConsumer.item}
+                        onChange={(item) => {
+                            if (this.state.configureConsumer) {
+                                this.state.configureConsumer.onChange(item);
+                                this.setState({ configureConsumer: undefined });
+                            }
+                        }}
+                    />
                 )}
                 {this.state.showDelete && (
                     <Modal
@@ -208,7 +206,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * Validate the form data.
      */
     private validateData(): void {
-        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 ? true : false;
+        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 && this.state.gridName.trim().length <= 30 ? true : false;
 
         this.setState({ isValid });
     }
@@ -258,7 +256,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                     name: this.state.gridName || "",
                     password: this.state.password || "",
                     producers: this.state.producers,
-                    consumers: []
+                    consumers: this.state.consumers
                 };
 
                 const response = await this._apiClient.gridUpdate({
@@ -357,91 +355,10 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
         this.setState(
             {
                 gridName: this.props.grid.name,
-                producers: this.props.grid.producers.slice(0)
+                producers: this.props.grid.producers.slice(0),
+                consumers: this.props.grid.consumers.slice(0)
             },
             () => this.validateData());
-    }
-
-    /**
-     * Add a new producer.
-     */
-    private producerAdd(): void {
-        ScrollHelper.scrollRoot();
-
-        this.setState({
-            configureProducer: {
-                id: "",
-                name: "",
-                sources: []
-            }
-        });
-    }
-
-    /**
-     * Configure a producer for the grid.
-     * @param producer The producer to configure.
-     */
-    private producerConfigure(producer: IProducer): void {
-        ScrollHelper.scrollRoot();
-
-        this.setState({
-            configureProducer: producer
-        });
-    }
-
-    /**
-     * Delete a producer from the grid.
-     * @param producer The producer to configure.
-     */
-    private producerDelete(producer: IProducer): void {
-        this.setState({ deleteProducer: producer });
-    }
-
-    /**
-     * Confirmation of delete a producer from the grid.
-     * @param id The producer to configure.
-     */
-    private producerDeleteConfirmation(id?: string): void {
-        if (id === "yes") {
-            const producers = this.state.producers;
-            const findProducer = this.state.deleteProducer;
-            if (findProducer) {
-                producers.splice(producers.findIndex(p => p.id === findProducer.id), 1);
-            }
-            this.setState({
-                producers,
-                deleteProducer: undefined
-            });
-        } else {
-            this.setState({
-                deleteProducer: undefined
-            });
-        }
-    }
-
-    /**
-     * Update a new producer.
-     * @param producer The producer that was updated.
-     */
-    private producerUpdate(producer?: IProducer): void {
-        if (producer) {
-            const producers = this.state.producers;
-            if (producer.id === "") {
-                producer.id = TrytesHelper.generateHash(27);
-                producers.push(producer);
-            } else {
-                producers.splice(producers.findIndex(p => p.id === producer.id), 1, producer);
-            }
-
-            this.setState(
-                {
-                    configureProducer: undefined,
-                    producers
-                },
-                () => ScrollHelper.scrollIntoViewBySelector("#producers"));
-        } else {
-            this.setState({ configureProducer: undefined }, () => ScrollHelper.scrollIntoViewBySelector("#producers"));
-        }
     }
 }
 

@@ -85,10 +85,11 @@ class Grid extends Component<any, GridState> {
                                 <label>Grid Name</label>
                                 <input
                                     type="text"
-                                    placeholder="Name for the grid with a least 5 characters"
+                                    placeholder="Name for the grid between 5 and 30 characters"
                                     value={this.state.gridName}
                                     onChange={(e) => this.setState({ gridName: e.target.value }, () => this.validateData())}
                                     readOnly={this.state.isBusy}
+                                    maxLength={30}
                                 />
                             </Fieldset>
                             <FormActions>
@@ -107,7 +108,7 @@ class Grid extends Component<any, GridState> {
      * Validate the form data.
      */
     private validateData(): void {
-        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 ? true : false;
+        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 && this.state.gridName.trim().length <= 30 ? true : false;
 
         this.setState({ isValid });
     }

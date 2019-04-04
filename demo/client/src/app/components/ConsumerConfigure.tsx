@@ -1,17 +1,17 @@
 import { Button, Fieldset, FormActions, Heading } from "iota-react-components";
 import React, { Component, ReactNode } from "react";
-import { ProducerConfigureProps } from "./ProducerConfigureProps";
-import { ProducerConfigureState } from "./ProducerConfigureState";
+import { ConsumerConfigureProps } from "./ConsumerConfigureProps";
+import { ConsumerConfigureState } from "./ConsumerConfigureState";
 
 /**
- * Component which allows the producer to be configured.
+ * Component which allows the consumer to be configured.
  */
-class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfigureState> {
+class ConsumerConfigure extends Component<ConsumerConfigureProps, ConsumerConfigureState> {
     /**
-     * Create a new instance of Producer.
+     * Create a new instance of Consumer.
      * @param props The props to create the component with.
      */
-    constructor(props: ProducerConfigureProps) {
+    constructor(props: ConsumerConfigureProps) {
         super(props);
         this.state = {
             name: ""
@@ -32,13 +32,13 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
     public render(): ReactNode {
         return (
             <React.Fragment>
-                <Heading level={2}>Producer</Heading>
-                <p>Please enter the details for your producer.</p>
+                <Heading level={2}>Consumer</Heading>
+                <p>Please enter the details for your consumer.</p>
                 <Fieldset>
                     <label>Name</label>
                     <input
                         type="text"
-                        placeholder="Name for the producer between 5 and 30 characters"
+                        placeholder="Name for the consumer between 5 and 30 characters"
                         value={this.state.name}
                         onChange={(e) => this.setState({ name: e.target.value }, () => this.validateData())}
                         maxLength={30}
@@ -97,4 +97,4 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
 
 }
 
-export default ProducerConfigure;
+export default ConsumerConfigure;

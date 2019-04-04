@@ -20,6 +20,10 @@ class GridLive extends Component<GridLiveProps, any> {
                 {this.props.grid.producers.map((p, idx) => (
                     <div key={idx}>{p.name}</div>
                 ))}
+                <Heading level={3}>Consumers</Heading>
+                {this.props.grid.consumers.map((c, idx) => (
+                    <div key={idx}>{c.name}</div>
+                ))}
             </React.Fragment >
         );
     }

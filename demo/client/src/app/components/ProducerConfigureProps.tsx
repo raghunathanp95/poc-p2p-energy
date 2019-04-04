@@ -1,13 +1,5 @@
 import { IProducer } from "../../models/api/IProducer";
+import { ItemConfigureProps } from "./ItemConfigureProps";
 
-export interface ProducerConfigureProps {
-    /**
-     * The producer data.
-     */
-    producer: IProducer;
-
-    /**
-     * The producer was updated.
-     */
-    onChange(producer?: IProducer): void;
+export interface ProducerConfigureProps extends ItemConfigureProps<IProducer> {
 }
