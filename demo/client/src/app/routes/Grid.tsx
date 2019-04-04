@@ -1,6 +1,7 @@
 import { Button, ButtonContainer, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
+import { RouteComponentProps } from "react-router";
 import { ServiceFactory } from "../../factories/serviceFactory";
 import { IGrid } from "../../models/api/IGrid";
 import { IConfiguration } from "../../models/config/IConfiguration";
@@ -9,12 +10,13 @@ import { DemoApiClient } from "../../services/demoApiClient";
 import { LocalStorageService } from "../../services/localStorageService";
 import GridConfigure from "../components/GridConfigure";
 import GridLive from "../components/GridLive";
+import { GridParams } from "./GridParams";
 import { GridState } from "./GridState";
 
 /**
  * Component which will show the users grid.
  */
-class Grid extends Component<any, GridState> {
+class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
     /**
      * The api client.
      */
@@ -29,7 +31,7 @@ class Grid extends Component<any, GridState> {
      * Create a new instance of Grid.
      * @param props The props to create the component with.
      */
-    constructor(props: any) {
+    constructor(props: RouteComponentProps<GridParams>) {
         super(props);
         this._localStorageService = ServiceFactory.get<LocalStorageService>("localStorage");
 
@@ -37,7 +39,7 @@ class Grid extends Component<any, GridState> {
         this._apiClient = new DemoApiClient(config.apiEndpoint);
 
         this.state = {
-            gridName: "",
+            gridName: this.props.match.params && this.props.match.params.gridName === undefined ? "" : this.props.match.params.gridName,
             status: "",
             view: "live"
         };
@@ -47,7 +49,7 @@ class Grid extends Component<any, GridState> {
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        const gridName = this._localStorageService.get<string>("gridName");
+        const gridName = this.state.gridName || this._localStorageService.get<string>("gridName");
 
         if (gridName && gridName.length >= 5) {
             this.setState({ gridName, isValid: true }, async () => this.loadGrid());
@@ -214,6 +216,7 @@ class Grid extends Component<any, GridState> {
      */
     private async loadCreateGrid(): Promise<void> {
         await this._localStorageService.remove("gridName");
+        this.props.history.replace("/grid");
 
         this.setState(
             {

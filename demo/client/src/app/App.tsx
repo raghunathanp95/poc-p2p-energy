@@ -10,6 +10,7 @@ import { ConfigurationService } from "../services/configurationService";
 import { LocalStorageService } from "../services/localStorageService";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
+import { GridParams } from "./routes/GridParams";
 import Introduction from "./routes/Introduction";
 
 /**
@@ -116,7 +117,11 @@ class App extends Component<RouteComponentProps, AppState> {
                         {!this.state.status && (
                             <Switch>
                                 <Route exact={true} path="/" component={() => (<Introduction hash={Date.now()} />)} />
-                                <Route exact={true} path="/grid" component={() => (<Grid hash={Date.now()} />)} />
+                                <Route
+                                    exact={true}
+                                    path="/grid/:gridName?"
+                                    component={(props: RouteComponentProps<GridParams>) => (<Grid {...props} />)}
+                                />
                             </Switch>
                         )}
                     </LayoutAppSingle>
