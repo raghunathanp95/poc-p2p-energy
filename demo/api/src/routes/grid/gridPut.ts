@@ -3,9 +3,11 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
+import { GridState } from "../../models/api/GridState";
 import { IGrid } from "../../models/api/IGrid";
 import { IGridPutRequest } from "../../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../../models/api/IGridPutResponse";
+import { DemoGridManagerService } from "../../services/demoGridManagerService";
 
 /**
  * Update a grid.
@@ -56,6 +58,11 @@ export async function gridPut(
     }
 
     await storageService.set(request.grid.name, request.grid);
+
+    // If the grid has been reconfigured we will stop it running
+    // if it is in use it will get started again
+    const demoGridManager = ServiceFactory.get<DemoGridManagerService>("demoGridManager");
+    await demoGridManager.setGridState(request.name, GridState.Idle);
 
     return {
         success: true,

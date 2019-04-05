@@ -1,13 +1,14 @@
 import axios from "axios";
 import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
 import { ApiHelper } from "p2p-energy-common/dist/utils/apiHelper";
+import { IGridDeleteRequest } from "../models/api/IGridDeleteRequest";
 import { IGridGetRequest } from "../models/api/IGridGetRequest";
 import { IGridGetResponse } from "../models/api/IGridGetResponse";
 import { IGridPasswordPutRequest } from "../models/api/IGridPasswordPutRequest";
 import { IGridPostRequest } from "../models/api/IGridPostRequest";
 import { IGridPutRequest } from "../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../models/api/IGridPutResponse";
-import { IGridDeleteRequest } from "../models/api/IGridDeleteRequest";
+import { IGridStatePutRequest } from "../models/api/IGridStatePutRequest";
 
 /**
  * Class to handle api communications.
@@ -134,6 +135,31 @@ export class DemoApiClient {
         try {
             const axiosResponse = await ax.put<IResponse>(
                 ApiHelper.joinParams(`grid/password`, [request.name]),
+                ApiHelper.removeKeys(request, ["name"]));
+
+            response = axiosResponse.data;
+        } catch (err) {
+            response = {
+                success: false,
+                message: `There was a problem communicating with the API.\n${err}`
+            };
+        }
+
+        return response;
+    }
+
+    /**
+     * Set the state of a grid.
+     * @param request The request to send.
+     * @returns The response from the request.
+     */
+    public async gridStatePut(request: IGridStatePutRequest): Promise<IResponse> {
+        const ax = axios.create({ baseURL: this._endpoint });
+        let response: IResponse;
+
+        try {
+            const axiosResponse = await ax.put<IResponse>(
+                ApiHelper.joinParams(`grid/state`, [request.name]),
                 ApiHelper.removeKeys(request, ["name"]));
 
             response = axiosResponse.data;
