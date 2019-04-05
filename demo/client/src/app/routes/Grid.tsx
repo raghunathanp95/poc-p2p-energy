@@ -11,7 +11,7 @@ import { LocalStorageService } from "../../services/localStorageService";
 import GridConfigure from "../components/GridConfigure";
 import GridLive from "../components/GridLive";
 import { GridParams } from "./GridParams";
-import { GridState } from "./GridState";
+import { GridState } from "./gridState";
 
 /**
  * Component which will show the users grid.

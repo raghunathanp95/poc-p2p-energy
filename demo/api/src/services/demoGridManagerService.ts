@@ -1,7 +1,7 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
-import { GridState } from "../models/api/GridState";
+import { GridState } from "../models/api/gridState";
 import { IGrid } from "../models/api/IGrid";
 
 /**
