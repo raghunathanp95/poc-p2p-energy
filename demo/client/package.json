@@ -11,11 +11,13 @@
     "dependencies": {
         "@iota/mam": "github:iotaledger/mam.client.js",
         "axios": "github:axios/axios",
+        "chartist": "^0.11.0",
         "classnames": "^2.2.6",
         "iota-css-theme": "github:iotaledger/iota-css-theme",
         "iota-react-components": "github:iotaledger/iota-react-components",
         "p2p-energy-common": "file:../../common",
         "react": "^16.8.6",
+        "react-chartist": "^0.13.3",
         "react-dom": "^16.8.6",
         "react-router-dom": "^4.3.1",
         "react-scripts": "^2.1.8"
@@ -38,6 +40,7 @@
         "not op_mini all"
     ],
     "devDependencies": {
+        "@types/chartist": "^0.9.44",
         "@types/classnames": "^2.2.6",
         "@types/node": "^11.12.0",
         "@types/react": "^16.8.10",

@@ -1,3 +1,25 @@
+@import './node_modules/chartist/dist/scss/chartist.scss';
+
+.ct-series-a .ct-slice-donut {
+  stroke: var(--jade) !important;
+}
+
+.ct-series-b .ct-slice-donut {
+  stroke: var(--blueberry) !important;
+}
+
+.ct-line {
+  stroke: var(--jade) !important;
+}
+
+.ct-point {
+  stroke: var(--blueberry) !important;
+}
+
+.ct-area {
+  fill: var(--jade) !important;
+}
+
 // sass-lint:disable no-ids
 #root {
   display: flex;
