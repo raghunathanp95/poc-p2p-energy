@@ -1,0 +1,109 @@
+.grid-live-consumer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid var(--light-grey);
+  border-radius: 5px;
+  padding: 20px;
+
+  @media (max-width: 514px) {
+    flex-direction: column;
+  }
+
+  .grid-live-consumer-sub-title {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
+
+    .grid-live-consumer-sub-title-minor {
+      font-weight: normal;
+      font-size: 14px;
+    }
+  }
+
+  .grid-live-consumer-info-wrapper {
+    display: flex;
+    flex-direction: row;
+
+    .grid-live-consumer-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100px;
+      margin: 0;
+      padding: 0;
+      outline: none;
+      background-color: transparent;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: 200ms ease;
+
+      &:hover,
+      &.grid-live-consumer-btn--expanded  {
+        border: 2px solid var(--jade);
+      }
+
+      .grid-live-consumer-btn-top {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px 5px 0px 0px;
+        background-color: #8e8e8e;
+        height: 60px;
+
+        img {
+          height: 70%;
+        }
+      }
+
+      .grid-live-consumer-btn-bottom {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0px 0px 5px 5px;
+        background-color: #f3f2f1;
+        font-size: 12px;
+        font-weight: bold;
+        height: 60px;
+        text-align: center;
+      }
+    }
+
+    .grid-live-consumer-info {
+      margin-left: 20px;
+
+      .grid-live-consumer-info-id {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+
+      .grid-live-consumer-info-data {
+        margin-top: 8px;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .grid-live-consumer-detail {
+    display: none;
+    transition: 300ms ease;
+    height: 0;
+
+    &.grid-live-consumer-detail--expanded {
+      display: block;
+      height: auto;
+    }
+
+    .charts {
+      .ct-chart {
+        width: 100%;
+      }
+    }
+  }
+}
+
+.grid-live-consumer + .grid-live-consumer {
+  margin-top: 20px;
+}

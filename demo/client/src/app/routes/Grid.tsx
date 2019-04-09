@@ -8,8 +8,8 @@ import { IConfiguration } from "../../models/config/IConfiguration";
 import { ConfigurationService } from "../../services/configurationService";
 import { DemoApiClient } from "../../services/demoApiClient";
 import { LocalStorageService } from "../../services/localStorageService";
-import GridConfigure from "../components/GridConfigure";
-import GridLive from "../components/GridLive";
+import GridConfigure from "../components/configure/GridConfigure";
+import GridLiveContainer from "../components/live/GridLiveContainer";
 import { GridParams } from "./GridParams";
 import { GridState } from "./GridState";
 
@@ -74,7 +74,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                             <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({grid})} />
                         )}
                         {this.state.view === "live" && (
-                            <GridLive grid={this.state.grid} />
+                            <GridLiveContainer grid={this.state.grid} />
                         )}
                     </React.Fragment>
                 )}

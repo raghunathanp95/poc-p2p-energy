@@ -10,5 +10,5 @@ export interface ISource extends IIdItem {
     /**
      * The power slices from the source.
      */
-    powerSlices?: IPowerSlice;
+    powerSlices?: IPowerSlice[];
 }

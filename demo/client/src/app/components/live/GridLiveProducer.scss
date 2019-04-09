@@ -1,0 +1,115 @@
+.grid-live-producer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid var(--light-grey);
+  border-radius: 5px;
+  padding: 20px;
+
+  @media (max-width: 514px) {
+    flex-direction: column;
+  }
+
+  .grid-live-producer-sub-title {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
+
+    .grid-live-producer-sub-title-minor {
+      font-weight: normal;
+      font-size: 14px;
+    }
+  }
+
+  .grid-live-sources {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .grid-live-producer-info-wrapper {
+    display: flex;
+    flex-direction: row;
+
+    .grid-live-producer-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100px;
+      margin: 0;
+      padding: 0;
+      outline: none;
+      background-color: transparent;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: 200ms ease;
+
+      &:hover,
+      &.grid-live-producer-btn--expanded  {
+        border: 2px solid var(--jade);
+      }
+
+      .grid-live-producer-btn-top {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px 5px 0px 0px;
+        background-color: #8e8e8e;
+        height: 60px;
+
+        img {
+          height: 70%;
+        }
+      }
+
+      .grid-live-producer-btn-bottom {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0px 0px 5px 5px;
+        background-color: #f3f2f1;
+        font-size: 12px;
+        font-weight: bold;
+        height: 60px;
+        text-align: center;
+      }
+    }
+
+    .grid-live-producer-info {
+      margin-left: 20px;
+
+      .grid-live-producer-info-id {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+
+      .grid-live-producer-info-data {
+        margin-top: 8px;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .grid-live-producer-detail {
+    display: none;
+    transition: 300ms ease;
+    height: 0;
+
+    &.grid-live-producer-detail--expanded {
+      display: block;
+      height: auto;
+    }
+
+    .charts {
+      .ct-chart {
+        width: 100%;
+      }
+    }
+  }
+}
+
+.grid-live-producer + .grid-live-producer {
+  margin-top: 20px;
+}
