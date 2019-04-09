@@ -71,7 +71,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                             <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
                         </ButtonContainer>
                         {this.state.view === "configure" && (
-                            <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({grid})} />
+                            <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({ grid })} />
                         )}
                         {this.state.view === "live" && (
                             <GridLiveContainer grid={this.state.grid} />
@@ -82,7 +82,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                     <React.Fragment>
                         <Heading level={1}>Load/Create Grid</Heading>
                         <p>Please enter the name of an existing grid to load, or fill in a name to create a new one.
-                            <br/>
+                            <br />
                             An existing grid named '<strong>Demonstration</strong>' is already available to load.
                         </p>
                         <Form>

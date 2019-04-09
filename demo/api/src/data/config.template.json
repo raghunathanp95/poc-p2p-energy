@@ -1,8 +1,20 @@
 {
+    "node": {
+        "provider": "https://MYNODE/",
+        "depth": 3,
+        "mwm": 9
+    },
+    "dynamoDbConnection": {
+        "region": "AWS-REGION",
+        "accessKeyId": "AWS-ACCESS-KEY-ID",
+        "secretAccessKey": "AWS-SECRET-ACCESS-KEY",
+        "dbTablePrefix": "DATABASE-TABLE-PREFIX"
+    },
     "s3Connection": {
         "region": "AWS-REGION",
         "accessKeyId": "AWS-ACCESS-KEY-ID",
         "secretAccessKey": "AWS-SECRET-ACCESS-KEY",
         "bucketPrefix": "BUCKET-PREFIX"
-    }
+    },
+    "walletSeed": "SEED"
 }

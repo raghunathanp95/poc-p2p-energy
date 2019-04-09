@@ -1,16 +1,16 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
-import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
 import { IGrid } from "../../models/api/IGrid";
 import { IGridGetRequest } from "../../models/api/IGridGetRequest";
 import { IGridGetResponse } from "../../models/api/IGridGetResponse";
+import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 
 /**
  * Get the data for the grid.
  */
 export async function gridGet(
-    config: IGridServiceConfiguration,
+    config: IDemoApiConfiguration,
     request: IGridGetRequest):
     Promise<IGridGetResponse> {
 
@@ -26,6 +26,15 @@ export async function gridGet(
 
     if (grid.password) {
         grid.password = `base64:${grid.password}`;
+    }
+
+    // Delete the wallet seeds from the information that we hand back
+    delete grid.walletSeed;
+    for (let i = 0; i < grid.producers.length; i++) {
+        delete grid.producers[i].walletSeed;
+    }
+    for (let i = 0; i < grid.consumers.length; i++) {
+        delete grid.consumers[i].walletSeed;
     }
 
     return {

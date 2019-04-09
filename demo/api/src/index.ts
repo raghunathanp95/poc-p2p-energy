@@ -6,6 +6,7 @@ import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage
 import { App } from "p2p-energy-common/dist/utils/app";
 import { IDemoApiConfiguration } from "./models/IDemoApiConfiguration";
 import { DemoGridManagerService } from "./services/demoGridManagerService";
+import { WalletStateService } from "./services/walletStateService";
 
 const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
@@ -14,7 +15,8 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" },
     { path: "/grid/:name", method: "delete", folder: "grid", func: "gridDelete" },
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" },
-    { path: "/grid/state/:name", method: "put", folder: "grid", func: "gridStatePut" }
+    { path: "/grid/state/:name", method: "put", folder: "grid", func: "gridStatePut" },
+    { path: "/wallet/:name?/:type?/:id?", method: "get", folder: "wallet", func: "walletGet" }
 ];
 
 const loggingService = new ConsoleLoggingService();
@@ -32,6 +34,10 @@ app.build(routes, async (_1, config, _2) => {
             "storage",
             () => new AmazonS3StorageService(config.s3Connection, "grids"));
     }
+
+    ServiceFactory.register(
+        "wallet-state",
+        () => new WalletStateService(config.dynamoDbConnection));
 
     ServiceFactory.register("demoGridManager", () => new DemoGridManagerService(loggingService));
 }).catch(err => {

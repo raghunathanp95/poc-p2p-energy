@@ -1,19 +1,20 @@
 import crypto from "crypto";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
-import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
+import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
 import { GridState } from "../../models/api/gridState";
 import { IGrid } from "../../models/api/IGrid";
 import { IGridPutRequest } from "../../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../../models/api/IGridPutResponse";
+import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 import { DemoGridManagerService } from "../../services/demoGridManagerService";
 
 /**
  * Update a grid.
  */
 export async function gridPut(
-    config: IGridServiceConfiguration,
+    config: IDemoApiConfiguration,
     request: IGridPutRequest):
     Promise<IGridPutResponse> {
 
@@ -54,6 +55,20 @@ export async function gridPut(
             request.grid.password = request.grid.password.substr(7);
         } else {
             request.grid.password = crypto.createHash("sha256").update(request.grid.password).digest("base64");
+        }
+    }
+
+    if (!request.grid.walletSeed) {
+        request.grid.walletSeed = TrytesHelper.generateHash(81);
+    }
+    for (let i = 0; i < request.grid.producers.length; i++) {
+        if (!request.grid.producers[i].walletSeed) {
+            request.grid.producers[i].walletSeed = TrytesHelper.generateHash(81);
+        }
+    }
+    for (let i = 0; i < request.grid.consumers.length; i++) {
+        if (!request.grid.consumers[i].walletSeed) {
+            request.grid.consumers[i].walletSeed = TrytesHelper.generateHash(81);
         }
     }
 

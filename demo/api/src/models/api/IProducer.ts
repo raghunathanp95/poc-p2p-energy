@@ -9,6 +9,11 @@ export interface IProducer extends IIdItem {
     sources: ISource[];
 
     /**
+     * The wallet seed for the producer.
+     */
+    walletSeed?: string;
+
+    /**
      * The power slices from the producer.
      */
     powerSlices?: IPowerSlice[];

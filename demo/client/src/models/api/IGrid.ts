@@ -13,6 +13,11 @@ export interface IGrid {
     name: string;
 
     /**
+     * The wallet seed for the grid.
+     */
+    walletSeed?: string;
+
+    /**
      * Password to protect the configuration.
      */
     password?: string;

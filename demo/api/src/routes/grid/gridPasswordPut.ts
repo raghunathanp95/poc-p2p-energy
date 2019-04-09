@@ -1,17 +1,17 @@
 import crypto from "crypto";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
-import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
 import { IGrid } from "../../models/api/IGrid";
 import { IGridPasswordPutRequest } from "../../models/api/IGridPasswordPutRequest";
+import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 
 /**
  * Check a grid password.
  */
 export async function gridPasswordPut(
-    config: IGridServiceConfiguration,
+    config: IDemoApiConfiguration,
     request: IGridPasswordPutRequest):
     Promise<IResponse> {
 
