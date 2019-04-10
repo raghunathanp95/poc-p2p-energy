@@ -1,7 +1,13 @@
+import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IDemoConsumerState } from "./IDemoConsumerState";
 import { IDemoProducerState } from "./IDemoProducerState";
 
 export interface IDemoGridState {
+    /**
+     * The grid manager state.
+     */
+    gridManagerState?: IGridManagerState;
+
     /**
      * Running costs balance.
      */

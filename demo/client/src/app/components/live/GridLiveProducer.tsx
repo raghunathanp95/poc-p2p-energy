@@ -7,7 +7,7 @@ import producer1 from "../../../assets/producers/producer1.svg";
 import producer2 from "../../../assets/producers/producer2.svg";
 import producer3 from "../../../assets/producers/producer3.svg";
 import { ISource } from "../../../models/api/ISource";
-import { DemoGridStateService } from "../../../services/demoGridStateService";
+import { DemoGridManager } from "../../../services/demoGridManager";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
 import { GridLiveProducerState } from "./GridLiveProducerState";
@@ -23,9 +23,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     private readonly _producerImages: any[];
 
     /**
-     * The demo grid state service.
+     * The demo grid manager.
      */
-    private readonly _demoGridStateService: DemoGridStateService;
+    private readonly _demoGridManager: DemoGridManager;
 
     /**
      * The selected sources for the graph.
@@ -45,12 +45,12 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             producer3
         ];
 
-        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
 
         this._selectedSources = [];
 
         this.state = {
-            producerState: this._demoGridStateService.getProducerState(this.props.producer.id),
+            producerState: this._demoGridManager.getProducerState(this.props.producer.id),
             isExpanded: false,
             graphLabels: [],
             graphSeries: []
@@ -63,7 +63,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     public async componentDidMount(): Promise<void> {
         this.calculateGraph();
 
-        this._demoGridStateService.subscribeProducer(this.props.producer.id, (producerState) => {
+        this._demoGridManager.subscribeProducer(this.props.producer.id, (producerState) => {
             this.setState({ producerState });
         });
     }
@@ -72,7 +72,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridStateService.unsubscribeProducer(this.props.producer.id);
+        this._demoGridManager.unsubscribeProducer(this.props.producer.id);
     }
 
     /**

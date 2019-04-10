@@ -49,7 +49,10 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        const gridName = this.state.gridName || this._localStorageService.get<string>("gridName");
+        let gridName = this.state.gridName;
+        if (!gridName) {
+            gridName = await this._localStorageService.get<string>("gridName");
+        }
 
         if (gridName && gridName.length >= 5) {
             this.setState({ gridName, isValid: true }, async () => this.loadGrid());

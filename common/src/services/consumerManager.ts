@@ -4,13 +4,13 @@ import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
-import { IConsumerState } from "../models/state/IConsumerState";
+import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
  * Class to handle a consumer.
  */
-export class ConsumerService {
+export class ConsumerManager {
     /**
      * Configuration for the consumer.
      */
@@ -34,7 +34,7 @@ export class ConsumerService {
     /**
      * The current state for the consumer.
      */
-    private _state?: IConsumerState;
+    private _state?: IConsumerManagerState;
 
     /**
      * Create a new instance of ConsumerService.
@@ -143,7 +143,7 @@ export class ConsumerService {
      * Load the state for the consumer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>("storage-config");
 
         this._loggingService.log("consumer", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -156,7 +156,7 @@ export class ConsumerService {
      * Store the state for the consumer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>("storage-config");
 
         this._loggingService.log("consumer", `Storing State`);
         await storageConfigService.set("state", this._state);

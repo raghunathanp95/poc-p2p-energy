@@ -2,7 +2,7 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
 /**
  * Definition of source state.
  */
-export interface ISourceState {
+export interface ISourceManagerState {
     /**
      * The channel configuration for the source.
      */

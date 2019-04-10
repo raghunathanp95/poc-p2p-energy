@@ -4,14 +4,14 @@
 export class LocalStorageService {
     /**
      * Load an item from local storage.
-     * @param key The key of the item to load.
+     * @param id The id of the item to load.
      * @returns The item loaded.
      */
-    public get<T>(key: string): T {
+    public async get<T>(id: string): Promise<T> {
         let obj;
         if (window.localStorage) {
             try {
-                const json = window.localStorage.getItem(key);
+                const json = window.localStorage.getItem(id);
 
                 if (json) {
                     obj = JSON.parse(json);
@@ -26,14 +26,14 @@ export class LocalStorageService {
 
     /**
      * Save an item to local storage.
-     * @param key The key of the item to store.
+     * @param id The id of the item to store.
      * @param item The item to store.
      */
-    public set<T>(key: string, item: T): void {
+    public async set<T>(id: string, item: T): Promise<void> {
         if (window.localStorage) {
             try {
                 const json = JSON.stringify(item);
-                window.localStorage.setItem(key, json);
+                window.localStorage.setItem(id, json);
             } catch (err) {
                 // Nothing to do
             }
@@ -42,12 +42,12 @@ export class LocalStorageService {
 
     /**
      * Remove an item from storage.
-     * @param key The key of the item to store.
+     * @param id The id of the item to store.
      */
-    public remove(key: string): void {
+    public async remove(id: string): Promise<void> {
         if (window.localStorage) {
             try {
-                window.localStorage.removeItem(key);
+                window.localStorage.removeItem(id);
             } catch (err) {
                 // Nothing to do
             }
@@ -56,21 +56,21 @@ export class LocalStorageService {
 
     /**
      * Clear the local storage.
-     * @param rootKey Clear all items that start with the root key, if undefined clear everything.
+     * @param rootId Clear all items that start with the root id, if undefined clear everything.
      */
-    public clear(rootKey: string): void {
+    public async clear(rootId: string): Promise<void> {
         if (window.localStorage) {
             try {
-                if (rootKey) {
-                    const keysToRemove = [];
+                if (rootId) {
+                    const itemsToRemove = [];
                     const len = window.localStorage.length;
                     for (let i = 0; i < len; i++) {
                         const key = window.localStorage.key(i);
-                        if (key && key.startsWith(rootKey)) {
-                            keysToRemove.push(key);
+                        if (key && key.startsWith(rootId)) {
+                            itemsToRemove.push(key);
                         }
                     }
-                    keysToRemove.forEach(key => {
+                    itemsToRemove.forEach(key => {
                         window.localStorage.removeItem(key);
                     });
                 } else {

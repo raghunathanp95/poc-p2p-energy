@@ -4,7 +4,7 @@ import { IRegistration } from "../models/services/registration/IRegistration";
 /**
  * Service to handle the grid.
  */
-export declare class GridService {
+export declare class GridManager {
     /**
      * Service to log output to.
      */

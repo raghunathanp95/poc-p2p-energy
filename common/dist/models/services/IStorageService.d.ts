@@ -16,9 +16,9 @@ export interface IStorageService<T> {
     set(id: string, item: T): Promise<void>;
     /**
      * Delete the item.
-     * @param itemKey The key of the item to remove.
+     * @param id The id of the item to remove.
      */
-    remove(itemKey: string): Promise<void>;
+    remove(id: string): Promise<void>;
     /**
      * Get all the paged items.
      * @param context The context of the items to get.

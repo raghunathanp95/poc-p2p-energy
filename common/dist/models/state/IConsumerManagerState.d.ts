@@ -2,7 +2,7 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
 /**
  * Definition of consumer state.
  */
-export interface IConsumerState {
+export interface IConsumerManagerState {
     /**
      * The channel configuration for the consumer.
      */

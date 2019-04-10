@@ -3,7 +3,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import React, { Component, ReactNode } from "react";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
-import { DemoGridStateService } from "../../../services/demoGridStateService";
+import { DemoGridManager } from "../../../services/demoGridManager";
 import "./GridLiveConsumer.scss";
 import { GridLiveConsumerProps } from "./GridLiveConsumerProps";
 import { GridLiveConsumerState } from "./GridLiveConsumerState";
@@ -18,9 +18,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     private readonly _consumerImages: any[];
 
     /**
-     * The demo grid state service.
+     * The demo grid manager.
      */
-    private readonly _demoGridStateService: DemoGridStateService;
+    private readonly _demoGridManager: DemoGridManager;
 
     /**
      * Create a new instance of GridLiveConsumer.
@@ -34,10 +34,10 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
-        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
 
         this.state = {
-            consumerState: this._demoGridStateService.getConsumerState(this.props.consumer.id),
+            consumerState: this._demoGridManager.getConsumerState(this.props.consumer.id),
             isExpanded: false
         };
     }
@@ -46,7 +46,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridStateService.subscribeConsumer(this.props.consumer.id, (consumerState) => {
+        this._demoGridManager.subscribeConsumer(this.props.consumer.id, (consumerState) => {
             this.setState({ consumerState });
         });
     }
@@ -55,7 +55,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridStateService.unsubscribeConsumer(this.props.consumer.id);
+        this._demoGridManager.unsubscribeConsumer(this.props.consumer.id);
     }
 
     /**

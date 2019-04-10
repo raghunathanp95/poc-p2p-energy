@@ -3,7 +3,7 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
 /**
  * Definition of producer state.
  */
-export interface IProducerState {
+export interface IProducerManagerState {
     /**
      * The seed used to generate payment addressses.
      */

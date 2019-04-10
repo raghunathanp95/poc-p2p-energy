@@ -4,7 +4,7 @@ import { IMamCommand } from "../models/mam/IMamCommand";
 /**
  * Class to handle a source.
  */
-export declare class SourceService {
+export declare class SourceManager {
     /**
      * Configuration for the source.
      */

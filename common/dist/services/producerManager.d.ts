@@ -5,7 +5,7 @@ import { IRegistration } from "../models/services/registration/IRegistration";
 /**
  * Class to maintain a Producer.
  */
-export declare class ProducerService {
+export declare class ProducerManager {
     /**
      * Configuration for the producer.
      */

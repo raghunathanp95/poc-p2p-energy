@@ -5,7 +5,7 @@ import { GridState } from "../../../models/api/gridState";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
-import { DemoGridStateService } from "../../../services/demoGridStateService";
+import { DemoGridManager } from "../../../services/demoGridManager";
 import "./GridLiveOverview.scss";
 import { GridLiveOverviewProps } from "./GridLiveOverviewProps";
 import { GridLiveOverviewState } from "./GridLiveOverviewState";
@@ -15,14 +15,9 @@ import { GridLiveOverviewState } from "./GridLiveOverviewState";
  */
 class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverviewState> {
     /**
-     * The api client.
+     * The demo grid manager.
      */
-    private readonly _apiClient: DemoApiClient;
-
-    /**
-     * The demo grid state service.
-     */
-    private readonly _demoGridStateService: DemoGridStateService;
+    private readonly _demoGridManager: DemoGridManager;
 
     /**
      * Create a new instance of GridLiveOverview.
@@ -31,12 +26,10 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
     constructor(props: GridLiveOverviewProps) {
         super(props);
 
-        const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
-        this._apiClient = new DemoApiClient(config.apiEndpoint);
-        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
 
         this.state = {
-            gridState: this._demoGridStateService.getGridState()
+            gridState: this._demoGridManager.getGridState()
         };
     }
 
@@ -44,7 +37,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridStateService.subscribeGrid("gridLiveOverview", (gridState) => {
+        this._demoGridManager.subscribeGrid("gridLiveOverview", (gridState) => {
             this.setState({gridState});
         });
     }
@@ -53,7 +46,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridStateService.unsubscribeGrid("gridLiveOverview");
+        this._demoGridManager.unsubscribeGrid("gridLiveOverview");
     }
 
     /**

@@ -6,9 +6,9 @@ import { IDemoProducerState } from "../models/services/IDemoProducerState";
 import { LocalStorageService } from "./localStorageService";
 
 /**
- * DemoGridStateService Class.
+ * DemoGridManager Class.
  */
-export class DemoGridStateService {
+export class DemoGridManager {
     /**
      * The id of the loaded grid.
      */
@@ -35,7 +35,7 @@ export class DemoGridStateService {
     private readonly _subscriptionsConsumer: { [id: string]: (state: IDemoConsumerState) => void };
 
     /**
-     * Create a new instance of DemoGridStateService.
+     * Create a new instance of DemoGridManager.
      */
     constructor() {
         this._subscriptionsGrid = {};
@@ -55,13 +55,14 @@ export class DemoGridStateService {
             // It is a different grid to the current loaded state
             // so load it and trigger subscriptions
             // See if we have the grid state in local storage
-            newState = localStorageService.get<IDemoGridState>(grid.id);
+            newState = await localStorageService.get<IDemoGridState>(grid.id);
         } else {
             newState = this._gridState;
         }
 
         this._gridId = grid.id;
         this._gridState = newState || {
+            gridManagerState: undefined,
             runningCostsBalance: 0,
             producerPaidBalance: 0,
             producerOwedBalance: 0,
@@ -83,7 +84,7 @@ export class DemoGridStateService {
             this._subscriptionsConsumer[id](this._gridState.consumerStates[id]);
         }
 
-        localStorageService.set<IDemoGridState>(grid.id, this._gridState);
+        await localStorageService.set<IDemoGridState>(grid.id, this._gridState);
     }
 
     /**

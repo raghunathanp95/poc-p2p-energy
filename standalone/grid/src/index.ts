@@ -2,7 +2,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
-import { IGridState } from "p2p-energy-common/dist/models/state/IGridState";
+import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
@@ -10,7 +10,7 @@ import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/a
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
-import { GridService } from "p2p-energy-common/dist/services/gridService";
+import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
@@ -41,7 +41,7 @@ app.build(routes, async (_1, config, _2) => {
 
         ServiceFactory.register(
             "storage-config",
-            () => new LocalFileStorageService<IGridState>(config.localStorageFolder, config.grid.id, "config"));
+            () => new LocalFileStorageService<IGridManagerState>(config.localStorageFolder, config.grid.id, "config"));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "registration-storage",
@@ -52,12 +52,12 @@ app.build(routes, async (_1, config, _2) => {
             () => new AmazonS3StorageService(config.s3Connection, "config"));
     }
 
-    const gridService = new GridService(config.node);
+    const gridManager = new GridManager(config.node);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, gridService.shouldCreateReturnChannel);
+        new RegistrationManagementService(config.node, gridManager.shouldCreateReturnChannel);
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
-    ServiceFactory.register("grid", () => gridService);
+    ServiceFactory.register("grid", () => gridManager);
 
     if (config.localStorageFolder) {
         ServiceFactory.register(
@@ -84,7 +84,7 @@ app.build(routes, async (_1, config, _2) => {
             () => new ProducerOutputPaymentService(config.dynamoDbConnection));
     }
 
-    await gridService.initialise();
+    await gridManager.initialise();
     await registrationManagementService.loadRegistrations();
 
     const schedules: ISchedule[] = [
@@ -92,12 +92,12 @@ app.build(routes, async (_1, config, _2) => {
             name: "Poll for Commands",
             schedule: "*/15 * * * * *",
             func: async () => registrationManagementService.pollCommands(
-                (registration, commands) => gridService.handleCommands(registration, commands))
+                (registration, commands) => gridManager.handleCommands(registration, commands))
         },
         {
             name: "Calculate asking prices",
             schedule: "*/15 * * * * *",
-            func: async () => gridService.calculateAskingPrices((startTime, endTime, output, askingPrice) => {
+            func: async () => gridManager.calculateAskingPrices((startTime, endTime, output, askingPrice) => {
                 // Calculate a price for the output based on its details and the asking price
                 return Math.floor(askingPrice * 0.95);
             })
@@ -105,7 +105,7 @@ app.build(routes, async (_1, config, _2) => {
         {
             name: "Check Payments",
             schedule: "*/15 * * * * *",
-            func: async () => gridService.checkPayments()
+            func: async () => gridManager.checkPayments()
         }
     ];
 

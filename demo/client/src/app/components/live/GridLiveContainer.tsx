@@ -4,7 +4,7 @@ import { GridState } from "../../../models/api/gridState";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
-import { DemoGridStateService } from "../../../services/demoGridStateService";
+import { DemoGridManager } from "../../../services/demoGridManager";
 import GridLiveConsumer from "./GridLiveConsumer";
 import "./GridLiveContainer.scss";
 import { GridLiveContainerProps } from "./GridLiveContainerProps";
@@ -22,9 +22,9 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
     private readonly _apiClient: DemoApiClient;
 
     /**
-     * The demo grid state service.
+     * The demo grid manager.
      */
-    private readonly _demoGridStateService: DemoGridStateService;
+    private readonly _demoGridManager: DemoGridManager;
 
     /**
      * Timer to check the wallet balance.
@@ -40,11 +40,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
         const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
         this._apiClient = new DemoApiClient(config.apiEndpoint);
-        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
 
         this.state = {
             walletBalance: "-----",
-            gridState: this._demoGridStateService.getGridState()
+            gridState: this._demoGridManager.getGridState()
         };
     }
 
@@ -55,11 +55,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
         this._walletBalanceInterval = setInterval(() => this.checkWalletBalance(), 30000);
         this.checkWalletBalance();
 
-        this._demoGridStateService.subscribeGrid("gridLiveContainer", (gridState) => {
+        this._demoGridManager.subscribeGrid("gridLiveContainer", (gridState) => {
             this.setState({gridState});
         });
 
-        await this._demoGridStateService.load(this.props.grid);
+        await this._demoGridManager.load(this.props.grid);
     }
 
     /**
@@ -71,7 +71,7 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
             this._walletBalanceInterval = undefined;
         }
 
-        this._demoGridStateService.unsubscribeGrid("gridLiveContainer");
+        this._demoGridManager.unsubscribeGrid("gridLiveContainer");
     }
 
     /**

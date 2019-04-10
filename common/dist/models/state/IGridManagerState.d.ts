@@ -1,7 +1,7 @@
 /**
  * Definition of grid state.
  */
-export interface IGridState {
+export interface IGridManagerState {
     /**
      * The seed used to generate payment addressses.
      */

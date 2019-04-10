@@ -4,13 +4,13 @@ import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
-import { IProducerState } from "p2p-energy-common/dist/models/state/IProducerState";
+import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
-import { ProducerService } from "p2p-energy-common/dist/services/producerService";
+import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
@@ -45,14 +45,15 @@ app.build(routes, async (_1, config, _2) => {
 
         ServiceFactory.register(
             "storage-config",
-            () => new LocalFileStorageService<IProducerState>(config.localStorageFolder, config.producer.id, "config"));
+            () => new LocalFileStorageService<IProducerManagerState>(
+                config.localStorageFolder, config.producer.id, "config"));
     } else {
         ServiceFactory.register(
             "registration-storage",
             () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
         );
 
-        ServiceFactory.register("storage-config", () => new ApiStorageService<IProducerState>(
+        ServiceFactory.register("storage-config", () => new ApiStorageService<IProducerManagerState>(
             config.gridApiEndpoint,
             config.producer.id,
             "config"));
@@ -60,12 +61,12 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
-    const producerService = new ProducerService(config.producer, config.node);
+    const producerManager = new ProducerManager(config.producer, config.node);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, producerService.shouldCreateReturnChannel);
+        new RegistrationManagementService(config.node, producerManager.shouldCreateReturnChannel);
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
-    ServiceFactory.register("producer", () => producerService);
+    ServiceFactory.register("producer", () => producerManager);
 
     if (config.localStorageFolder) {
         ServiceFactory.register(
@@ -87,7 +88,7 @@ app.build(routes, async (_1, config, _2) => {
         );
     }
 
-    await producerService.initialise();
+    await producerManager.initialise();
     await registrationManagementService.loadRegistrations();
 
     const schedules: ISchedule[] = [
@@ -95,12 +96,12 @@ app.build(routes, async (_1, config, _2) => {
             name: "Poll for Commands",
             schedule: "*/15 * * * * *",
             func: async () => registrationManagementService.pollCommands(
-                (registration, commands) => producerService.handleCommands(registration, commands))
+                (registration, commands) => producerManager.handleCommands(registration, commands))
         },
         {
             name: "Collate Sources",
             schedule: "*/60 * * * * *",
-            func: async () => producerService.collateSources((startTime, endTime, value) => {
+            func: async () => producerManager.collateSources((startTime, endTime, value) => {
                 // Calculate a cost for the output slice, you could base this on time of day, value etc
                 return 1000;
             })

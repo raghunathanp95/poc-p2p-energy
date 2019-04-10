@@ -1,10 +1,10 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IConsumerServiceConfiguration } from "p2p-energy-common/dist/models/config/consumer/IConsumerServiceConfiguration";
-import { IConsumerState } from "p2p-energy-common/dist/models/state/IConsumerState";
+import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
-import { ConsumerService } from "p2p-energy-common/dist/services/consumerService";
+import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 
 // tslint:disable:no-var-requires no-require-imports
@@ -21,9 +21,10 @@ ServiceFactory.register("registration", () => new ApiRegistrationService(config.
 if (config.localStorageFolder) {
     ServiceFactory.register(
         "storage-config",
-        () => new LocalFileStorageService<IConsumerState>(config.localStorageFolder, config.consumer.id, "config"));
+        () => new LocalFileStorageService<IConsumerManagerState>(
+            config.localStorageFolder, config.consumer.id, "config"));
 } else {
-    ServiceFactory.register("storage-config", () => new ApiStorageService<IConsumerState>(
+    ServiceFactory.register("storage-config", () => new ApiStorageService<IConsumerManagerState>(
         config.gridApiEndpoint,
         config.consumer.id,
         "config"));
@@ -36,13 +37,13 @@ loggingService.log("app", `   Name: ${config.consumer.name}`);
 
 /**
  * Start the consumer running.
- * @param consumerService The consumer service to start.
+ * @param consumerManager The consumer manager to start.
  */
-async function start(consumerService: ConsumerService): Promise<void> {
-    await consumerService.intialise();
+async function start(consumerManager: ConsumerManager): Promise<void> {
+    await consumerManager.intialise();
 
     // await consumerService.closedown();
 }
 
-start(new ConsumerService(config.consumer, config.node))
+start(new ConsumerManager(config.consumer, config.node))
     .catch(err => console.log(err));

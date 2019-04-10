@@ -8,13 +8,13 @@ import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
-import { IGridState } from "../models/state/IGridState";
+import { IGridManagerState } from "../models/state/IGridManagerState";
 import { TrytesHelper } from "../utils/trytesHelper";
 
 /**
  * Service to handle the grid.
  */
-export class GridService {
+export class GridManager {
     /**
      * Service to log output to.
      */
@@ -23,7 +23,7 @@ export class GridService {
     /**
      * The current state for the producer.
      */
-    private _state?: IGridState;
+    private _state?: IGridManagerState;
 
     /**
      * Node configuration.
@@ -238,7 +238,7 @@ export class GridService {
      * Load the state for the grid.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>("storage-config");
 
         this._loggingService.log("grid", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -253,7 +253,7 @@ export class GridService {
      * Store the state for the grid.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>("storage-config");
 
         this._loggingService.log("grid", `Storing State`);
         await storageConfigService.set("state", this._state);

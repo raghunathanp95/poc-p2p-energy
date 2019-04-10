@@ -6,12 +6,12 @@ import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
-import { ISourceState } from "../models/state/ISourceState";
+import { ISourceManagerState } from "../models/state/ISourceManagerState";
 import { MamCommandChannel } from "./mamCommandChannel";
 /**
  * Class to handle a source.
  */
-export class SourceService {
+export class SourceManager {
     /**
      * Configuration for the source.
      */
@@ -35,7 +35,7 @@ export class SourceService {
     /**
      * The current state for the source.
      */
-    private _state?: ISourceState;
+    private _state?: ISourceManagerState;
 
     /**
      * Create a new instance of SourceService.
@@ -150,7 +150,7 @@ export class SourceService {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>("storage-config");
 
         this._loggingService.log("source", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -165,7 +165,7 @@ export class SourceService {
      * Store the state for the source.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>("storage-config");
 
         this._loggingService.log("source", `Storing State`);
         await storageConfigService.set("state", this._state);

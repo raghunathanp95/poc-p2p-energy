@@ -1,10 +1,10 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ISourceServiceConfiguration } from "p2p-energy-common/dist/models/config/source/ISourceServiceConfiguration";
-import { ISourceState } from "p2p-energy-common/dist/models/state/ISourceState";
+import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
-import { SourceService } from "p2p-energy-common/dist/services/sourceService";
+import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 
 // tslint:disable:no-var-requires no-require-imports
@@ -21,9 +21,9 @@ ServiceFactory.register("registration", () => new ApiRegistrationService(config.
 if (config.localStorageFolder) {
     ServiceFactory.register(
         "storage-config",
-        () => new LocalFileStorageService<ISourceState>(config.localStorageFolder, config.source.id, "config"));
+        () => new LocalFileStorageService<ISourceManagerState>(config.localStorageFolder, config.source.id, "config"));
 } else {
-    ServiceFactory.register("storage-config", () => new ApiStorageService<ISourceState>(
+    ServiceFactory.register("storage-config", () => new ApiStorageService<ISourceManagerState>(
         config.producerApiEndpoint,
         config.source.id,
         "config"));
@@ -37,19 +37,19 @@ loggingService.log("app", `   Type: ${config.source.type}`);
 
 /**
  * Start the source running.
- * @param sourceService The source service to start.
+ * @param sourceManager The source manager to start.
  */
-async function start(sourceService: SourceService): Promise<void> {
-    await sourceService.intialise();
+async function start(sourceManager: SourceManager): Promise<void> {
+    await sourceManager.intialise();
 
     for (let i = 0; i < 5; i++) {
         // tslint:disable-next-line:insecure-random
-        await sourceService.sendOutputCommand(Math.random() * 1000);
+        await sourceManager.sendOutputCommand(Math.random() * 1000);
     }
 
     // Don't close down unless you want to remove the registration
     // await sourceService.closedown();
 }
 
-start(new SourceService(config.source, config.node))
+start(new SourceManager(config.source, config.node))
     .catch(err => console.log(err));

@@ -11,14 +11,14 @@ import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
-import { IProducerState } from "../models/state/IProducerState";
+import { IProducerManagerState } from "../models/state/IProducerManagerState";
 import { TrytesHelper } from "../utils/trytesHelper";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
  * Class to maintain a Producer.
  */
-export class ProducerService {
+export class ProducerManager {
     /**
      * Configuration for the producer.
      */
@@ -42,7 +42,7 @@ export class ProducerService {
     /**
      * The current state for the producer.
      */
-    private _state?: IProducerState;
+    private _state?: IProducerManagerState;
 
     /**
      * Create a new instance of ProducerService.
@@ -319,7 +319,7 @@ export class ProducerService {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>("storage-config");
 
         this._loggingService.log("producer", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -336,7 +336,7 @@ export class ProducerService {
      * Store the state for the producer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>("storage-config");
 
         this._loggingService.log("producer", `Storing State`);
         await storageConfigService.set("state", this._state);

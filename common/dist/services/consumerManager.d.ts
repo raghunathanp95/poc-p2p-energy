@@ -3,7 +3,7 @@ import { INodeConfiguration } from "../models/config/INodeConfiguration";
 /**
  * Class to handle a consumer.
  */
-export declare class ConsumerService {
+export declare class ConsumerManager {
     /**
      * Configuration for the consumer.
      */

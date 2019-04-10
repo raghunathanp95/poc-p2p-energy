@@ -1,7 +1,8 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
-import { ProducerService } from "p2p-energy-common/dist/services/producerService";
+import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
+
 /**
  * Simulate a snapshot the producer.
  */
@@ -12,7 +13,7 @@ export async function reset(config: IProducerServiceConfiguration): Promise<stri
 
     loggingService.log("reset", "Resetting");
     try {
-        const producerService = ServiceFactory.get<ProducerService>("producer");
+        const producerService = ServiceFactory.get<ProducerManager>("producer");
         await producerService.reset();
 
         loggingService.log("reset", "Success");
