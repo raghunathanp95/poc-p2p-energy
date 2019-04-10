@@ -1,33 +1,30 @@
-import { IMamCommand } from "../mam/IMamCommand";
-import { IRegistration } from "./registration/IRegistration";
-
 /**
  * Service to handle the registrations.
  */
 export interface IRegistrationService {
     /**
-     * Add a new registration.
-     * @param registration The registration details.
-     * @param root The client mam channel root.
-     * @param sideKey The client mam channel side key.
+     * Create a new registration.
+     * @param registrationId The registration id of the item.
+     * @param itemName Name of the item.
+     * @param itemType The type of the item.
+     * @param root The initial root for the mam channel.
+     * @param sideKey The private key for the mam channel.
+     * @returns The response from the request.
      */
-    addRegistration(registration: IRegistration, root: string, sideKey: string): Promise<void>;
+    register(registrationId: string, itemName?: string, itemType?: string, root?: string, sideKey?: string): Promise<{
+        /**
+         * The root used for the channel from the registration.
+         */
+        root?: string;
+        /**
+         * The private key used for decoding the channel.
+         */
+        sideKey?: string;
+    }>;
 
     /**
-     * Remove a registration from the service.
-     * @param registration The registration details.
+     * Remove a registration.
+     * @param registrationId The registration id of the item.
      */
-    removeRegistration(registrationId: string): Promise<void>;
-
-    /**
-     * Load the registrations to intialise the queues.
-     */
-    loadRegistrations(): Promise<void>;
-
-    /**
-     * Look for new commands for each registration.
-     * @param handleCommands Handle any new commands found from the registration.
-     */
-    pollCommands(
-        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void>;
+    unregister(registrationId: string): Promise<void>;
 }

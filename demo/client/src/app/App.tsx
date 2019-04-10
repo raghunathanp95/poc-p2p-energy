@@ -1,12 +1,13 @@
 import "iota-css-theme";
 import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import contentHomePage from "../content/contentHomePage.json";
-import { ServiceFactory } from "../factories/serviceFactory";
 import { IConfiguration } from "../models/config/IConfiguration";
 import { ConfigurationService } from "../services/configurationService";
+import { DemoGridStateService } from "../services/demoGridStateService";
 import { LocalStorageService } from "../services/localStorageService";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
@@ -48,6 +49,7 @@ class App extends Component<RouteComponentProps, AppState> {
 
             ServiceFactory.register("configuration", () => configService);
             ServiceFactory.register("localStorage", () => new LocalStorageService());
+            ServiceFactory.register("demoGridState", () => new DemoGridStateService());
 
             this._configuration = config;
 

@@ -4,9 +4,9 @@ import { ISourceConfiguration } from "../models/config/source/ISourceConfigurati
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
+import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { ISourceState } from "../models/state/ISourceState";
-import { RegistrationApiClient } from "./api/registrationApiClient";
 import { MamCommandChannel } from "./mamCommandChannel";
 /**
  * Class to handle a source.
@@ -18,9 +18,9 @@ export class SourceService {
     private readonly _config: ISourceConfiguration;
 
     /**
-     * Configuration for the producer api.
+     * Registration service.
      */
-    private readonly _producerApiEndpoint: string;
+    private readonly _registrationService: IRegistrationService;
 
     /**
      * Configuration for the tangle node.
@@ -40,19 +40,15 @@ export class SourceService {
     /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
-     * @param producerApiEndpoint The producer api endpoint.
      * @param nodeConfig The configuration for a tangle node.
-     * @param registrationService The service used to store registrations.
-     * @param loggingService To send log output.
      */
     constructor(
         sourceConfig: ISourceConfiguration,
-        producerApiEndpoint: string,
         nodeConfig: INodeConfiguration) {
         this._config = sourceConfig;
-        this._producerApiEndpoint = producerApiEndpoint;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
     }
 
     /**
@@ -60,20 +56,18 @@ export class SourceService {
      * @param configuration The configuration to use.
      */
     public async intialise(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._producerApiEndpoint);
-
         await this.loadState();
 
         this._loggingService.log("source-init", "Registering with Producer");
 
-        const response = await registrationApiClient.registrationSet({
-            registrationId: this._config.id,
-            itemName: this._config.name,
-            itemType: this._config.type,
-            sideKey: this._state && this._state.channel && this._state.channel.sideKey,
-            root: this._state && this._state.channel && this._state.channel.initialRoot
-        });
-        this._loggingService.log("source-init", `Registering with Producer: ${response.message}`);
+        await this._registrationService.register(
+            this._config.id,
+            this._config.name,
+            this._config.type,
+            this._state && this._state.channel && this._state.channel.sideKey,
+            this._state && this._state.channel && this._state.channel.initialRoot
+        );
+        this._loggingService.log("source-init", `Registered with Producer`);
 
         if (this._state.channel) {
             this._loggingService.log("source-init", `Channel Config already exists`);
@@ -89,12 +83,14 @@ export class SourceService {
             this._loggingService.log("source-init", `Creating Channel Success`);
 
             this._loggingService.log("source-init", `Updating Registration`);
-            const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._config.id,
-                sideKey: this._state.channel.sideKey,
-                root: this._state.channel.initialRoot
-            });
-            this._loggingService.log("source-init", `Updating Registration: ${updateResponse.message}`);
+            await this._registrationService.register(
+                this._config.id,
+                this._config.name,
+                this._config.type,
+                this._state.channel.sideKey,
+                this._state.channel.initialRoot
+            );
+            this._loggingService.log("source-init", `Updated Registration`);
         }
         this._loggingService.log("source-init", `Registration Complete`);
 
@@ -105,8 +101,6 @@ export class SourceService {
      * Unregister the source from the Producer.
      */
     public async closedown(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._producerApiEndpoint);
-
         if (this._state && this._state.channel) {
             this._loggingService.log("source", `Sending Goodbye`);
 
@@ -121,11 +115,9 @@ export class SourceService {
 
         this._loggingService.log("source", `Unregistering from the Producer`);
 
-        const response = await registrationApiClient.registrationDelete({
-            registrationId: this._config.id
-        });
+        await this._registrationService.unregister(this._config.id);
 
-        this._loggingService.log("source", `Unregistering from the Producer: ${response.message}`);
+        this._loggingService.log("source", `Unregistered from the Producer`);
     }
 
     /**

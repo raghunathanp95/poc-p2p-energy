@@ -1,7 +1,7 @@
 import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal } from "iota-react-components";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import { Redirect } from "react-router-dom";
-import { ServiceFactory } from "../../../factories/serviceFactory";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";

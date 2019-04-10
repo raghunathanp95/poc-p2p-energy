@@ -19,9 +19,9 @@ export declare class ProducerService {
      */
     private readonly _loggingService;
     /**
-     * Configuration for the grid api.
+     * Registration service.
      */
-    private readonly _gridApiEndpoint;
+    private readonly _registrationService;
     /**
      * The current state for the producer.
      */
@@ -29,10 +29,9 @@ export declare class ProducerService {
     /**
      * Create a new instance of ProducerService.
      * @param producerConfig The configuration for the producer.
-     * @param gridApiEndpoint The grid api endpoint.
      * @param nodeConfig The configuration for a tangle node.
      */
-    constructor(producerConfig: IProducerConfiguration, gridApiEndpoint: string, nodeConfig: INodeConfiguration);
+    constructor(producerConfig: IProducerConfiguration, nodeConfig: INodeConfiguration);
     /**
      * Intialise the producer by registering with the Grid.
      */

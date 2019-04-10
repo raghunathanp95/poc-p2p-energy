@@ -10,9 +10,9 @@ export declare class SourceService {
      */
     private readonly _config;
     /**
-     * Configuration for the producer api.
+     * Registration service.
      */
-    private readonly _producerApiEndpoint;
+    private readonly _registrationService;
     /**
      * Configuration for the tangle node.
      */
@@ -28,12 +28,9 @@ export declare class SourceService {
     /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
-     * @param producerApiEndpoint The producer api endpoint.
      * @param nodeConfig The configuration for a tangle node.
-     * @param registrationService The service used to store registrations.
-     * @param loggingService To send log output.
      */
-    constructor(sourceConfig: ISourceConfiguration, producerApiEndpoint: string, nodeConfig: INodeConfiguration);
+    constructor(sourceConfig: ISourceConfiguration, nodeConfig: INodeConfiguration);
     /**
      * Register the source with the Producer.
      * @param configuration The configuration to use.

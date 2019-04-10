@@ -3,7 +3,7 @@ import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
-import { IRegistrationService } from "../models/services/IRegistrationService";
+import { IRegistrationManagementService } from "../models/services/IRegistrationManagementService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { MamCommandChannel } from "./mamCommandChannel";
@@ -11,7 +11,7 @@ import { MamCommandChannel } from "./mamCommandChannel";
 /**
  * Service to handle the registrations.
  */
-export class RegistrationService implements IRegistrationService {
+export class RegistrationManagementService implements IRegistrationManagementService {
     /**
      * Configuration for the tangle node.
      */

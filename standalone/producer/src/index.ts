@@ -7,10 +7,11 @@ import { IRegistration } from "p2p-energy-common/dist/models/services/registrati
 import { IProducerState } from "p2p-energy-common/dist/models/state/IProducerState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
+import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ProducerService } from "p2p-energy-common/dist/services/producerService";
-import { RegistrationService } from "p2p-energy-common/dist/services/registrationService";
+import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
@@ -57,10 +58,13 @@ app.build(routes, async (_1, config, _2) => {
             "config"));
     }
 
-    const producerService = new ProducerService(config.producer, config.gridApiEndpoint, config.node);
-    const registrationService = new RegistrationService(config.node, producerService.shouldCreateReturnChannel);
+    ServiceFactory.register("registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
-    ServiceFactory.register("registration-management", () => registrationService);
+    const producerService = new ProducerService(config.producer, config.node);
+    const registrationManagementService =
+        new RegistrationManagementService(config.node, producerService.shouldCreateReturnChannel);
+
+    ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("producer", () => producerService);
 
     if (config.localStorageFolder) {
@@ -84,13 +88,13 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     await producerService.initialise();
-    await registrationService.loadRegistrations();
+    await registrationManagementService.loadRegistrations();
 
     const schedules: ISchedule[] = [
         {
             name: "Poll for Commands",
             schedule: "*/15 * * * * *",
-            func: async () => registrationService.pollCommands(
+            func: async () => registrationManagementService.pollCommands(
                 (registration, commands) => producerService.handleCommands(registration, commands))
         },
         {

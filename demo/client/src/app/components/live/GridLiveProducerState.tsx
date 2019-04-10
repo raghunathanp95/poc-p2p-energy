@@ -1,18 +1,15 @@
+import { IDemoProducerState } from "../../../models/services/IDemoProducerState";
+
 export interface GridLiveProducerState {
+    /**
+     * The producer state.
+     */
+    producerState?: IDemoProducerState;
+
     /**
      * Are the details expanded.
      */
     isExpanded: boolean;
-
-    /**
-     * Received balance.
-     */
-    receivedBalance: number;
-
-    /**
-     * Owed balance.
-     */
-    owedBalance: number;
 
     /**
      * The data labels for the graph.

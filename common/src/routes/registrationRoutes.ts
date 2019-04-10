@@ -4,7 +4,7 @@ import { IRegistrationDeleteRequest } from "../models/api/registration/IRegistra
 import { IRegistrationSetRequest } from "../models/api/registration/IRegistrationSetRequest";
 import { IRegistrationSetResponse } from "../models/api/registration/IRegistrationSetResponse";
 import { ILoggingService } from "../models/services/ILoggingService";
-import { IRegistrationService } from "../models/services/IRegistrationService";
+import { IRegistrationManagementService } from "../models/services/IRegistrationManagementService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { ValidationHelper } from "../utils/validationHelper";
@@ -30,7 +30,7 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
         ValidationHelper.trytes(request.sideKey, 81, "sideKey");
     }
 
-    const registrationService = ServiceFactory.get<IRegistrationService>("registration-management");
+    const registrationService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
 
     const registration: IRegistration = {
         id: request.registrationId,
@@ -60,7 +60,7 @@ export async function registrationDelete(config: any, request: IRegistrationDele
     ValidationHelper.string(request.registrationId, "registrationId", 8);
 
     loggingService.log("registration", "Delete", request.registrationId);
-    const registrationService = ServiceFactory.get<IRegistrationService>("registration-management");
+    const registrationService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
 
     await registrationService.removeRegistration(request.registrationId);
 

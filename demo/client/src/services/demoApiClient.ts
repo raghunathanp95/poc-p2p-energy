@@ -8,8 +8,6 @@ import { IGridPasswordPutRequest } from "../models/api/IGridPasswordPutRequest";
 import { IGridPostRequest } from "../models/api/IGridPostRequest";
 import { IGridPutRequest } from "../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../models/api/IGridPutResponse";
-import { IGridStatePutRequest } from "../models/api/IGridStatePutRequest";
-import { IWalletGetRequest } from "../models/api/IWalletGetRequest";
 import { IWalletGetResponse } from "../models/api/IWalletGetResponse";
 
 /**
@@ -151,43 +149,16 @@ export class DemoApiClient {
     }
 
     /**
-     * Set the state of a grid.
-     * @param request The request to send.
-     * @returns The response from the request.
-     */
-    public async gridStatePut(request: IGridStatePutRequest): Promise<IResponse> {
-        const ax = axios.create({ baseURL: this._endpoint });
-        let response: IResponse;
-
-        try {
-            const axiosResponse = await ax.put<IResponse>(
-                ApiHelper.joinParams(`grid/state`, [request.name]),
-                ApiHelper.removeKeys(request, ["name"]));
-
-            response = axiosResponse.data;
-        } catch (err) {
-            response = {
-                success: false,
-                message: `There was a problem communicating with the API.\n${err}`
-            };
-        }
-
-        return response;
-    }
-
-    /**
      * Get the wallet info.
      * @param request The request to send.
      * @returns The response from the request.
      */
-    public async walletGet(request: IWalletGetRequest): Promise<IWalletGetResponse> {
+    public async walletGet(): Promise<IWalletGetResponse> {
         const ax = axios.create({ baseURL: this._endpoint });
         let response: IWalletGetResponse;
 
         try {
-            const axiosResponse = await ax.get<IWalletGetResponse>(
-                ApiHelper.joinParams(`wallet`, [request.gridName, request.type, request.id]),
-                ApiHelper.removeKeys(request, ["gridName", "type", "id"]));
+            const axiosResponse = await ax.get<IWalletGetResponse>(`wallet`);
 
             response = axiosResponse.data;
         } catch (err) {

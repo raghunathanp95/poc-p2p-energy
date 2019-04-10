@@ -1,9 +1,10 @@
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
-import { ServiceFactory } from "../../../factories/serviceFactory";
 import { GridState } from "../../../models/api/gridState";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
+import { DemoGridStateService } from "../../../services/demoGridStateService";
 import GridLiveConsumer from "./GridLiveConsumer";
 import "./GridLiveContainer.scss";
 import { GridLiveContainerProps } from "./GridLiveContainerProps";
@@ -21,6 +22,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
     private readonly _apiClient: DemoApiClient;
 
     /**
+     * The demo grid state service.
+     */
+    private readonly _demoGridStateService: DemoGridStateService;
+
+    /**
      * Timer to check the wallet balance.
      */
     private _walletBalanceInterval?: NodeJS.Timer;
@@ -34,9 +40,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
         const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
         this._apiClient = new DemoApiClient(config.apiEndpoint);
+        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
 
         this.state = {
-            walletBalance: 0
+            walletBalance: "-----",
+            gridState: this._demoGridStateService.getGridState()
         };
     }
 
@@ -44,13 +52,14 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        await this._apiClient.gridStatePut({
-            name: this.props.grid.name,
-            state: GridState.Running
-        });
-
         this._walletBalanceInterval = setInterval(() => this.checkWalletBalance(), 30000);
         this.checkWalletBalance();
+
+        this._demoGridStateService.subscribeGrid("gridLiveContainer", (gridState) => {
+            this.setState({gridState});
+        });
+
+        await this._demoGridStateService.load(this.props.grid);
     }
 
     /**
@@ -61,6 +70,8 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
             clearInterval(this._walletBalanceInterval);
             this._walletBalanceInterval = undefined;
         }
+
+        this._demoGridStateService.unsubscribeGrid("gridLiveContainer");
     }
 
     /**
@@ -70,7 +81,7 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
     public render(): ReactNode {
         return (
             <div className="grid-live-container">
-                <div>Global Wallet Balance: {this.state.walletBalance}i</div>
+                <div>Global Wallet Balance: {this.state.walletBalance}</div>
 
                 <div className="grid-live-columns">
                     <div className="grid-live-source-producer-column">
@@ -107,9 +118,9 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
      * Check the wallet balance for the global wallet.
      */
     private async checkWalletBalance(): Promise<void> {
-        const walletResponse = await this._apiClient.walletGet({});
-        if (walletResponse && walletResponse.success) {
-            this.setState({ walletBalance: walletResponse.balance || 0 });
+        const walletResponse = await this._apiClient.walletGet();
+        if (walletResponse && walletResponse.success && walletResponse.balance) {
+            this.setState({ walletBalance: `${walletResponse.balance}i` });
         }
     }
 }

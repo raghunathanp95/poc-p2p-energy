@@ -14,4 +14,12 @@
     width: 196px;
     height: 196px;
   }
+
+  .positive {
+    color: var(--success);
+  }
+
+  .negative {
+    color: var(--danger);
+  }
 }

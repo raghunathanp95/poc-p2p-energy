@@ -11,7 +11,7 @@ import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLo
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
 import { GridService } from "p2p-energy-common/dist/services/gridService";
-import { RegistrationService } from "p2p-energy-common/dist/services/registrationService";
+import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
@@ -53,9 +53,10 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     const gridService = new GridService(config.node);
-    const registrationService = new RegistrationService(config.node, gridService.shouldCreateReturnChannel);
+    const registrationManagementService =
+        new RegistrationManagementService(config.node, gridService.shouldCreateReturnChannel);
 
-    ServiceFactory.register("registration-management", () => registrationService);
+    ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("grid", () => gridService);
 
     if (config.localStorageFolder) {
@@ -84,13 +85,13 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     await gridService.initialise();
-    await registrationService.loadRegistrations();
+    await registrationManagementService.loadRegistrations();
 
     const schedules: ISchedule[] = [
         {
             name: "Poll for Commands",
             schedule: "*/15 * * * * *",
-            func: async () => registrationService.pollCommands(
+            func: async () => registrationManagementService.pollCommands(
                 (registration, commands) => gridService.handleCommands(registration, commands))
         },
         {

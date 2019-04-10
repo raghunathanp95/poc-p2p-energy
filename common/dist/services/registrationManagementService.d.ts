@@ -1,11 +1,11 @@
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
-import { IRegistrationService } from "../models/services/IRegistrationService";
+import { IRegistrationManagementService } from "../models/services/IRegistrationManagementService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 /**
  * Service to handle the registrations.
  */
-export declare class RegistrationService implements IRegistrationService {
+export declare class RegistrationManagementService implements IRegistrationManagementService {
     /**
      * Configuration for the tangle node.
      */

@@ -8,11 +8,11 @@ import { IMamCommand } from "../models/mam/IMamCommand";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
+import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IProducerState } from "../models/state/IProducerState";
 import { TrytesHelper } from "../utils/trytesHelper";
-import { RegistrationApiClient } from "./api/registrationApiClient";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
@@ -35,9 +35,9 @@ export class ProducerService {
     private readonly _loggingService: ILoggingService;
 
     /**
-     * Configuration for the grid api.
+     * Registration service.
      */
-    private readonly _gridApiEndpoint: string;
+    private readonly _registrationService: IRegistrationService;
 
     /**
      * The current state for the producer.
@@ -47,37 +47,31 @@ export class ProducerService {
     /**
      * Create a new instance of ProducerService.
      * @param producerConfig The configuration for the producer.
-     * @param gridApiEndpoint The grid api endpoint.
      * @param nodeConfig The configuration for a tangle node.
      */
-    constructor(
-        producerConfig: IProducerConfiguration,
-        gridApiEndpoint: string,
-        nodeConfig: INodeConfiguration) {
+    constructor(producerConfig: IProducerConfiguration, nodeConfig: INodeConfiguration) {
         this._config = producerConfig;
         this._nodeConfig = nodeConfig;
-        this._gridApiEndpoint = gridApiEndpoint;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
     }
 
     /**
      * Intialise the producer by registering with the Grid.
      */
     public async initialise(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-
         await this.loadState();
 
         this._loggingService.log("producer-init", "Registering with Grid");
 
-        const response = await registrationApiClient.registrationSet({
-            registrationId: this._config.id,
-            itemName: this._config.name,
-            itemType: "producer",
-            sideKey: this._state && this._state.channel && this._state.channel.sideKey,
-            root: this._state && this._state.channel && this._state.channel.initialRoot
-        });
-        this._loggingService.log("producer-init", `Registering with Grid: ${response.message}`);
+        await this._registrationService.register(
+            this._config.id,
+            this._config.name,
+            "producer",
+            this._state && this._state.channel && this._state.channel.sideKey,
+            this._state && this._state.channel && this._state.channel.initialRoot
+        );
+        this._loggingService.log("producer-init", `Registered with Grid`);
 
         if (this._state.channel) {
             this._loggingService.log("producer-init", `Channel Config already exists`);
@@ -93,12 +87,14 @@ export class ProducerService {
             this._loggingService.log("producer-init", `Creating Channel Success`);
 
             this._loggingService.log("producer-init", `Updating Registration`);
-            const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._config.id,
-                sideKey: this._state.channel.sideKey,
-                root: this._state.channel.initialRoot
-            });
-            this._loggingService.log("producer-init", `Updating Registration: ${updateResponse.message}`);
+            await this._registrationService.register(
+                this._config.id,
+                this._config.name,
+                "producer",
+                this._state.channel.sideKey,
+                this._state.channel.initialRoot
+            );
+            this._loggingService.log("producer-init", `Updated Registration`);
         }
         this._loggingService.log("producer-init", `Registration Complete`);
 
@@ -118,13 +114,14 @@ export class ProducerService {
             await this.saveState();
 
             this._loggingService.log("producer-reset", `Updating Registration with Grid`);
-            const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-            const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._config.id,
-                sideKey: this._state.channel.sideKey,
-                root: this._state.channel.initialRoot
-            });
-            this._loggingService.log("producer-reset", `Updating Registration with Grid: ${updateResponse.message}`);
+            await this._registrationService.register(
+                this._config.id,
+                this._config.name,
+                "producer",
+                this._state.channel.sideKey,
+                this._state.channel.initialRoot
+            );
+            this._loggingService.log("producer-reset", `Updated Registration with Grid`);
         }
     }
 
@@ -132,8 +129,6 @@ export class ProducerService {
      * Closedown the producer by unregistering from the Grid.
      */
     public async closedown(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-
         if (this._state && this._state.channel) {
             this._loggingService.log("producer-closedown", `Sending Goodbye`);
 
@@ -148,11 +143,9 @@ export class ProducerService {
 
         this._loggingService.log("producer-closedown", `Unregistering from the Grid`);
 
-        const response = await registrationApiClient.registrationDelete({
-            registrationId: this._config.id
-        });
+        await this._registrationService.unregister(this._config.id);
 
-        this._loggingService.log("producer-closedown", `Unregistering from the Grid: ${response.message}`);
+        this._loggingService.log("producer-closedown", `Unregistered from the Grid`);
     }
 
     /**

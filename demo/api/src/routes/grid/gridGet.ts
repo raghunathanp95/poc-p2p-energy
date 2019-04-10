@@ -28,15 +28,6 @@ export async function gridGet(
         grid.password = `base64:${grid.password}`;
     }
 
-    // Delete the wallet seeds from the information that we hand back
-    delete grid.walletSeed;
-    for (let i = 0; i < grid.producers.length; i++) {
-        delete grid.producers[i].walletSeed;
-    }
-    for (let i = 0; i < grid.consumers.length; i++) {
-        delete grid.consumers[i].walletSeed;
-    }
-
     return {
         success: true,
         message: "OK",

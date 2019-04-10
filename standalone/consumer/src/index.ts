@@ -1,6 +1,7 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IConsumerServiceConfiguration } from "p2p-energy-common/dist/models/config/consumer/IConsumerServiceConfiguration";
 import { IConsumerState } from "p2p-energy-common/dist/models/state/IConsumerState";
+import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ConsumerService } from "p2p-energy-common/dist/services/consumerService";
@@ -13,7 +14,10 @@ const configId = process.env.CONFIG_ID || "local";
 const config: IConsumerServiceConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
+
 ServiceFactory.register("logging", () => loggingService);
+ServiceFactory.register("registration", () => new ApiRegistrationService(config.gridApiEndpoint));
+
 if (config.localStorageFolder) {
     ServiceFactory.register(
         "storage-config",
@@ -40,5 +44,5 @@ async function start(consumerService: ConsumerService): Promise<void> {
     // await consumerService.closedown();
 }
 
-start(new ConsumerService(config.consumer, config.gridApiEndpoint, config.node))
+start(new ConsumerService(config.consumer, config.node))
     .catch(err => console.log(err));

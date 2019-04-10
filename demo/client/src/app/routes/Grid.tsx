@@ -1,8 +1,8 @@
 import { Button, ButtonContainer, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { RouteComponentProps } from "react-router";
-import { ServiceFactory } from "../../factories/serviceFactory";
 import { IGrid } from "../../models/api/IGrid";
 import { IConfiguration } from "../../models/config/IConfiguration";
 import { ConfigurationService } from "../../services/configurationService";

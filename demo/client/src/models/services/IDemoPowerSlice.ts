@@ -1,4 +1,4 @@
-export interface IPowerSlice {
+export interface IDemoPowerSlice {
     /**
      * The start time of the slice.
      */

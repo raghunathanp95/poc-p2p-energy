@@ -1,7 +1,17 @@
+import { IRegistrationService } from "../../models/services/IRegistrationService";
 /**
- * Service to handle the registrations.
+ * Service to handle the storage using the storage api.
  */
-export interface IRegistrationService {
+export declare class ApiRegistrationService implements IRegistrationService {
+    /**
+     * The storage api endpoint.
+     */
+    private readonly _apiEndpoint;
+    /**
+     * Create a new instance of ApiRegistrationService
+     * @param apiEndpoint The api configuration.
+     */
+    constructor(apiEndpoint: string);
     /**
      * Create a new registration.
      * @param registrationId The registration id of the item.

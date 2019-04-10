@@ -1,3 +1,8 @@
-// tslint:disable-next-line:no-empty-interface
+import { IDemoGridState } from "../../../models/services/IDemoGridState";
+
 export interface GridLiveOverviewState {
+    /**
+     * The grid state.
+     */
+    gridState?: IDemoGridState;
 }

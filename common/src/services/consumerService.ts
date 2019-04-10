@@ -2,9 +2,9 @@ import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { ILoggingService } from "../models/services/ILoggingService";
+import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IConsumerState } from "../models/state/IConsumerState";
-import { RegistrationApiClient } from "./api/registrationApiClient";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
@@ -17,11 +17,6 @@ export class ConsumerService {
     private readonly _config: IConsumerConfiguration;
 
     /**
-     * Configuration for the grid api.
-     */
-    private readonly _gridApiEndpoint: string;
-
-    /**
      * Configuration for the tangle node.
      */
     private readonly _nodeConfig: INodeConfiguration;
@@ -32,6 +27,11 @@ export class ConsumerService {
     private readonly _loggingService: ILoggingService;
 
     /**
+     * Registration service.
+     */
+    private readonly _registrationService: IRegistrationService;
+
+    /**
      * The current state for the consumer.
      */
     private _state?: IConsumerState;
@@ -39,19 +39,17 @@ export class ConsumerService {
     /**
      * Create a new instance of ConsumerService.
      * @param consumerConfig The configuration for the consumer.
-     * @param gridApiEndpoint The grid api endpoint.
      * @param nodeConfig The configuration for a tangle node.
      * @param registrationService The service used to store registrations.
      * @param loggingService To send log output.
      */
     constructor(
         consumerConfig: IConsumerConfiguration,
-        gridApiEndpoint: string,
         nodeConfig: INodeConfiguration) {
         this._config = consumerConfig;
-        this._gridApiEndpoint = gridApiEndpoint;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
     }
 
     /**
@@ -59,21 +57,19 @@ export class ConsumerService {
      * @param configuration The configuration to use.
      */
     public async intialise(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-
         await this.loadState();
 
         this._loggingService.log("consumer-init", "Registering with Grid");
 
-        const response = await registrationApiClient.registrationSet({
-            registrationId: this._config.id,
-            itemName: this._config.name,
-            itemType: "consumer",
-            sideKey: this._state && this._state.channel && this._state.channel.sideKey,
-            root: this._state && this._state.channel && this._state.channel.initialRoot
-        });
+        const response = await this._registrationService.register(
+            this._config.id,
+            this._config.name,
+            "consumer",
+            this._state && this._state.channel && this._state.channel.sideKey,
+            this._state && this._state.channel && this._state.channel.initialRoot
+        );
 
-        this._loggingService.log("consumer-init", `Registering with Grid: ${response.message}`);
+        this._loggingService.log("consumer-init", `Registered with Grid`);
 
         this._loggingService.log("consumer-init", `Grid returned mam channel: ${response.root}, ${response.sideKey}`);
 
@@ -106,12 +102,14 @@ export class ConsumerService {
             this._loggingService.log("consumer-init", `Creating Channel Success`);
 
             this._loggingService.log("consumer-init", `Updating Registration`);
-            const updateResponse = await registrationApiClient.registrationSet({
-                registrationId: this._config.id,
-                sideKey: this._state.channel.sideKey,
-                root: this._state.channel.initialRoot
-            });
-            this._loggingService.log("consumer-init", `Updating Registration: ${ updateResponse.message } `);
+            await this._registrationService.register(
+                this._config.id,
+                this._config.name,
+                "consumer",
+                this._state.channel.sideKey,
+                this._state.channel.initialRoot
+            );
+            this._loggingService.log("consumer-init", `Updated Registration`);
         }
         this._loggingService.log("consumer-init", `Registration Complete`);
 
@@ -122,8 +120,6 @@ export class ConsumerService {
      * Unregister the source from the Grid.
      */
     public async closedown(): Promise<void> {
-        const registrationApiClient = new RegistrationApiClient(this._gridApiEndpoint);
-
         if (this._state && this._state.channel) {
             this._loggingService.log("consumer-closedown", `Sending Goodbye`);
 
@@ -138,11 +134,9 @@ export class ConsumerService {
 
         this._loggingService.log("consumer-closedown", `Unregistering from the Grid`);
 
-        const response = await registrationApiClient.registrationDelete({
-            registrationId: this._config.id
-        });
+        await this._registrationService.unregister(this._config.id);
 
-        this._loggingService.log("consumer-closedown", `Unregistering from the Grid: ${ response.message } `);
+        this._loggingService.log("consumer-closedown", `Unregistered from the Grid`);
     }
 
     /**

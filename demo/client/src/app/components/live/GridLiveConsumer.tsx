@@ -1,7 +1,9 @@
 import classnames from "classnames";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
+import { DemoGridStateService } from "../../../services/demoGridStateService";
 import "./GridLiveConsumer.scss";
 import { GridLiveConsumerProps } from "./GridLiveConsumerProps";
 import { GridLiveConsumerState } from "./GridLiveConsumerState";
@@ -16,6 +18,11 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     private readonly _consumerImages: any[];
 
     /**
+     * The demo grid state service.
+     */
+    private readonly _demoGridStateService: DemoGridStateService;
+
+    /**
      * Create a new instance of GridLiveConsumer.
      * @param props The props for the component.
      */
@@ -27,12 +34,28 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
+        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+
         this.state = {
-            isExpanded: false,
-            // tslint:disable:insecure-random
-            paidBalance: Math.floor(Math.random() * 1000),
-            owedBalance: Math.floor(Math.random() * 1000)
+            consumerState: this._demoGridStateService.getConsumerState(this.props.consumer.id),
+            isExpanded: false
         };
+    }
+
+    /**
+     * The component mounted.
+     */
+    public async componentDidMount(): Promise<void> {
+        this._demoGridStateService.subscribeConsumer(this.props.consumer.id, (consumerState) => {
+            this.setState({ consumerState });
+        });
+    }
+
+    /**
+     * The component is going to unmount so tidy up.
+     */
+    public componentWillUnmount(): void {
+        this._demoGridStateService.unsubscribeConsumer(this.props.consumer.id);
     }
 
     /**
@@ -61,9 +84,13 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                     </button>
                     <div className="grid-live-consumer-info">
                         <div className="grid-live-consumer-info-id">ID: {this.props.consumer.id}</div>
-                        <div className="grid-live-consumer-sub-title">Balance</div>
-                        <div className="grid-live-consumer-info-data">Paid: {this.state.paidBalance}i</div>
-                        <div className="grid-live-consumer-info-data">Owed: {this.state.owedBalance}i</div>
+                        {this.state.consumerState && (
+                            <React.Fragment>
+                                <div className="grid-live-consumer-sub-title">Balance</div>
+                                <div className="grid-live-consumer-info-data">Paid: {this.state.consumerState.paidBalance}i</div>
+                                <div className="grid-live-consumer-info-data">Owed: {this.state.consumerState.owedBalance}i</div>
+                            </React.Fragment>
+                        )}
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -74,8 +101,8 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                                 { "grid-live-consumer-detail--expanded": this.state.isExpanded }
                             )}
                     >
-                    <br/>
-                    Here will be the expanded details for the consumer.
+                        <br />
+                        Here will be the expanded details for the consumer.
                     </div>
                 )}
             </div>

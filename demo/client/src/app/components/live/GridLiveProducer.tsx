@@ -1,12 +1,13 @@
 import { ILineChartOptions } from "chartist";
 import classnames from "classnames";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import ChartistGraph from "react-chartist";
 import producer1 from "../../../assets/producers/producer1.svg";
 import producer2 from "../../../assets/producers/producer2.svg";
 import producer3 from "../../../assets/producers/producer3.svg";
-import { IPowerSlice } from "../../../models/api/IPowerSlice";
 import { ISource } from "../../../models/api/ISource";
+import { DemoGridStateService } from "../../../services/demoGridStateService";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
 import { GridLiveProducerState } from "./GridLiveProducerState";
@@ -20,6 +21,11 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The producer images.
      */
     private readonly _producerImages: any[];
+
+    /**
+     * The demo grid state service.
+     */
+    private readonly _demoGridStateService: DemoGridStateService;
 
     /**
      * The selected sources for the graph.
@@ -39,13 +45,13 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             producer3
         ];
 
+        this._demoGridStateService = ServiceFactory.get<DemoGridStateService>("demoGridState");
+
         this._selectedSources = [];
 
         this.state = {
+            producerState: this._demoGridStateService.getProducerState(this.props.producer.id),
             isExpanded: false,
-            // tslint:disable:insecure-random
-            receivedBalance: Math.floor(Math.random() * 10000),
-            owedBalance: Math.floor(Math.random() * 10000),
             graphLabels: [],
             graphSeries: []
         };
@@ -55,8 +61,18 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this.populatePowerData();
         this.calculateGraph();
+
+        this._demoGridStateService.subscribeProducer(this.props.producer.id, (producerState) => {
+            this.setState({ producerState });
+        });
+    }
+
+    /**
+     * The component is going to unmount so tidy up.
+     */
+    public componentWillUnmount(): void {
+        this._demoGridStateService.unsubscribeProducer(this.props.producer.id);
     }
 
     /**
@@ -85,9 +101,13 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     </button>
                     <div className="grid-live-producer-info">
                         <div className="grid-live-producer-info-id">ID: {this.props.producer.id}</div>
-                        <div className="grid-live-producer-sub-title">Balance</div>
-                        <div className="grid-live-producer-info-data">Received: {this.state.receivedBalance}i</div>
-                        <div className="grid-live-producer-info-data">Owed: {this.state.owedBalance}i</div>
+                        {this.state.producerState && (
+                            <React.Fragment>
+                                <div className="grid-live-producer-sub-title">Balance</div>
+                                <div className="grid-live-producer-info-data">Received: {this.state.producerState.receivedBalance}i</div>
+                                <div className="grid-live-producer-info-data">Owed: {this.state.producerState.owedBalance}i</div>
+                            </React.Fragment>
+                        )}
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -143,30 +163,6 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     }
 
     /**
-     * Populate power data for the producer.
-     */
-    private populatePowerData(): void {
-        // Dummy data for now
-        this.props.producer.powerSlices = [];
-        if (this.props.producer.sources.length > 0) {
-            for (let i = 0; i < this.props.producer.sources.length; i++) {
-                const powerSlices = [];
-
-                for (let k = 0; k < 10; k++) {
-                    // tslint:disable-next-line:insecure-random
-                    const powerSlice: IPowerSlice = { startTime: k, endTime: ((k + 1)) - 1, value: Math.random() * 180 };
-                    powerSlices.push(powerSlice);
-
-                    this.props.producer.powerSlices[k] = this.props.producer.powerSlices[k] || { startTime: k, endTime: ((k + 1)) - 1, value: 0 };
-                    this.props.producer.powerSlices[k].value += powerSlice.value;
-                }
-
-                this.props.producer.sources[i].powerSlices = powerSlices;
-            }
-        }
-    }
-
-    /**
      * A source has been selected.
      * @param source The source that was selected.
      * @param isSelected Is the source selected.
@@ -186,24 +182,29 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * Calculate the graph data.
      */
     private calculateGraph(): void {
-        let graphLabels: string[] = [];
-        const graphSeries: number[][] = [];
+        if (this.state.producerState) {
+            let graphLabels: string[] = [];
+            const graphSeries: number[][] = [];
 
-        if (this.props.producer.powerSlices && this.props.producer.powerSlices.length > 0) {
-            graphSeries.push(this.props.producer.powerSlices.map(p => p.value));
-            graphLabels = this.props.producer.powerSlices.map(p => p.startTime.toString());
-        }
+            if (this.state.producerState.powerSlices && this.state.producerState.powerSlices.length > 0) {
+                graphSeries.push(this.state.producerState.powerSlices.map(p => p.value));
+                graphLabels = this.state.producerState.powerSlices.map(p => p.startTime.toString());
+            }
 
-        for (let i = 0; i < this.props.producer.sources.length; i++) {
-            if (this._selectedSources.indexOf(this.props.producer.sources[i].id) >= 0) {
-                const powerSlices = this.props.producer.sources[i].powerSlices;
-                if (powerSlices) {
-                    graphSeries.push(powerSlices.map(p => p.value));
+            for (let i = 0; i < this.props.producer.sources.length; i++) {
+                if (this._selectedSources.indexOf(this.props.producer.sources[i].id) >= 0) {
+                    const sourceState = this.state.producerState.sourceStates[this.props.producer.sources[i].id];
+                    if (sourceState) {
+                        const powerSlices = sourceState.powerSlices;
+                        if (powerSlices) {
+                            graphSeries.push(powerSlices.map(p => p.value));
+                        }
+                    }
                 }
             }
-        }
 
-        this.setState({ graphSeries, graphLabels });
+            this.setState({ graphSeries, graphLabels });
+        }
     }
 }
 
