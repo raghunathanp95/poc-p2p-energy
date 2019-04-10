@@ -10,13 +10,12 @@
     align-items: stretch;
     width: 100px;
     margin: 0;
-    cursor: pointer;
-    border: none;
-    outline: none;
     padding: 0;
-    background-color: transparent;
-    border-radius: 8px;
     border: 2px solid transparent;
+    border-radius: 8px;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
 
     &.grid-live-source-btn--selected {
       border: 2px solid var(--jade);
@@ -24,11 +23,11 @@
 
     .grid-live-source-btn-top {
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: 60px;
       border-radius: 5px 5px 0px 0px;
       background-color: #c4c4c4;
-      height: 60px;
 
       img {
         height: 70%;
@@ -37,15 +36,15 @@
 
     .grid-live-source-btn-bottom {
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      height: 60px;
+      padding: 10px;
       border-radius: 0px 0px 5px 5px;
       background-color: #f3f2f1;
       font-size: 12px;
       font-weight: bold;
-      padding: 10px;
       text-align: center;
-      height: 60px;
     }
   }
 }
