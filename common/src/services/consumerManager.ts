@@ -49,7 +49,7 @@ export class ConsumerManager {
         this._config = consumerConfig;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
-        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("consumer-registration");
     }
 
     /**
@@ -143,7 +143,8 @@ export class ConsumerManager {
      * Load the state for the consumer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+            "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -156,7 +157,8 @@ export class ConsumerManager {
      * Store the state for the consumer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+            "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Storing State`);
         await storageConfigService.set("state", this._state);

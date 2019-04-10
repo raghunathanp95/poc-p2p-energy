@@ -48,7 +48,7 @@ export class SourceManager {
         this._config = sourceConfig;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
-        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("source-registration");
     }
 
     /**
@@ -150,7 +150,8 @@ export class SourceManager {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>(
+            "source-storage-manager-state");
 
         this._loggingService.log("source", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -165,7 +166,8 @@ export class SourceManager {
      * Store the state for the source.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>(
+            "source-storage-manager-state");
 
         this._loggingService.log("source", `Storing State`);
         await storageConfigService.set("state", this._state);

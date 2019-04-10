@@ -48,6 +48,13 @@ export class GridManager {
     }
 
     /**
+     * Closedown the grid.
+     */
+    public async closedown(): Promise<void> {
+        await this.saveState();
+    }
+
+    /**
      * Should we create a return channel when adding a registration.
      * @param registration The registration to check.
      */
@@ -238,7 +245,8 @@ export class GridManager {
      * Load the state for the grid.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+            "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -253,7 +261,8 @@ export class GridManager {
      * Store the state for the grid.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+            "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Storing State`);
         await storageConfigService.set("state", this._state);

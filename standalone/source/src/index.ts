@@ -16,14 +16,14 @@ const config: ISourceServiceConfiguration = require(`./data/config.${configId}.j
 const loggingService = new ConsoleLoggingService();
 
 ServiceFactory.register("logging", () => loggingService);
-ServiceFactory.register("registration", () => new ApiRegistrationService(config.producerApiEndpoint));
+ServiceFactory.register("source-registration", () => new ApiRegistrationService(config.producerApiEndpoint));
 
 if (config.localStorageFolder) {
     ServiceFactory.register(
-        "storage-config",
+        "source-storage-manager-state",
         () => new LocalFileStorageService<ISourceManagerState>(config.localStorageFolder, config.source.id, "config"));
 } else {
-    ServiceFactory.register("storage-config", () => new ApiStorageService<ISourceManagerState>(
+    ServiceFactory.register("source-storage-manager-state", () => new ApiStorageService<ISourceManagerState>(
         config.producerApiEndpoint,
         config.source.id,
         "config"));

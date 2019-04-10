@@ -27,6 +27,10 @@ export declare class GridManager {
      */
     initialise(): Promise<void>;
     /**
+     * Closedown the grid.
+     */
+    closedown(): Promise<void>;
+    /**
      * Should we create a return channel when adding a registration.
      * @param registration The registration to check.
      */

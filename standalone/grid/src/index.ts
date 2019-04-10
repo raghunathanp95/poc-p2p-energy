@@ -40,7 +40,7 @@ app.build(routes, async (_1, config, _2) => {
         );
 
         ServiceFactory.register(
-            "storage-config",
+            "grid-storage-manager-state",
             () => new LocalFileStorageService<IGridManagerState>(config.localStorageFolder, config.grid.id, "config"));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
@@ -48,7 +48,7 @@ app.build(routes, async (_1, config, _2) => {
             () => new AmazonS3RegistrationService(config.dynamoDbConnection));
 
         ServiceFactory.register(
-            "storage-config",
+            "grid-storage-manager-state",
             () => new AmazonS3StorageService(config.s3Connection, "config"));
     }
 

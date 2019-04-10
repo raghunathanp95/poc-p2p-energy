@@ -16,15 +16,15 @@ const config: IConsumerServiceConfiguration = require(`./data/config.${configId}
 const loggingService = new ConsoleLoggingService();
 
 ServiceFactory.register("logging", () => loggingService);
-ServiceFactory.register("registration", () => new ApiRegistrationService(config.gridApiEndpoint));
+ServiceFactory.register("consumer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
 if (config.localStorageFolder) {
     ServiceFactory.register(
-        "storage-config",
+        "consumer-storage-manager-state",
         () => new LocalFileStorageService<IConsumerManagerState>(
             config.localStorageFolder, config.consumer.id, "config"));
 } else {
-    ServiceFactory.register("storage-config", () => new ApiStorageService<IConsumerManagerState>(
+    ServiceFactory.register("consumer-storage-manager-state", () => new ApiStorageService<IConsumerManagerState>(
         config.gridApiEndpoint,
         config.consumer.id,
         "config"));

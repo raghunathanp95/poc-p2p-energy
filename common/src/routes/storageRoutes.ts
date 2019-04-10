@@ -22,8 +22,8 @@ export async function storageGet(config: any, request: IStorageGetRequest): Prom
     ValidationHelper.string(request.context, "context");
     ValidationHelper.string(request.id, "id");
 
-    const registrationService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
-    const item = await registrationService.get(request.registrationId);
+    const registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
+    const item = await registrationStorageService.get(request.registrationId);
     if (!item) {
         throw new Error(`Registration '${request.registrationId}' does not exist.`);
     }
@@ -52,8 +52,8 @@ export async function storageSet(config: any, request: IStorageSetRequest, body:
     ValidationHelper.string(request.context, "context");
     ValidationHelper.string(request.id, "id");
 
-    const registrationService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
-    const item = await registrationService.get(request.registrationId);
+    const registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
+    const item = await registrationStorageService.get(request.registrationId);
     if (!item) {
         throw new Error(`Registration '${request.registrationId}' does not exist.`);
     }
@@ -84,8 +84,8 @@ export async function storageDelete(config: any, request: IStorageDeleteRequest)
         ValidationHelper.string(request.id, "id");
     }
 
-    const registrationService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
-    const item = await registrationService.get(request.registrationId);
+    const registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
+    const item = await registrationStorageService.get(request.registrationId);
     if (!item) {
         throw new Error(`Registration '${request.registrationId}' does not exist.`);
     }
@@ -111,8 +111,8 @@ export async function storageList(config: any, request: IStorageListRequest): Pr
     ValidationHelper.string(request.registrationId, "registrationId", 8);
     ValidationHelper.string(request.context, "context");
 
-    const registrationService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
-    const item = await registrationService.get(request.registrationId);
+    const registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
+    const item = await registrationStorageService.get(request.registrationId);
     if (!item) {
         throw new Error(`Registration '${request.registrationId}' does not exist.`);
     }

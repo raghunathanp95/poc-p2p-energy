@@ -44,7 +44,7 @@ app.build(routes, async (_1, config, _2) => {
         );
 
         ServiceFactory.register(
-            "storage-config",
+            "producer-storage-manager-state",
             () => new LocalFileStorageService<IProducerManagerState>(
                 config.localStorageFolder, config.producer.id, "config"));
     } else {
@@ -53,13 +53,13 @@ app.build(routes, async (_1, config, _2) => {
             () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
         );
 
-        ServiceFactory.register("storage-config", () => new ApiStorageService<IProducerManagerState>(
+        ServiceFactory.register("producer-storage-manager-state", () => new ApiStorageService<IProducerManagerState>(
             config.gridApiEndpoint,
             config.producer.id,
             "config"));
     }
 
-    ServiceFactory.register("registration", () => new ApiRegistrationService(config.gridApiEndpoint));
+    ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
     const producerManager = new ProducerManager(config.producer, config.node);
     const registrationManagementService =

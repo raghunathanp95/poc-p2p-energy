@@ -53,7 +53,7 @@ export class ProducerManager {
         this._config = producerConfig;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
-        this._registrationService = ServiceFactory.get<IRegistrationService>("registration");
+        this._registrationService = ServiceFactory.get<IRegistrationService>("producer-registration");
     }
 
     /**
@@ -319,7 +319,8 @@ export class ProducerManager {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>(
+            "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Loading State`);
         this._state = await storageConfigService.get("state");
@@ -336,7 +337,8 @@ export class ProducerManager {
      * Store the state for the producer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>("storage-config");
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>(
+            "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Storing State`);
         await storageConfigService.set("state", this._state);

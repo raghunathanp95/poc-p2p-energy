@@ -1,4 +1,5 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { IGrid } from "../models/api/IGrid";
 import { IDemoConsumerState } from "../models/services/IDemoConsumerState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
@@ -18,6 +19,11 @@ export class DemoGridManager {
      * The state of the grid.
      */
     private _gridState?: IDemoGridState;
+
+    /**
+     * The grid manager.
+     */
+    private _gridManager?: GridManager;
 
     /**
      * Subscriptions to the grid state changes.
@@ -52,6 +58,7 @@ export class DemoGridManager {
 
         let newState;
         if (this._gridId !== grid.id) {
+            this.destroyManagers();
             // It is a different grid to the current loaded state
             // so load it and trigger subscriptions
             // See if we have the grid state in local storage
@@ -71,6 +78,8 @@ export class DemoGridManager {
             producerStates: {},
             consumerStates: {}
         };
+
+        this.constructManagers();
 
         for (const id in this._subscriptionsGrid) {
             this._subscriptionsGrid[id](this._gridState);
@@ -162,6 +171,23 @@ export class DemoGridManager {
      */
     public getConsumerState(id: string): IDemoConsumerState | undefined {
         return this._gridState && this._gridState.consumerStates[id];
+    }
+
+    /**
+     * Destroy the managers for each of the entities.
+     */
+    private destroyManagers(): void {
+        if (this._gridManager) {
+            this._gridManager.closedown();
+        }
+
+    }
+
+    /**
+     * Construct the managers for each of the entities.
+     */
+    private constructManagers(): void {
+
     }
 
     // /**
