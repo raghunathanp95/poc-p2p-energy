@@ -45,7 +45,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             producer3
         ];
 
-        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this._selectedSources = [];
 

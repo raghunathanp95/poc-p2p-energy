@@ -1,18 +1,21 @@
 import "iota-css-theme";
 import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
 import React, { Component, ReactNode } from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import contentHomePage from "../content/contentHomePage.json";
 import { IConfiguration } from "../models/config/IConfiguration";
+import { IAppState } from "../models/IAppState";
 import { ConfigurationService } from "../services/configurationService";
 import { DemoGridManager } from "../services/demoGridManager";
-import { LocalStorageService } from "../services/localStorageService";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
 import { GridParams } from "./routes/GridParams";
 import Introduction from "./routes/Introduction";
+import { IDemoGridState } from "../models/services/IDemoGridState";
 
 /**
  * Main application class.
@@ -48,8 +51,10 @@ class App extends Component<RouteComponentProps, AppState> {
             const config = await configService.load(`/data/config.${configId}.json`);
 
             ServiceFactory.register("configuration", () => configService);
-            ServiceFactory.register("localStorage", () => new LocalStorageService());
-            ServiceFactory.register("demoGridState", () => new DemoGridManager());
+            ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
+            ServiceFactory.register("logging", () => new ConsoleLoggingService());
+            ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid"));
+            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(config.node));
 
             this._configuration = config;
 

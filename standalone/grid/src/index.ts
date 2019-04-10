@@ -54,7 +54,7 @@ app.build(routes, async (_1, config, _2) => {
 
     const gridManager = new GridManager(config.node);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, gridManager.shouldCreateReturnChannel);
+        new RegistrationManagementService(config.node, (registration) => registration.itemType === "consumer");
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("grid", () => gridManager);

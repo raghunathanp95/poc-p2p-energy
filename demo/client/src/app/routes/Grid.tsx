@@ -1,13 +1,14 @@
 import { Button, ButtonContainer, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { RouteComponentProps } from "react-router";
 import { IGrid } from "../../models/api/IGrid";
 import { IConfiguration } from "../../models/config/IConfiguration";
+import { IAppState } from "../../models/IAppState";
 import { ConfigurationService } from "../../services/configurationService";
 import { DemoApiClient } from "../../services/demoApiClient";
-import { LocalStorageService } from "../../services/localStorageService";
 import GridConfigure from "../components/configure/GridConfigure";
 import GridLiveContainer from "../components/live/GridLiveContainer";
 import { GridParams } from "./GridParams";
@@ -25,7 +26,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
     /**
      * Access local storage in the browser.
      */
-    private readonly _localStorageService: LocalStorageService;
+    private readonly _appStateStorageService: IStorageService<IAppState>;
 
     /**
      * Create a new instance of Grid.
@@ -33,7 +34,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
      */
     constructor(props: RouteComponentProps<GridParams>) {
         super(props);
-        this._localStorageService = ServiceFactory.get<LocalStorageService>("localStorage");
+        this._appStateStorageService = ServiceFactory.get<IStorageService<IAppState>>("app-state-storage");
 
         const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
         this._apiClient = new DemoApiClient(config.apiEndpoint);
@@ -51,7 +52,8 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
     public async componentDidMount(): Promise<void> {
         let gridName = this.state.gridName;
         if (!gridName) {
-            gridName = await this._localStorageService.get<string>("gridName");
+            const appState = await this._appStateStorageService.get("default");
+            gridName = appState && appState.gridName;
         }
 
         if (gridName && gridName.length >= 5) {
@@ -144,7 +146,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                 });
 
                 if (response.success) {
-                    await this._localStorageService.set("gridName", this.state.gridName);
+                    await this._appStateStorageService.set("default", { gridName: this.state.gridName });
 
                     this.setState({
                         isBusy: false,
@@ -178,7 +180,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                 });
 
                 if (response.success) {
-                    await this._localStorageService.set("gridName", this.state.gridName);
+                    await this._appStateStorageService.set("default", { gridName: this.state.gridName });
 
                     this.setState({
                         isBusy: false,
@@ -218,7 +220,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
      * Create a new grid.
      */
     private async loadCreateGrid(): Promise<void> {
-        await this._localStorageService.remove("gridName");
+        await this._appStateStorageService.remove("default");
         this.props.history.replace("/grid");
 
         this.setState(

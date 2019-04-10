@@ -55,14 +55,6 @@ export class GridManager {
     }
 
     /**
-     * Should we create a return channel when adding a registration.
-     * @param registration The registration to check.
-     */
-    public shouldCreateReturnChannel(registration: IRegistration): boolean {
-        return registration.itemType === "consumer";
-    }
-
-    /**
      * Process commands for the registration.
      * @param registration The registration.
      * @param commands The commands to process.
@@ -249,7 +241,7 @@ export class GridManager {
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Loading State`);
-        this._state = await storageConfigService.get("state");
+        this._state = await storageConfigService.get(`state`);
         this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {

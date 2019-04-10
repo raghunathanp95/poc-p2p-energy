@@ -40,7 +40,7 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
         const config = ServiceFactory.get<ConfigurationService<IConfiguration>>("configuration").get();
         this._apiClient = new DemoApiClient(config.apiEndpoint);
-        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
             walletBalance: "-----",

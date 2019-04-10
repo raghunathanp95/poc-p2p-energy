@@ -1,5 +1,5 @@
 import { IRegistrationService } from "../../models/services/IRegistrationService";
-import { RegistrationApiClient } from "./registrationApiClient";
+import { RegistrationApiClient } from "../api/registrationApiClient";
 
 /**
  * Service to handle the storage using the storage api.

@@ -251,14 +251,6 @@ export class ProducerManager {
     }
 
     /**
-     * Should we create a return channel when adding a registration.
-     * @param registration The registration to check.
-     */
-    public shouldCreateReturnChannel(registration: IRegistration): boolean {
-        return false;
-    }
-
-    /**
      * Process commands for the registration.
      * @param registration The registration.
      * @param commands The commands to process.
@@ -323,7 +315,7 @@ export class ProducerManager {
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Loading State`);
-        this._state = await storageConfigService.get("state");
+        this._state = await storageConfigService.get(`${this._config.id}/state`);
         this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
@@ -341,7 +333,7 @@ export class ProducerManager {
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Storing State`);
-        await storageConfigService.set("state", this._state);
+        await storageConfigService.set(`${this._config.id}/state`, this._state);
         this._loggingService.log("producer", `Storing State Complete`);
     }
 }

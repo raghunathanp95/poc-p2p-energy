@@ -1,4 +1,9 @@
 {
+    "node": {
+        "provider": "https://MYNODE/",
+        "depth": 3,
+        "mwm": 9
+    },
     "apiEndpoint": "API-ENDPOINT",
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"
 }

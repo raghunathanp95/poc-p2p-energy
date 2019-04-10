@@ -34,7 +34,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
-        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
             consumerState: this._demoGridManager.getConsumerState(this.props.consumer.id),

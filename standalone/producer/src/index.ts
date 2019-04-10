@@ -63,7 +63,7 @@ app.build(routes, async (_1, config, _2) => {
 
     const producerManager = new ProducerManager(config.producer, config.node);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, producerManager.shouldCreateReturnChannel);
+        new RegistrationManagementService(config.node, () => false);
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("producer", () => producerManager);

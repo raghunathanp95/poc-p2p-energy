@@ -6,6 +6,11 @@ You should copy `./public/data/config.template.json` to `./public/data/config.de
 
 ```js
 {
+    "node": {
+        "provider": "https://MYNODE/",           /* A node to perform Tangle operations */
+        "depth": 3,                              /* Depth to use for attaches */
+        "mwm": 9                                 /* MWM to use for attaches */
+    },
     "apiEndpoint": "API-ENDPOINT",               /* URL of the demo API */
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"   /* Optional, google analytics id */
 }

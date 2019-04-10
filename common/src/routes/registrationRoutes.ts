@@ -30,7 +30,7 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
         ValidationHelper.trytes(request.sideKey, 81, "sideKey");
     }
 
-    const registrationService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+    const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
 
     const registration: IRegistration = {
         id: request.registrationId,
@@ -41,7 +41,7 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
 
     loggingService.log("registration", "Set", registration);
 
-    await registrationService.addRegistration(registration, request.root, request.sideKey);
+    await registrationManagementService.addRegistration(registration, request.root, request.sideKey);
 
     return {
         success: true,
@@ -60,9 +60,9 @@ export async function registrationDelete(config: any, request: IRegistrationDele
     ValidationHelper.string(request.registrationId, "registrationId", 8);
 
     loggingService.log("registration", "Delete", request.registrationId);
-    const registrationService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+    const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
 
-    await registrationService.removeRegistration(request.registrationId);
+    await registrationManagementService.removeRegistration(request.registrationId);
 
     const storageService = ServiceFactory.get<IStorageService<string>>("storage");
     await storageService.remove(`${request.registrationId}/`);

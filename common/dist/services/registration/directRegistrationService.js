@@ -35,17 +35,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var registrationApiClient_1 = require("./registrationApiClient");
+var serviceFactory_1 = require("../../factories/serviceFactory");
 /**
- * Service to handle the storage using the storage api.
+ * Service to handle the storage directly with management service.
  */
-var ApiRegistrationService = /** @class */ (function () {
+var DirectRegistrationService = /** @class */ (function () {
     /**
-     * Create a new instance of ApiRegistrationService
-     * @param apiEndpoint The api configuration.
+     * Create a new instance of DirectRegistrationService
+     * @param registrationManagementServiceName The api configuration.
      */
-    function ApiRegistrationService(apiEndpoint) {
-        this._apiEndpoint = apiEndpoint;
+    function DirectRegistrationService(registrationManagementServiceName) {
+        this._registrationManagementService =
+            serviceFactory_1.ServiceFactory.get(registrationManagementServiceName);
     }
     /**
      * Create a new registration.
@@ -56,12 +57,26 @@ var ApiRegistrationService = /** @class */ (function () {
      * @param sideKey The private key for the mam channel.
      * @returns The response from the request.
      */
-    ApiRegistrationService.prototype.register = function (registrationId, itemName, itemType, root, sideKey) {
+    DirectRegistrationService.prototype.register = function (registrationId, itemName, itemType, root, sideKey) {
         return __awaiter(this, void 0, void 0, function () {
-            var registrationApiClient;
+            var registration;
             return __generator(this, function (_a) {
-                registrationApiClient = new registrationApiClient_1.RegistrationApiClient(this._apiEndpoint);
-                return [2 /*return*/, registrationApiClient.registrationSet({ registrationId: registrationId, itemName: itemName, itemType: itemType, root: root, sideKey: sideKey })];
+                switch (_a.label) {
+                    case 0:
+                        registration = {
+                            id: registrationId,
+                            created: Date.now(),
+                            itemName: itemName,
+                            itemType: itemType
+                        };
+                        return [4 /*yield*/, this._registrationManagementService.addRegistration(registration, root, sideKey)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, {
+                                sideKey: registration.returnMamChannel && registration.returnMamChannel.sideKey,
+                                root: registration.returnMamChannel && registration.returnMamChannel.initialRoot
+                            }];
+                }
             });
         });
     };
@@ -69,14 +84,11 @@ var ApiRegistrationService = /** @class */ (function () {
      * Remove a registration.
      * @param registrationId The registration id of the item.
      */
-    ApiRegistrationService.prototype.unregister = function (registrationId) {
+    DirectRegistrationService.prototype.unregister = function (registrationId) {
         return __awaiter(this, void 0, void 0, function () {
-            var registrationApiClient;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        registrationApiClient = new registrationApiClient_1.RegistrationApiClient(this._apiEndpoint);
-                        return [4 /*yield*/, registrationApiClient.registrationDelete({ registrationId: registrationId })];
+                    case 0: return [4 /*yield*/, this._registrationManagementService.removeRegistration(registrationId)];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
@@ -84,7 +96,7 @@ var ApiRegistrationService = /** @class */ (function () {
             });
         });
     };
-    return ApiRegistrationService;
+    return DirectRegistrationService;
 }());
-exports.ApiRegistrationService = ApiRegistrationService;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBpUmVnaXN0cmF0aW9uU2VydmljZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zZXJ2aWNlcy9hcGkvYXBpUmVnaXN0cmF0aW9uU2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQ0EsaUVBQWdFO0FBRWhFOztHQUVHO0FBQ0g7SUFNSTs7O09BR0c7SUFDSCxnQ0FBWSxXQUFtQjtRQUMzQixJQUFJLENBQUMsWUFBWSxHQUFHLFdBQVcsQ0FBQztJQUNwQyxDQUFDO0lBRUQ7Ozs7Ozs7O09BUUc7SUFDVSx5Q0FBUSxHQUFyQixVQUNJLGNBQXNCLEVBQ3RCLFFBQWlCLEVBQ2pCLFFBQWlCLEVBQ2pCLElBQWEsRUFDYixPQUFnQjs7OztnQkFXVixxQkFBcUIsR0FBRyxJQUFJLDZDQUFxQixDQUFDLElBQUksQ0FBQyxZQUFZLENBQUMsQ0FBQztnQkFFM0Usc0JBQU8scUJBQXFCLENBQUMsZUFBZSxDQUFDLEVBQUUsY0FBYyxnQkFBQSxFQUFFLFFBQVEsVUFBQSxFQUFFLFFBQVEsVUFBQSxFQUFFLElBQUksTUFBQSxFQUFFLE9BQU8sU0FBQSxFQUFFLENBQUMsRUFBQzs7O0tBQ3ZHO0lBRUQ7OztPQUdHO0lBQ1UsMkNBQVUsR0FBdkIsVUFBd0IsY0FBc0I7Ozs7Ozt3QkFDcEMscUJBQXFCLEdBQUcsSUFBSSw2Q0FBcUIsQ0FBQyxJQUFJLENBQUMsWUFBWSxDQUFDLENBQUM7d0JBRTNFLHFCQUFNLHFCQUFxQixDQUFDLGtCQUFrQixDQUFDLEVBQUUsY0FBYyxnQkFBQSxFQUFFLENBQUMsRUFBQTs7d0JBQWxFLFNBQWtFLENBQUM7Ozs7O0tBQ3RFO0lBQ0wsNkJBQUM7QUFBRCxDQUFDLEFBckRELElBcURDO0FBckRZLHdEQUFzQiJ9
+exports.DirectRegistrationService = DirectRegistrationService;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZGlyZWN0UmVnaXN0cmF0aW9uU2VydmljZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zZXJ2aWNlcy9yZWdpc3RyYXRpb24vZGlyZWN0UmVnaXN0cmF0aW9uU2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsaUVBQWdFO0FBS2hFOztHQUVHO0FBQ0g7SUFNSTs7O09BR0c7SUFDSCxtQ0FBWSxpQ0FBeUM7UUFDakQsSUFBSSxDQUFDLDhCQUE4QjtZQUMvQiwrQkFBYyxDQUFDLEdBQUcsQ0FBaUMsaUNBQWlDLENBQUMsQ0FBQztJQUM5RixDQUFDO0lBRUQ7Ozs7Ozs7O09BUUc7SUFDVSw0Q0FBUSxHQUFyQixVQUNJLGNBQXNCLEVBQ3RCLFFBQWlCLEVBQ2pCLFFBQWlCLEVBQ2pCLElBQWEsRUFDYixPQUFnQjs7Ozs7O3dCQVlWLFlBQVksR0FBa0I7NEJBQ2hDLEVBQUUsRUFBRSxjQUFjOzRCQUNsQixPQUFPLEVBQUUsSUFBSSxDQUFDLEdBQUcsRUFBRTs0QkFDbkIsUUFBUSxFQUFFLFFBQVE7NEJBQ2xCLFFBQVEsRUFBRSxRQUFRO3lCQUNyQixDQUFDO3dCQUVGLHFCQUFNLElBQUksQ0FBQyw4QkFBOEIsQ0FBQyxlQUFlLENBQUMsWUFBWSxFQUFFLElBQUksRUFBRSxPQUFPLENBQUMsRUFBQTs7d0JBQXRGLFNBQXNGLENBQUM7d0JBRXZGLHNCQUFPO2dDQUNILE9BQU8sRUFBRSxZQUFZLENBQUMsZ0JBQWdCLElBQUksWUFBWSxDQUFDLGdCQUFnQixDQUFDLE9BQU87Z0NBQy9FLElBQUksRUFBRSxZQUFZLENBQUMsZ0JBQWdCLElBQUksWUFBWSxDQUFDLGdCQUFnQixDQUFDLFdBQVc7NkJBQ25GLEVBQUM7Ozs7S0FDTDtJQUVEOzs7T0FHRztJQUNVLDhDQUFVLEdBQXZCLFVBQXdCLGNBQXNCOzs7OzRCQUMxQyxxQkFBTSxJQUFJLENBQUMsOEJBQThCLENBQUMsa0JBQWtCLENBQUMsY0FBYyxDQUFDLEVBQUE7O3dCQUE1RSxTQUE0RSxDQUFDOzs7OztLQUNoRjtJQUNMLGdDQUFDO0FBQUQsQ0FBQyxBQS9ERCxJQStEQztBQS9EWSw4REFBeUIifQ==

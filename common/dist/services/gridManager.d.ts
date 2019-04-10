@@ -31,11 +31,6 @@ export declare class GridManager {
      */
     closedown(): Promise<void>;
     /**
-     * Should we create a return channel when adding a registration.
-     * @param registration The registration to check.
-     */
-    shouldCreateReturnChannel(registration: IRegistration): boolean;
-    /**
      * Process commands for the registration.
      * @param registration The registration.
      * @param commands The commands to process.

@@ -1,11 +1,12 @@
 import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import React, { Component, ReactNode } from "react";
 import { Redirect } from "react-router-dom";
 import { IConfiguration } from "../../../models/config/IConfiguration";
+import { IAppState } from "../../../models/IAppState";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
-import { LocalStorageService } from "../../../services/localStorageService";
 import ConsumerConfigure from "./ConsumerConfigure";
 import ConsumerList from "./ConsumerList";
 import { GridConfigureProps } from "./GridConfigureProps";
@@ -25,7 +26,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     /**
      * Access local storage in the browser.
      */
-    private readonly _localStorageService: LocalStorageService;
+    private readonly _appStateStorageService: IStorageService<IAppState>;
 
     /**
      * The component was unmounted.
@@ -38,7 +39,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      */
     constructor(props: GridConfigureProps) {
         super(props);
-        this._localStorageService = ServiceFactory.get<LocalStorageService>("localStorage");
+        this._appStateStorageService = ServiceFactory.get<IStorageService<IAppState>>("app-state-storage");
 
         this._unmounted = false;
 
@@ -291,7 +292,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 });
 
                 if (response.success) {
-                    await this._localStorageService.set("gridName", this.state.gridName);
+                    await this._appStateStorageService.set("default", { gridName: this.state.gridName });
 
                     if (this.props.onChange) {
                         this.props.onChange(updatedGrid);
@@ -357,7 +358,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                             });
 
                             if (response.success) {
-                                await this._localStorageService.remove("gridName");
+                                await this._appStateStorageService.remove("default");
 
                                 this.setState({
                                     isBusy: false,

@@ -26,7 +26,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
     constructor(props: GridLiveOverviewProps) {
         super(props);
 
-        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demoGridState");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
             gridState: this._demoGridManager.getGridState()

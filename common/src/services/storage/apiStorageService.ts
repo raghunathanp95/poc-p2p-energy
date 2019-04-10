@@ -1,5 +1,5 @@
 import { IStorageService } from "../../models/services/IStorageService";
-import { StorageApiClient } from "./storageApiClient";
+import { StorageApiClient } from "../api/storageApiClient";
 
 /**
  * Service to handle the storage using the storage api.
