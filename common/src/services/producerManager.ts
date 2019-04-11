@@ -322,13 +322,15 @@ export class ProducerManager {
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Loading State`);
-        this._state = await storageConfigService.get(`${this._config.id}/state`);
+        this._state = await storageConfigService.get(this._config.id);
         this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),
             paymentAddressIndex: 0,
-            lastOutputTime: Date.now()
+            lastOutputTime: Date.now(),
+            owedBalance: 0,
+            receivedBalance: 0
         };
     }
 
@@ -340,7 +342,7 @@ export class ProducerManager {
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Storing State`);
-        await storageConfigService.set(`${this._config.id}/state`, this._state);
+        await storageConfigService.set(this._config.id, this._state);
         this._loggingService.log("producer", `Storing State Complete`);
     }
 }

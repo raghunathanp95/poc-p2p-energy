@@ -7,11 +7,11 @@ import { IRegistration } from "p2p-energy-common/dist/models/services/registrati
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
-import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
-import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
+import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
+import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";

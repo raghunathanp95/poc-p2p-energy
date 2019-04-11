@@ -12,5 +12,5 @@ export interface ISourceManagerState {
     /**
      * The last output time slot.
      */
-    lastOutputTime: number;
+    lastOutputTime?: number;
 }

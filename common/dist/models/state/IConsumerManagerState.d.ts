@@ -11,4 +11,12 @@ export interface IConsumerManagerState {
      * The return channel configuration from the grid.
      */
     returnChannel?: IMamChannelConfiguration;
+    /**
+     * Paid balance.
+     */
+    paidBalance?: number;
+    /**
+     * Owed balance.
+     */
+    owedBalance?: number;
 }

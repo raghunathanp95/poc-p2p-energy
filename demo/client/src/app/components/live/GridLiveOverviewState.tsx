@@ -1,8 +1,27 @@
-import { IDemoGridState } from "../../../models/services/IDemoGridState";
 
 export interface GridLiveOverviewState {
     /**
-     * The grid state.
+     * Running costs balance.
      */
-    gridState?: IDemoGridState;
+    runningCostsBalance: string;
+
+    /**
+     * Producer paid balance.
+     */
+    producerPaidBalance: string;
+
+    /**
+     * Producer owed balance.
+     */
+    producerOwedBalance: string;
+
+    /**
+     * Consumer owed balance.
+     */
+    consumerOwedBalance: string;
+
+    /**
+     * Consumer recieved balance.
+     */
+    consumerReceivedBalance: string;
 }

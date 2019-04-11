@@ -161,7 +161,7 @@ export class SourceManager {
             "source-storage-manager-state");
 
         this._loggingService.log("source", `Loading State`);
-        this._state = await storageConfigService.get("state");
+        this._state = await storageConfigService.get(this._config.id);
         this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
@@ -177,7 +177,7 @@ export class SourceManager {
             "source-storage-manager-state");
 
         this._loggingService.log("source", `Storing State`);
-        await storageConfigService.set("state", this._state);
+        await storageConfigService.set(this._config.id, this._state);
         this._loggingService.log("source", `Storing State Complete`);
     }
 }

@@ -154,10 +154,13 @@ export class ConsumerManager {
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Loading State`);
-        this._state = await storageConfigService.get(`${this._config.id}/state`);
+        this._state = await storageConfigService.get(this._config.id);
         this._loggingService.log("consumer", `Loaded State`);
 
-        this._state = this._state || {};
+        this._state = this._state || {
+            paidBalance: 0,
+            owedBalance: 0
+        };
     }
 
     /**
@@ -168,7 +171,7 @@ export class ConsumerManager {
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Storing State`);
-        await storageConfigService.set(`${this._config.id}/state`, this._state);
+        await storageConfigService.set(this._config.id, this._state);
         this._loggingService.log("consumer", `Storing State Complete`);
     }
 }

@@ -1,9 +1,13 @@
 import classnames from "classnames";
+import { Button } from "iota-react-components";
+import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import biomass from "../../../assets/sources/biomass.svg";
 import geothermal from "../../../assets/sources/geothermal.svg";
 import solar from "../../../assets/sources/solar.svg";
 import wind from "../../../assets/sources/wind.svg";
+import { DemoGridManager } from "../../../services/demoGridManager";
+import { MamExplorer } from "../../../services/mamExplorer";
 import "./GridLiveSource.scss";
 import { GridLiveSourceProps } from "./GridLiveSourceProps";
 import { GridLiveSourceState } from "./GridLiveSourceState";
@@ -16,6 +20,16 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
      * The source images.
      */
     private readonly _sourceImages: { [id: string]: any };
+
+    /**
+     * The demo grid manager.
+     */
+    private readonly _demoGridManager: DemoGridManager;
+
+    /**
+     * Mam explorer service.
+     */
+    private readonly _mamExplorer: MamExplorer;
 
     /**
      * Create a new instance of GridLiveSource.
@@ -31,9 +45,33 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
             biomass
         };
 
+        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
+        this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
+
         this.state = {
             isSelected: this.props.isSelected
         };
+    }
+
+    /**
+     * The component mounted.
+     */
+    public async componentDidMount(): Promise<void> {
+        this._demoGridManager.subscribeSource(this.props.source.id, (sourceState) => {
+            const mamChannel = sourceState && sourceState.sourceManagerState && sourceState.sourceManagerState.channel;
+
+            this.setState({
+                mamRoot: mamChannel && mamChannel.initialRoot,
+                sideKey: mamChannel && mamChannel.sideKey
+            });
+        });
+    }
+
+    /**
+     * The component is going to unmount so tidy up.
+     */
+    public componentWillUnmount(): void {
+        this._demoGridManager.unsubscribeSource(this.props.source.id);
     }
 
     /**
@@ -59,6 +97,16 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
                         {this.props.source.name}
                     </div>
                 </button>
+
+                {this.state.mamRoot && (
+                    <Button
+                        size="extra-small"
+                        color="secondary"
+                        onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                    >
+                        MAM Output
+                    </Button>
+                )}
             </div>
         );
     }

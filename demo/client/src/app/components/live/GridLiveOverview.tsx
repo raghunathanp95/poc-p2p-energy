@@ -1,10 +1,6 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import grid from "../../../assets/grid/grid.svg";
-import { GridState } from "../../../models/api/gridState";
-import { IConfiguration } from "../../../models/config/IConfiguration";
-import { ConfigurationService } from "../../../services/configurationService";
-import { DemoApiClient } from "../../../services/demoApiClient";
 import { DemoGridManager } from "../../../services/demoGridManager";
 import "./GridLiveOverview.scss";
 import { GridLiveOverviewProps } from "./GridLiveOverviewProps";
@@ -29,7 +25,11 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
-            gridState: this._demoGridManager.getGridState()
+            runningCostsBalance: "-----",
+            producerPaidBalance: "-----",
+            producerOwedBalance: "-----",
+            consumerOwedBalance: "-----",
+            consumerReceivedBalance: "-----"
         };
     }
 
@@ -38,7 +38,20 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
      */
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeGrid("gridLiveOverview", (gridState) => {
-            this.setState({gridState});
+            const gridManagerState = gridState && gridState.gridManagerState;
+
+            this.setState({
+                runningCostsBalance: gridManagerState && gridManagerState.runningCostsBalance !== undefined
+                    ? `${gridManagerState.runningCostsBalance}i` : "-----",
+                producerPaidBalance: gridManagerState && gridManagerState.producerPaidBalance !== undefined
+                    ? `${gridManagerState.producerPaidBalance}i` : "-----",
+                producerOwedBalance: gridManagerState && gridManagerState.producerOwedBalance !== undefined
+                    ? `${gridManagerState.producerOwedBalance}i` : "-----",
+                consumerOwedBalance: gridManagerState && gridManagerState.consumerOwedBalance !== undefined
+                    ? `${gridManagerState.consumerOwedBalance}i` : "-----",
+                consumerReceivedBalance: gridManagerState && gridManagerState.consumerReceivedBalance !== undefined
+                    ? `${gridManagerState.consumerReceivedBalance}i` : "-----"
+            });
         });
     }
 
@@ -64,18 +77,14 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                 <div className="grid-live-grid-sub-title">Connections</div>
                 <div>Producers: {this.props.grid.producers.length}</div>
                 <div>Consumers: {this.props.grid.consumers.length}</div>
-                {this.state.gridState && (
-                    <React.Fragment>
-                        <div className="grid-live-grid-sub-title">Balances</div>
-                        <div className="positive">Running costs received: {this.state.gridState.runningCostsBalance}i</div>
-                        <br/>
-                        <div className="negative">Producers are owed: {this.state.gridState.producerOwedBalance}i</div>
-                        <div className="positive">Producers have received: {this.state.gridState.producerPaidBalance}i</div>
-                        <br/>
-                        <div className="negative">Consumers owe: {this.state.gridState.consumerOwedBalance}i</div>
-                        <div className="positive">Consumers have paid: {this.state.gridState.consumerReceivedBalance}i</div>
-                    </React.Fragment>
-                )}
+                <div className="grid-live-grid-sub-title">Balances</div>
+                <div className="positive">Running costs received: {this.state.runningCostsBalance}</div>
+                <br />
+                <div className="negative">Producers are owed: {this.state.producerOwedBalance}</div>
+                <div className="positive">Producers have received: {this.state.producerPaidBalance}</div>
+                <br />
+                <div className="negative">Consumers owe: {this.state.consumerOwedBalance}</div>
+                <div className="positive">Consumers have paid: {this.state.consumerReceivedBalance}</div>
             </div>
         );
     }

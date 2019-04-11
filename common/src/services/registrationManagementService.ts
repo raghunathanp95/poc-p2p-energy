@@ -174,17 +174,17 @@ export class RegistrationManagementService implements IRegistrationManagementSer
                 registration.itemMamChannel = itemMamChannelConfiguration;
                 this._loggingService.log("registration", `Initialising item channel complete`);
             }
+        }
 
-            if (registration.returnMamChannel === undefined && this._shouldCreateReturnChannel(registration)) {
-                this._loggingService.log("registration", `Generating return channel hello`);
+        if (registration.returnMamChannel === undefined && this._shouldCreateReturnChannel(registration)) {
+            this._loggingService.log("registration", `Generating return channel hello`);
 
-                const returnMamChannel = new MamCommandChannel(this._nodeConfig);
+            const returnMamChannel = new MamCommandChannel(this._nodeConfig);
 
-                registration.returnMamChannel = {};
-                await returnMamChannel.openWritable(registration.returnMamChannel);
+            registration.returnMamChannel = {};
+            await returnMamChannel.openWritable(registration.returnMamChannel);
 
-                this._loggingService.log("registration", `Generating return channel hello complete`);
-            }
+            this._loggingService.log("registration", `Generating return channel hello complete`);
         }
     }
 

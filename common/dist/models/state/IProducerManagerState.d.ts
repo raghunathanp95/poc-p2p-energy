@@ -16,7 +16,15 @@ export interface IProducerManagerState {
      */
     channel?: IMamChannelConfiguration;
     /**
+     * Received balance.
+     */
+    receivedBalance?: number;
+    /**
+     * Owed balance.
+     */
+    owedBalance?: number;
+    /**
      * The time of the last output command.
      */
-    lastOutputTime: number;
+    lastOutputTime?: number;
 }

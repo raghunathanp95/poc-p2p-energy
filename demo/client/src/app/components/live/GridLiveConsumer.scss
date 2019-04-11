@@ -41,7 +41,7 @@
       cursor: pointer;
 
       &:hover,
-      &.grid-live-consumer-btn--expanded  {
+      &.grid-live-consumer-btn--expanded {
         border: 2px solid var(--jade);
       }
 
@@ -60,14 +60,24 @@
 
       .grid-live-consumer-btn-bottom {
         display: flex;
+        position: relative;
         align-items: center;
         justify-content: center;
         height: 60px;
+        padding: 0px 5px;
         border-radius: 0px 0px 5px 5px;
         background-color: #f3f2f1;
         font-size: 12px;
         font-weight: bold;
         text-align: center;
+
+        .icon-chevron-down,
+        .icon-chevron-up {
+          position: absolute;
+          right: 3px;
+          bottom: 0px;
+          opacity: 0.5;
+        }
       }
     }
 

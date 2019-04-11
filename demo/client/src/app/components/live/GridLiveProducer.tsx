@@ -74,10 +74,13 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
 
         this._demoGridManager.subscribeProducer(this.props.producer.id, (producerState) => {
             const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
+            const producerManagerState = producerState && producerState.producerManagerState;
 
             this.setState({
-                receivedBalance: producerState && producerState.receivedBalance !== undefined ? `${producerState.receivedBalance}i` : "-----",
-                owedBalance: producerState && producerState.owedBalance !== undefined ? `${producerState.owedBalance}i` : "-----",
+                receivedBalance: producerManagerState && producerManagerState.receivedBalance !== undefined
+                    ? `${producerManagerState.receivedBalance}i` : "-----",
+                owedBalance: producerManagerState && producerManagerState.owedBalance !== undefined ?
+                    `${producerManagerState.owedBalance}i` : "-----",
                 mamRoot: mamChannel && mamChannel.initialRoot,
                 sideKey: mamChannel && mamChannel.sideKey
             });
@@ -113,6 +116,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                         </div>
                         <div className="grid-live-producer-btn-bottom">
                             {this.props.producer.name}
+                            <span className={this.state.isExpanded ? "icon-chevron-up" : "icon-chevron-down"} />
                         </div>
                     </button>
                     <div className="grid-live-producer-info">
@@ -138,7 +142,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                     color="secondary"
                                     onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
                                 >
-                                    Explore MAM Output
+                                    MAM Output
                                 </Button>
                             )}
                         </div>

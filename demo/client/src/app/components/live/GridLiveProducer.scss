@@ -47,7 +47,7 @@
       cursor: pointer;
 
       &:hover,
-      &.grid-live-producer-btn--expanded  {
+      &.grid-live-producer-btn--expanded {
         border: 2px solid var(--jade);
       }
 
@@ -66,14 +66,24 @@
 
       .grid-live-producer-btn-bottom {
         display: flex;
+        position: relative;
         align-items: center;
         justify-content: center;
         height: 60px;
+        padding: 0px 5px;
         border-radius: 0px 0px 5px 5px;
         background-color: #f3f2f1;
         font-size: 12px;
         font-weight: bold;
         text-align: center;
+
+        .icon-chevron-down,
+        .icon-chevron-up {
+          position: absolute;
+          right: 3px;
+          bottom: 0px;
+          opacity: 0.5;
+        }
       }
     }
 
@@ -87,7 +97,7 @@
 
       .grid-live-producer-info-data {
         margin-top: 8px;
-        font-size: 16px;
+        font-size: 14px;
       }
     }
   }

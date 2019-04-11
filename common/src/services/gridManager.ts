@@ -252,7 +252,12 @@ export class GridManager {
         this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {
-            paymentSeed: TrytesHelper.generateHash()
+            paymentSeed: TrytesHelper.generateHash(),
+            runningCostsBalance: 0,
+            producerPaidBalance: 0,
+            producerOwedBalance: 0,
+            consumerOwedBalance: 0,
+            consumerReceivedBalance: 0
         };
     }
 

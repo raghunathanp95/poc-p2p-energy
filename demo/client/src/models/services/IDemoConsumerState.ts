@@ -8,16 +8,6 @@ export interface IDemoConsumerState {
     consumerManagerState: IConsumerManagerState;
 
     /**
-     * Paid balance.
-     */
-    paidBalance?: number;
-
-    /**
-     * Owed balance.
-     */
-    owedBalance?: number;
-
-    /**
      * The power slices for the producer.
      */
     powerSlices?: IDemoPowerSlice[];

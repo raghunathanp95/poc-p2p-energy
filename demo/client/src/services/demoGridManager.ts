@@ -5,6 +5,7 @@ import { IRegistration } from "p2p-energy-common/dist/models/services/registrati
 import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
+import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
@@ -16,6 +17,7 @@ import { IGrid } from "../models/api/IGrid";
 import { IDemoConsumerState } from "../models/services/IDemoConsumerState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
 import { IDemoProducerState } from "../models/services/IDemoProducerState";
+import { IDemoSourceState } from "../models/services/IDemoSourceState";
 
 /**
  * DemoGridManager Class.
@@ -77,9 +79,14 @@ export class DemoGridManager {
     private readonly _subscriptionsProducer: { [id: string]: (state: IDemoProducerState | undefined) => void };
 
     /**
-     * Subscriptions to the state changes.
+     * Subscriptions to the consumer state changes.
      */
     private readonly _subscriptionsConsumer: { [id: string]: (state: IDemoConsumerState | undefined) => void };
+
+    /**
+     * Subscriptions to the source state changes.
+     */
+    private readonly _subscriptionsSource: { [id: string]: (state: IDemoSourceState | undefined) => void };
 
     /**
      * Create a new instance of DemoGridManager.
@@ -92,9 +99,11 @@ export class DemoGridManager {
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
         this._subscriptionsConsumer = {};
+        this._subscriptionsSource = {};
         this._gridState = {
             producerStates: {},
-            consumerStates: {}
+            consumerStates: {},
+            sourceStates: {}
         };
     }
 
@@ -120,7 +129,8 @@ export class DemoGridManager {
         this._gridId = grid.id;
         this._gridState = newState || {
             producerStates: {},
-            consumerStates: {}
+            consumerStates: {},
+            sourceStates: {}
         };
 
         await this.constructManagers(grid, progressCallback);
@@ -130,6 +140,7 @@ export class DemoGridManager {
 
             this.updateProducerSubscribers();
             this.updateConsumerSubscribers();
+            this.updateSourceSubscribers();
 
             await this._demoGridStateStorageService.set(grid.id, this._gridState);
         }
@@ -144,6 +155,7 @@ export class DemoGridManager {
      */
     public subscribeGrid(id: string, callback: (state: IDemoGridState | undefined) => void): void {
         this._subscriptionsGrid[id] = callback;
+        callback(this.getGridState());
     }
 
     /**
@@ -184,10 +196,28 @@ export class DemoGridManager {
 
     /**
      * Unsubscribe from consumer state changes.
-     * @param id The id of the grid to subscribe to.
+     * @param id The id of the consumer to unsubscribe.
      */
     public unsubscribeConsumer(id: string): void {
         delete this._subscriptionsConsumer[id];
+    }
+
+    /**
+     * Subscribe to source state changes.
+     * @param id The id of the item to subscribe to.
+     * @param callback The callback for the subscription.
+     */
+    public subscribeSource(id: string, callback: (state: IDemoSourceState | undefined) => void): void {
+        this._subscriptionsSource[id] = callback;
+        callback(this.getSourceState(id));
+    }
+
+    /**
+     * Unsubscribe from source state changes.
+     * @param id The id of the source to unsubscribe from.
+     */
+    public unsubscribeSource(id: string): void {
+        delete this._subscriptionsSource[id];
     }
 
     /**
@@ -229,6 +259,19 @@ export class DemoGridManager {
     }
 
     /**
+     * Get the current state of a source
+     * @param id The id of the source to get.
+     * @returns The source state.
+     */
+    public getSourceState(id: string): IDemoSourceState | undefined {
+        const state = this._gridState && this._gridState.sourceStates[id];
+        if (state && this._sourceManagers && this._sourceManagers[id]) {
+            state.sourceManagerState = this._sourceManagers[id].getState();
+        }
+        return state;
+    }
+
+    /**
      * Update the subscribers for the grid.
      */
     private updateGridSubscribers(): void {
@@ -252,6 +295,15 @@ export class DemoGridManager {
     private updateConsumerSubscribers(): void {
         for (const id in this._subscriptionsConsumer) {
             this._subscriptionsConsumer[id](this.getConsumerState(id));
+        }
+    }
+
+    /**
+     * Update the subscribers for the sources.
+     */
+    private updateSourceSubscribers(): void {
+        for (const id in this._subscriptionsSource) {
+            this._subscriptionsSource[id](this.getSourceState(id));
         }
     }
 
@@ -305,30 +357,31 @@ export class DemoGridManager {
         for (let p = 0; p < grid.producers.length; p++) {
             const producer = grid.producers[p];
 
-            progressCallback(`Initializing Producer '${producer.name}'.`);
+            progressCallback(`Initializing Producer '${producer.name}' [${producer.id}].`);
             if (!this._producerManagers[producer.id]) {
                 this._producerManagers[producer.id] = new ProducerManager({ name: producer.name, id: producer.id }, this._nodeConfig);
                 await this._producerManagers[producer.id].initialise();
             }
 
-            this._gridState.producerStates[producer.id] = this._gridState.producerStates[producer.id] || {
-                owedBalance: 123,
-                receivedBalance: 456
-            };
+            this._gridState.producerStates[producer.id] = this._gridState.producerStates[producer.id] || {};
 
-            // for (let s = 0; s < producer.sources.length; s++) {
-            //     const source = producer.sources[s];
+            for (let s = 0; s < producer.sources.length; s++) {
+                const source = producer.sources[s];
 
-            //     if (!this._sourceManagers[source.id]) {
-            //         this._sourceManagers[source.id] = new SourceManager({name: source.name, id: source.id, type: source.type}, this._nodeConfig);
-            //     }
-            // }
+                progressCallback(`Initializing Source '${source.name}' [${source.id}].`);
+                if (!this._sourceManagers[source.id]) {
+                    this._sourceManagers[source.id] = new SourceManager({ name: source.name, id: source.id, type: source.type }, this._nodeConfig);
+                    await this._sourceManagers[source.id].initialise();
+                }
+
+                this._gridState.sourceStates[source.id] = this._gridState.sourceStates[source.id] || {};
+            }
         }
 
         for (let c = 0; c < grid.consumers.length; c++) {
             const consumer = grid.consumers[c];
 
-            progressCallback(`Initializing Consumer '${consumer.name}'.`);
+            progressCallback(`Initializing Consumer '${consumer.name}' [${consumer.id}].`);
             if (!this._consumerManagers[consumer.id]) {
                 this._consumerManagers[consumer.id] = new ConsumerManager({ name: consumer.name, id: consumer.id }, this._nodeConfig);
                 await this._consumerManagers[consumer.id].initialise();
@@ -378,6 +431,14 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "consumer-registration",
+            () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "source-storage-manager-state",
+            () => new BrowserStorageService<ISourceManagerState>(`source-manager-state`));
+
+        ServiceFactory.register(
+            "source-registration",
             () => new DirectRegistrationService("registration-management"));
 
     }

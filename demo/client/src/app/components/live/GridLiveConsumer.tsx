@@ -60,8 +60,10 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             const mamChannelReturn = consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.returnChannel;
 
             this.setState({
-                paidBalance: consumerState && consumerState.paidBalance !== undefined ? `${consumerState.paidBalance}i` : "-----",
-                owedBalance: consumerState && consumerState.owedBalance !== undefined ? `${consumerState.owedBalance}i` : "-----",
+                paidBalance: consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.paidBalance !== undefined ?
+                    `${consumerState.consumerManagerState.paidBalance}i` : "-----",
+                owedBalance: consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.owedBalance !== undefined ?
+                    `${consumerState.consumerManagerState.owedBalance}i` : "-----",
                 mamRoot: mamChannel && mamChannel.initialRoot,
                 sideKey: mamChannel && mamChannel.sideKey,
                 mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
@@ -99,6 +101,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         </div>
                         <div className="grid-live-consumer-btn-bottom">
                             {this.props.consumer.name}
+                            <span className={this.state.isExpanded ? "icon-chevron-up" : "icon-chevron-down"} />
                         </div>
                     </button>
                     <div className="grid-live-consumer-info">
@@ -123,7 +126,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                                 color="secondary"
                                 onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
                             >
-                                Explore MAM Usage
+                                MAM Usage
                             </Button>
                         )}
                         {this.state.mamRootReturn && (
@@ -132,7 +135,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                                 color="secondary"
                                 onClick={() => this._mamExplorer.explore(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
                             >
-                                Explore MAM Billing
+                                MAM Billing
                             </Button>
                         )}
                     </div>

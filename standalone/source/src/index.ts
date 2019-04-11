@@ -1,10 +1,10 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ISourceServiceConfiguration } from "p2p-energy-common/dist/models/config/source/ISourceServiceConfiguration";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
-import { ApiRegistrationService } from "p2p-energy-common/dist/services/api/apiRegistrationService";
-import { ApiStorageService } from "p2p-energy-common/dist/services/api/apiStorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
+import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 
 // tslint:disable:no-var-requires no-require-imports

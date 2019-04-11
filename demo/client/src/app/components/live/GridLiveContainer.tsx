@@ -73,10 +73,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                 status: ""
             });
         } catch (err) {
+            console.log(err);
             this.setState({
                 isBusy: false,
                 isError: true,
-                status: `Error initializing grid: ${err.message}`
+                status: `${this.state.status}\nError: ${err.message}`
             });
         }
     }
