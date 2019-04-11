@@ -102,7 +102,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
     }
 
     /**
-     * Load the registrations to intialise the queues.
+     * Load the registrations to initialise the queues.
      */
     public async loadRegistrations(): Promise<void> {
         this._loggingService.log("registration", `Loading registrations`);
@@ -167,7 +167,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
 
                 if (!openSuccess) {
                     throw new Error(
-                        "Unable to intialise mam channel for item, could not find initial 'hello' command."
+                        "Unable to initialise mam channel for item, could not find initial 'hello' command."
                     );
                 }
 

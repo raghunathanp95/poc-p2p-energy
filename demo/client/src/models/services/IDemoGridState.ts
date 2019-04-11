@@ -11,27 +11,27 @@ export interface IDemoGridState {
     /**
      * Running costs balance.
      */
-    runningCostsBalance: number;
+    runningCostsBalance?: number;
 
     /**
      * Producer paid balance.
      */
-    producerPaidBalance: number;
+    producerPaidBalance?: number;
 
     /**
      * Producer owed balance.
      */
-    producerOwedBalance: number;
+    producerOwedBalance?: number;
 
     /**
      * Consumer owed balance.
      */
-    consumerOwedBalance: number;
+    consumerOwedBalance?: number;
 
     /**
      * Consumer recieved balance.
      */
-    consumerReceivedBalance: number;
+    consumerReceivedBalance?: number;
 
     /**
      * The producer states.

@@ -2,6 +2,7 @@ import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IRegistration } from "../models/services/registration/IRegistration";
+import { IProducerManagerState } from "../models/state/IProducerManagerState";
 /**
  * Class to maintain a Producer.
  */
@@ -33,7 +34,11 @@ export declare class ProducerManager {
      */
     constructor(producerConfig: IProducerConfiguration, nodeConfig: INodeConfiguration);
     /**
-     * Intialise the producer by registering with the Grid.
+     * Get the state for the manager.
+     */
+    getState(): IProducerManagerState;
+    /**
+     * Initialise the producer by registering with the Grid.
      */
     initialise(): Promise<void>;
     /**

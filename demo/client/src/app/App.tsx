@@ -9,13 +9,14 @@ import logo from "../assets/logo.svg";
 import contentHomePage from "../content/contentHomePage.json";
 import { IConfiguration } from "../models/config/IConfiguration";
 import { IAppState } from "../models/IAppState";
+import { IDemoGridState } from "../models/services/IDemoGridState";
 import { ConfigurationService } from "../services/configurationService";
 import { DemoGridManager } from "../services/demoGridManager";
+import { MamExplorer } from "../services/mamExplorer";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
 import { GridParams } from "./routes/GridParams";
 import Introduction from "./routes/Introduction";
-import { IDemoGridState } from "../models/services/IDemoGridState";
 
 /**
  * Main application class.
@@ -51,6 +52,7 @@ class App extends Component<RouteComponentProps, AppState> {
             const config = await configService.load(`/data/config.${configId}.json`);
 
             ServiceFactory.register("configuration", () => configService);
+            ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, config.node.provider));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid"));

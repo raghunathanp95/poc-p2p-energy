@@ -12,6 +12,7 @@ You should copy `./public/data/config.template.json` to `./public/data/config.de
         "mwm": 9                                 /* MWM to use for attaches */
     },
     "apiEndpoint": "API-ENDPOINT",               /* URL of the demo API */
+    "mamExplorer": "https://mam-explorer.firebaseapp.com/?root=:root&provider=:provider&mode=:mode&key=:sideKey",
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"   /* Optional, google analytics id */
 }
 ```

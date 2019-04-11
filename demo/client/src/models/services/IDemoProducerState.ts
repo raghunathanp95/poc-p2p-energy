@@ -6,17 +6,17 @@ export interface IDemoProducerState {
     /**
      * The producer manager state.
      */
-    producerManagerState: IProducerManagerState;
+    producerManagerState?: IProducerManagerState;
 
     /**
      * Received balance.
      */
-    receivedBalance: number;
+    receivedBalance?: number;
 
     /**
      * Owed balance.
      */
-    owedBalance: number;
+    owedBalance?: number;
 
     /**
      * The power slices for the producer.

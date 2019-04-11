@@ -1,6 +1,8 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
+import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
+import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
@@ -14,7 +16,6 @@ import { IGrid } from "../models/api/IGrid";
 import { IDemoConsumerState } from "../models/services/IDemoConsumerState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
 import { IDemoProducerState } from "../models/services/IDemoProducerState";
-import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
 
 /**
  * DemoGridManager Class.
@@ -38,7 +39,7 @@ export class DemoGridManager {
     /**
      * The state of the grid.
      */
-    private _gridState?: IDemoGridState;
+    private _gridState: IDemoGridState;
 
     /**
      * The grid manager.
@@ -68,17 +69,17 @@ export class DemoGridManager {
     /**
      * Subscriptions to the grid state changes.
      */
-    private readonly _subscriptionsGrid: { [id: string]: (state: IDemoGridState) => void };
+    private readonly _subscriptionsGrid: { [id: string]: (state: IDemoGridState | undefined) => void };
 
     /**
      * Subscriptions to the producer state changes.
      */
-    private readonly _subscriptionsProducer: { [id: string]: (state: IDemoProducerState) => void };
+    private readonly _subscriptionsProducer: { [id: string]: (state: IDemoProducerState | undefined) => void };
 
     /**
      * Subscriptions to the state changes.
      */
-    private readonly _subscriptionsConsumer: { [id: string]: (state: IDemoConsumerState) => void };
+    private readonly _subscriptionsConsumer: { [id: string]: (state: IDemoConsumerState | undefined) => void };
 
     /**
      * Create a new instance of DemoGridManager.
@@ -91,13 +92,18 @@ export class DemoGridManager {
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
         this._subscriptionsConsumer = {};
+        this._gridState = {
+            producerStates: {},
+            consumerStates: {}
+        };
     }
 
     /**
      * Load the state from the grid.
      * @param grid The grid to populate from.
+     * @param progressCallback Send callback messages.
      */
-    public async load(grid: IGrid): Promise<void> {
+    public async load(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
         this.stopUpdates();
 
         let newState;
@@ -113,30 +119,18 @@ export class DemoGridManager {
 
         this._gridId = grid.id;
         this._gridState = newState || {
-            gridManagerState: undefined,
-            runningCostsBalance: 0,
-            producerPaidBalance: 0,
-            producerOwedBalance: 0,
-            consumerReceivedBalance: 0,
-            consumerOwedBalance: 0,
             producerStates: {},
             consumerStates: {}
         };
 
-        this.constructManagers(grid);
+        await this.constructManagers(grid, progressCallback);
 
         if (this._gridState) {
-            for (const id in this._subscriptionsGrid) {
-                this._subscriptionsGrid[id](this._gridState);
-            }
+            this.updateGridSubscribers();
 
-            for (const id in this._subscriptionsProducer) {
-                this._subscriptionsProducer[id](this._gridState.producerStates[id]);
-            }
+            this.updateProducerSubscribers();
+            this.updateConsumerSubscribers();
 
-            for (const id in this._subscriptionsConsumer) {
-                this._subscriptionsConsumer[id](this._gridState.consumerStates[id]);
-            }
             await this._demoGridStateStorageService.set(grid.id, this._gridState);
         }
 
@@ -148,7 +142,7 @@ export class DemoGridManager {
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeGrid(id: string, callback: (state: IDemoGridState) => void): void {
+    public subscribeGrid(id: string, callback: (state: IDemoGridState | undefined) => void): void {
         this._subscriptionsGrid[id] = callback;
     }
 
@@ -165,8 +159,9 @@ export class DemoGridManager {
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeProducer(id: string, callback: (state: IDemoProducerState) => void): void {
+    public subscribeProducer(id: string, callback: (state: IDemoProducerState | undefined) => void): void {
         this._subscriptionsProducer[id] = callback;
+        callback(this.getProducerState(id));
     }
 
     /**
@@ -182,8 +177,9 @@ export class DemoGridManager {
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeConsumer(id: string, callback: (state: IDemoConsumerState) => void): void {
+    public subscribeConsumer(id: string, callback: (state: IDemoConsumerState | undefined) => void): void {
         this._subscriptionsConsumer[id] = callback;
+        callback(this.getConsumerState(id));
     }
 
     /**
@@ -199,7 +195,11 @@ export class DemoGridManager {
      * @returns The grid state.
      */
     public getGridState(): IDemoGridState | undefined {
-        return this._gridState;
+        const state = this._gridState;
+        if (state && this._gridManager) {
+            state.gridManagerState = this._gridManager.getState();
+        }
+        return state;
     }
 
     /**
@@ -208,7 +208,11 @@ export class DemoGridManager {
      * @returns The producer state.
      */
     public getProducerState(id: string): IDemoProducerState | undefined {
-        return this._gridState && this._gridState.producerStates[id];
+        const state = this._gridState && this._gridState.producerStates[id];
+        if (state && this._producerManagers && this._producerManagers[id]) {
+            state.producerManagerState = this._producerManagers[id].getState();
+        }
+        return state;
     }
 
     /**
@@ -217,7 +221,38 @@ export class DemoGridManager {
      * @returns The consumer state.
      */
     public getConsumerState(id: string): IDemoConsumerState | undefined {
-        return this._gridState && this._gridState.consumerStates[id];
+        const state = this._gridState && this._gridState.consumerStates[id];
+        if (state && this._consumerManagers && this._consumerManagers[id]) {
+            state.consumerManagerState = this._consumerManagers[id].getState();
+        }
+        return state;
+    }
+
+    /**
+     * Update the subscribers for the grid.
+     */
+    private updateGridSubscribers(): void {
+        for (const id in this._subscriptionsGrid) {
+            this._subscriptionsGrid[id](this.getGridState());
+        }
+    }
+
+    /**
+     * Update the subscribers for the producers.
+     */
+    private updateProducerSubscribers(): void {
+        for (const id in this._subscriptionsProducer) {
+            this._subscriptionsProducer[id](this.getProducerState(id));
+        }
+    }
+
+    /**
+     * Update the subscribers for the consumers.
+     */
+    private updateConsumerSubscribers(): void {
+        for (const id in this._subscriptionsConsumer) {
+            this._subscriptionsConsumer[id](this.getConsumerState(id));
+        }
     }
 
     /**
@@ -252,26 +287,34 @@ export class DemoGridManager {
     /**
      * Construct the managers for each of the entities.
      * @param grid Grid to construct the managers for.
+     * @param progressCallback Send callback messages.
      */
-    private async constructManagers(grid: IGrid): Promise<void> {
+    private async constructManagers(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
         this.initialiseServices(grid);
 
+        progressCallback("Initializing Grid.");
         if (!this._gridManager) {
             this._gridManager = new GridManager(this._nodeConfig);
             await this._gridManager.initialise();
         }
 
         this._producerManagers = this._producerManagers || {};
-        // this._sourceManagers = this._sourceManagers || {};
-        // this._consumerManagers = this._consumerManagers || {};
+        this._sourceManagers = this._sourceManagers || {};
+        this._consumerManagers = this._consumerManagers || {};
 
         for (let p = 0; p < grid.producers.length; p++) {
             const producer = grid.producers[p];
 
+            progressCallback(`Initializing Producer '${producer.name}'.`);
             if (!this._producerManagers[producer.id]) {
                 this._producerManagers[producer.id] = new ProducerManager({ name: producer.name, id: producer.id }, this._nodeConfig);
                 await this._producerManagers[producer.id].initialise();
             }
+
+            this._gridState.producerStates[producer.id] = this._gridState.producerStates[producer.id] || {
+                owedBalance: 123,
+                receivedBalance: 456
+            };
 
             // for (let s = 0; s < producer.sources.length; s++) {
             //     const source = producer.sources[s];
@@ -282,13 +325,20 @@ export class DemoGridManager {
             // }
         }
 
-        // for (let c = 0 ; c < grid.consumers.length; c++) {
-        //     const consumer = grid.consumers[c];
+        for (let c = 0; c < grid.consumers.length; c++) {
+            const consumer = grid.consumers[c];
 
-        //     if (!this._consumerManagers[consumer.id]) {
-        //         this._consumerManagers[consumer.id] = new ConsumerManager({name: consumer.name, id: consumer.id}, this._nodeConfig);
-        //     }
-        // }
+            progressCallback(`Initializing Consumer '${consumer.name}'.`);
+            if (!this._consumerManagers[consumer.id]) {
+                this._consumerManagers[consumer.id] = new ConsumerManager({ name: consumer.name, id: consumer.id }, this._nodeConfig);
+                await this._consumerManagers[consumer.id].initialise();
+            }
+
+            this._gridState.consumerStates[consumer.id] = this._gridState.consumerStates[consumer.id] || {
+                paidBalance: 321,
+                owedBalance: 654
+            };
+        }
     }
 
     /**
@@ -315,12 +365,21 @@ export class DemoGridManager {
             () => new BrowserStorageService<IRegistration>(`registrations`));
 
         ServiceFactory.register(
-            "producer-registration-management",
+            "registration-management",
             () => new RegistrationManagementService(this._nodeConfig, (registration) => registration.itemType === "consumer"));
 
         ServiceFactory.register(
             "producer-registration",
-            () => new DirectRegistrationService("producer-registration-management"));
+            () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "consumer-storage-manager-state",
+            () => new BrowserStorageService<IConsumerManagerState>(`consumer-manager-state`));
+
+        ServiceFactory.register(
+            "consumer-registration",
+            () => new DirectRegistrationService("registration-management"));
+
     }
 
     // /**

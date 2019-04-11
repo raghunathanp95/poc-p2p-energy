@@ -1,5 +1,6 @@
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 /**
  * Class to handle a consumer.
  */
@@ -33,10 +34,14 @@ export declare class ConsumerManager {
      */
     constructor(consumerConfig: IConsumerConfiguration, nodeConfig: INodeConfiguration);
     /**
+     * Get the state for the manager.
+     */
+    getState(): IConsumerManagerState;
+    /**
      * Register the consumer with the Grid.
      * @param configuration The configuration to use.
      */
-    intialise(): Promise<void>;
+    initialise(): Promise<void>;
     /**
      * Unregister the source from the Grid.
      */

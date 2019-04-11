@@ -1,6 +1,7 @@
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
+import { ISourceManagerState } from "../models/state/ISourceManagerState";
 /**
  * Class to handle a source.
  */
@@ -32,10 +33,14 @@ export declare class SourceManager {
      */
     constructor(sourceConfig: ISourceConfiguration, nodeConfig: INodeConfiguration);
     /**
+     * Get the state for the manager.
+     */
+    getState(): ISourceManagerState;
+    /**
      * Register the source with the Producer.
      * @param configuration The configuration to use.
      */
-    intialise(): Promise<void>;
+    initialise(): Promise<void>;
     /**
      * Unregister the source from the Producer.
      */

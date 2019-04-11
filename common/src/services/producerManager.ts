@@ -57,7 +57,14 @@ export class ProducerManager {
     }
 
     /**
-     * Intialise the producer by registering with the Grid.
+     * Get the state for the manager.
+     */
+    public getState(): IProducerManagerState {
+        return this._state;
+    }
+
+    /**
+     * Initialise the producer by registering with the Grid.
      */
     public async initialise(): Promise<void> {
         await this.loadState();
@@ -68,8 +75,8 @@ export class ProducerManager {
             this._config.id,
             this._config.name,
             "producer",
-            this._state && this._state.channel && this._state.channel.sideKey,
-            this._state && this._state.channel && this._state.channel.initialRoot
+            this._state && this._state.channel && this._state.channel.initialRoot,
+            this._state && this._state.channel && this._state.channel.sideKey
         );
         this._loggingService.log("producer-init", `Registered with Grid`);
 
@@ -91,8 +98,8 @@ export class ProducerManager {
                 this._config.id,
                 this._config.name,
                 "producer",
-                this._state.channel.sideKey,
-                this._state.channel.initialRoot
+                this._state.channel.initialRoot,
+                this._state.channel.sideKey
             );
             this._loggingService.log("producer-init", `Updated Registration`);
         }
@@ -118,8 +125,8 @@ export class ProducerManager {
                 this._config.id,
                 this._config.name,
                 "producer",
-                this._state.channel.sideKey,
-                this._state.channel.initialRoot
+                this._state.channel.initialRoot,
+                this._state.channel.sideKey
             );
             this._loggingService.log("producer-reset", `Updated Registration with Grid`);
         }

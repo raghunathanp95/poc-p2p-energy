@@ -40,7 +40,7 @@ loggingService.log("app", `   Name: ${config.consumer.name}`);
  * @param consumerManager The consumer manager to start.
  */
 async function start(consumerManager: ConsumerManager): Promise<void> {
-    await consumerManager.intialise();
+    await consumerManager.initialise();
 
     // await consumerService.closedown();
 }

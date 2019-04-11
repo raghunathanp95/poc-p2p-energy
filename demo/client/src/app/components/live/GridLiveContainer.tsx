@@ -1,6 +1,6 @@
+import { StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
-import { GridState } from "../../../models/api/gridState";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
@@ -44,7 +44,10 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
         this.state = {
             walletBalance: "-----",
-            gridState: this._demoGridManager.getGridState()
+            gridState: this._demoGridManager.getGridState(),
+            isBusy: true,
+            isError: false,
+            status: `Generating grid '${this.props.grid.name}'`
         };
     }
 
@@ -56,10 +59,26 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
         this.checkWalletBalance();
 
         this._demoGridManager.subscribeGrid("gridLiveContainer", (gridState) => {
-            this.setState({gridState});
+            this.setState({ gridState });
         });
 
-        await this._demoGridManager.load(this.props.grid);
+        try {
+            await this._demoGridManager.load(this.props.grid, (progress) => {
+                this.setState({
+                    status: progress
+                });
+            });
+            this.setState({
+                isBusy: false,
+                status: ""
+            });
+        } catch (err) {
+            this.setState({
+                isBusy: false,
+                isError: true,
+                status: `Error initializing grid: ${err.message}`
+            });
+        }
     }
 
     /**
@@ -81,35 +100,41 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
     public render(): ReactNode {
         return (
             <div className="grid-live-container">
-                <div>Global Wallet Balance: {this.state.walletBalance}</div>
+                <StatusMessage status={this.state.status} color={this.state.isError ? "danger" : "success"} isBusy={this.state.isBusy} />
 
-                <div className="grid-live-columns">
-                    <div className="grid-live-source-producer-column">
-                        <div className="grid-live-caption">Producers</div>
-                        {this.props.grid.producers.length === 0 && (
-                            <div className="grid-live-producer">
-                                <div>There are no producers configured.</div>
+                {!this.state.status && (
+                    <React.Fragment>
+                        <div>Global Wallet Balance: {this.state.walletBalance}</div>
+
+                        <div className="grid-live-columns">
+                            <div className="grid-live-source-producer-column">
+                                <div className="grid-live-caption">Producers</div>
+                                {this.props.grid.producers.length === 0 && (
+                                    <div className="grid-live-producer">
+                                        <div>There are no producers configured.</div>
+                                    </div>
+                                )}
+                                {this.props.grid.producers.map((p, idx) => (
+                                    <GridLiveProducer key={idx} producer={p} idx={idx} />
+                                ))}
                             </div>
-                        )}
-                        {this.props.grid.producers.map((p, idx) => (
-                            <GridLiveProducer key={idx} producer={p} idx={idx} />
-                        ))}
-                    </div>
-                    <div className="grid-live-grid-column">
-                        <div className="grid-live-caption">Grid</div>
-                        <GridLiveOverview grid={this.props.grid} />
-                    </div>
+                            <div className="grid-live-grid-column">
+                                <div className="grid-live-caption">Grid</div>
+                                <GridLiveOverview grid={this.props.grid} />
+                            </div>
 
-                    <div className="grid-live-consumer-column">
-                        <div className="grid-live-caption">Consumers</div>
-                        {this.props.grid.consumers.length === 0 && (
-                            <div>There are no consumers configured.</div>
-                        )}
-                        {this.props.grid.consumers.map((c, idx) => (
-                            <GridLiveConsumer key={idx} consumer={c} idx={idx} />
-                        ))}
-                    </div>
-                </div>
+                            <div className="grid-live-consumer-column">
+                                <div className="grid-live-caption">Consumers</div>
+                                {this.props.grid.consumers.length === 0 && (
+                                    <div>There are no consumers configured.</div>
+                                )}
+                                {this.props.grid.consumers.map((c, idx) => (
+                                    <GridLiveConsumer key={idx} consumer={c} idx={idx} />
+                                ))}
+                            </div>
+                        </div>
+                    </React.Fragment>
+                )}
             </div >
         );
     }

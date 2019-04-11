@@ -52,10 +52,17 @@ export class SourceManager {
     }
 
     /**
+     * Get the state for the manager.
+     */
+    public getState(): ISourceManagerState {
+        return this._state;
+    }
+
+    /**
      * Register the source with the Producer.
      * @param configuration The configuration to use.
      */
-    public async intialise(): Promise<void> {
+    public async initialise(): Promise<void> {
         await this.loadState();
 
         this._loggingService.log("source-init", "Registering with Producer");
@@ -64,8 +71,8 @@ export class SourceManager {
             this._config.id,
             this._config.name,
             this._config.type,
-            this._state && this._state.channel && this._state.channel.sideKey,
-            this._state && this._state.channel && this._state.channel.initialRoot
+            this._state && this._state.channel && this._state.channel.initialRoot,
+            this._state && this._state.channel && this._state.channel.sideKey
         );
         this._loggingService.log("source-init", `Registered with Producer`);
 
@@ -87,8 +94,8 @@ export class SourceManager {
                 this._config.id,
                 this._config.name,
                 this._config.type,
-                this._state.channel.sideKey,
-                this._state.channel.initialRoot
+                this._state.channel.initialRoot,
+                this._state.channel.sideKey
             );
             this._loggingService.log("source-init", `Updated Registration`);
         }

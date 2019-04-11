@@ -1,10 +1,23 @@
-import { IDemoProducerState } from "../../../models/services/IDemoProducerState";
-
 export interface GridLiveProducerState {
     /**
-     * The producer state.
+     * The mam root.
      */
-    producerState?: IDemoProducerState;
+    mamRoot?: string;
+
+    /**
+     * The mam sideKey.
+     */
+    sideKey?: string;
+
+    /**
+     * The received balance.
+     */
+    receivedBalance: string;
+
+    /**
+     * Owed balance.
+     */
+    owedBalance: string;
 
     /**
      * Are the details expanded.

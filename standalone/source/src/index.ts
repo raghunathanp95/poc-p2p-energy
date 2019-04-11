@@ -40,7 +40,7 @@ loggingService.log("app", `   Type: ${config.source.type}`);
  * @param sourceManager The source manager to start.
  */
 async function start(sourceManager: SourceManager): Promise<void> {
-    await sourceManager.intialise();
+    await sourceManager.initialise();
 
     for (let i = 0; i < 5; i++) {
         // tslint:disable-next-line:insecure-random

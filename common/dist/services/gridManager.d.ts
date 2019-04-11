@@ -1,6 +1,7 @@
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IRegistration } from "../models/services/registration/IRegistration";
+import { IGridManagerState } from "../models/state/IGridManagerState";
 /**
  * Service to handle the grid.
  */
@@ -23,7 +24,11 @@ export declare class GridManager {
      */
     constructor(nodeConfig: INodeConfiguration);
     /**
-     * Intialise the grid.
+     * Get the state for the manager.
+     */
+    getState(): IGridManagerState;
+    /**
+     * Initialise the grid.
      */
     initialise(): Promise<void>;
     /**

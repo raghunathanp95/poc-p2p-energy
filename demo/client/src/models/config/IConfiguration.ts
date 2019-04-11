@@ -15,4 +15,9 @@ export interface IConfiguration {
      * The google analytics id.
      */
     googleAnalyticsId: string;
+
+    /**
+     * Url to use for mam exploration.
+     */
+    mamExplorer: string;
 }

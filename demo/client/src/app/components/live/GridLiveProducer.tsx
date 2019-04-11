@@ -1,5 +1,6 @@
 import { ILineChartOptions } from "chartist";
 import classnames from "classnames";
+import { Button } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import ChartistGraph from "react-chartist";
@@ -8,6 +9,7 @@ import producer2 from "../../../assets/producers/producer2.svg";
 import producer3 from "../../../assets/producers/producer3.svg";
 import { ISource } from "../../../models/api/ISource";
 import { DemoGridManager } from "../../../services/demoGridManager";
+import { MamExplorer } from "../../../services/mamExplorer";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
 import { GridLiveProducerState } from "./GridLiveProducerState";
@@ -33,6 +35,11 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     private readonly _selectedSources: string[];
 
     /**
+     * Mam explorer service.
+     */
+    private readonly _mamExplorer: MamExplorer;
+
+    /**
      * Create a new instance of GridLiveProducer.
      * @param props The props for the component.
      */
@@ -45,15 +52,17 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             producer3
         ];
 
+        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this._selectedSources = [];
 
         this.state = {
-            producerState: this._demoGridManager.getProducerState(this.props.producer.id),
             isExpanded: false,
             graphLabels: [],
-            graphSeries: []
+            graphSeries: [],
+            receivedBalance: "-----",
+            owedBalance: "-----"
         };
     }
 
@@ -64,7 +73,14 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         this.calculateGraph();
 
         this._demoGridManager.subscribeProducer(this.props.producer.id, (producerState) => {
-            this.setState({ producerState });
+            const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
+
+            this.setState({
+                receivedBalance: producerState && producerState.receivedBalance !== undefined ? `${producerState.receivedBalance}i` : "-----",
+                owedBalance: producerState && producerState.owedBalance !== undefined ? `${producerState.owedBalance}i` : "-----",
+                mamRoot: mamChannel && mamChannel.initialRoot,
+                sideKey: mamChannel && mamChannel.sideKey
+            });
         });
     }
 
@@ -101,13 +117,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     </button>
                     <div className="grid-live-producer-info">
                         <div className="grid-live-producer-info-id">ID: {this.props.producer.id}</div>
-                        {this.state.producerState && (
-                            <React.Fragment>
-                                <div className="grid-live-producer-sub-title">Balance</div>
-                                <div className="grid-live-producer-info-data">Received: {this.state.producerState.receivedBalance}i</div>
-                                <div className="grid-live-producer-info-data">Owed: {this.state.producerState.owedBalance}i</div>
-                            </React.Fragment>
-                        )}
+                        <div className="grid-live-producer-sub-title">Balance</div>
+                        <div className="grid-live-producer-info-data">Received: {this.state.receivedBalance}</div>
+                        <div className="grid-live-producer-info-data">Owed: {this.state.owedBalance}</div>
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -118,7 +130,18 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 { "grid-live-producer-detail--expanded": this.state.isExpanded }
                             )}
                     >
-                        <div className="grid-live-producer-sub-title">Power Output</div>
+                        <div className="grid-live-producer-sub-title">
+                            Power Output
+                            {this.state.mamRoot && (
+                                <Button
+                                    size="extra-small"
+                                    color="secondary"
+                                    onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                                >
+                                    Explore MAM Output
+                                </Button>
+                            )}
+                        </div>
                         {this.state.graphSeries.length === 0 && (
                             <div>There is no power data for this producer.</div>
                         )}
@@ -182,29 +205,29 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * Calculate the graph data.
      */
     private calculateGraph(): void {
-        if (this.state.producerState) {
-            let graphLabels: string[] = [];
-            const graphSeries: number[][] = [];
+        // if (this.state.producerState) {
+        //     let graphLabels: string[] = [];
+        //     const graphSeries: number[][] = [];
 
-            if (this.state.producerState.powerSlices && this.state.producerState.powerSlices.length > 0) {
-                graphSeries.push(this.state.producerState.powerSlices.map(p => p.value));
-                graphLabels = this.state.producerState.powerSlices.map(p => p.startTime.toString());
-            }
+        //     if (this.state.producerState.powerSlices && this.state.producerState.powerSlices.length > 0) {
+        //         graphSeries.push(this.state.producerState.powerSlices.map(p => p.value));
+        //         graphLabels = this.state.producerState.powerSlices.map(p => p.startTime.toString());
+        //     }
 
-            for (let i = 0; i < this.props.producer.sources.length; i++) {
-                if (this._selectedSources.indexOf(this.props.producer.sources[i].id) >= 0) {
-                    const sourceState = this.state.producerState.sourceStates[this.props.producer.sources[i].id];
-                    if (sourceState) {
-                        const powerSlices = sourceState.powerSlices;
-                        if (powerSlices) {
-                            graphSeries.push(powerSlices.map(p => p.value));
-                        }
-                    }
-                }
-            }
+        //     for (let i = 0; i < this.props.producer.sources.length; i++) {
+        //         if (this._selectedSources.indexOf(this.props.producer.sources[i].id) >= 0) {
+        //             const sourceState = this.state.producerState.sourceStates[this.props.producer.sources[i].id];
+        //             if (sourceState) {
+        //                 const powerSlices = sourceState.powerSlices;
+        //                 if (powerSlices) {
+        //                     graphSeries.push(powerSlices.map(p => p.value));
+        //                 }
+        //             }
+        //         }
+        //     }
 
-            this.setState({ graphSeries, graphLabels });
-        }
+        //     this.setState({ graphSeries, graphLabels });
+        // }
     }
 }
 

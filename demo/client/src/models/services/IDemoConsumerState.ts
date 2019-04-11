@@ -10,12 +10,12 @@ export interface IDemoConsumerState {
     /**
      * Paid balance.
      */
-    paidBalance: number;
+    paidBalance?: number;
 
     /**
      * Owed balance.
      */
-    owedBalance: number;
+    owedBalance?: number;
 
     /**
      * The power slices for the producer.

@@ -53,10 +53,17 @@ export class ConsumerManager {
     }
 
     /**
+     * Get the state for the manager.
+     */
+    public getState(): IConsumerManagerState {
+        return this._state;
+    }
+
+    /**
      * Register the consumer with the Grid.
      * @param configuration The configuration to use.
      */
-    public async intialise(): Promise<void> {
+    public async initialise(): Promise<void> {
         await this.loadState();
 
         this._loggingService.log("consumer-init", "Registering with Grid");
@@ -65,8 +72,8 @@ export class ConsumerManager {
             this._config.id,
             this._config.name,
             "consumer",
-            this._state && this._state.channel && this._state.channel.sideKey,
-            this._state && this._state.channel && this._state.channel.initialRoot
+            this._state && this._state.channel && this._state.channel.initialRoot,
+            this._state && this._state.channel && this._state.channel.sideKey
         );
 
         this._loggingService.log("consumer-init", `Registered with Grid`);
@@ -106,8 +113,8 @@ export class ConsumerManager {
                 this._config.id,
                 this._config.name,
                 "consumer",
-                this._state.channel.sideKey,
-                this._state.channel.initialRoot
+                this._state.channel.initialRoot,
+                this._state.channel.sideKey
             );
             this._loggingService.log("consumer-init", `Updated Registration`);
         }
@@ -147,7 +154,7 @@ export class ConsumerManager {
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Loading State`);
-        this._state = await storageConfigService.get("state");
+        this._state = await storageConfigService.get(`${this._config.id}/state`);
         this._loggingService.log("consumer", `Loaded State`);
 
         this._state = this._state || {};
@@ -161,7 +168,7 @@ export class ConsumerManager {
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Storing State`);
-        await storageConfigService.set("state", this._state);
+        await storageConfigService.set(`${this._config.id}/state`, this._state);
         this._loggingService.log("consumer", `Storing State Complete`);
     }
 }

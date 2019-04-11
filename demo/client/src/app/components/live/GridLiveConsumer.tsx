@@ -1,9 +1,11 @@
 import classnames from "classnames";
+import { Button } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
+import { MamExplorer } from "../../../services/mamExplorer";
 import "./GridLiveConsumer.scss";
 import { GridLiveConsumerProps } from "./GridLiveConsumerProps";
 import { GridLiveConsumerState } from "./GridLiveConsumerState";
@@ -23,6 +25,11 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     private readonly _demoGridManager: DemoGridManager;
 
     /**
+     * Mam explorer service.
+     */
+    private readonly _mamExplorer: MamExplorer;
+
+    /**
      * Create a new instance of GridLiveConsumer.
      * @param props The props for the component.
      */
@@ -34,11 +41,13 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
+        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
-            consumerState: this._demoGridManager.getConsumerState(this.props.consumer.id),
-            isExpanded: false
+            isExpanded: false,
+            paidBalance: "-----",
+            owedBalance: "-----"
         };
     }
 
@@ -47,7 +56,17 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
      */
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeConsumer(this.props.consumer.id, (consumerState) => {
-            this.setState({ consumerState });
+            const mamChannel = consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.channel;
+            const mamChannelReturn = consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.returnChannel;
+
+            this.setState({
+                paidBalance: consumerState && consumerState.paidBalance !== undefined ? `${consumerState.paidBalance}i` : "-----",
+                owedBalance: consumerState && consumerState.owedBalance !== undefined ? `${consumerState.owedBalance}i` : "-----",
+                mamRoot: mamChannel && mamChannel.initialRoot,
+                sideKey: mamChannel && mamChannel.sideKey,
+                mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
+                sideKeyReturn: mamChannelReturn && mamChannelReturn.sideKey
+            });
         });
     }
 
@@ -84,13 +103,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                     </button>
                     <div className="grid-live-consumer-info">
                         <div className="grid-live-consumer-info-id">ID: {this.props.consumer.id}</div>
-                        {this.state.consumerState && (
-                            <React.Fragment>
-                                <div className="grid-live-consumer-sub-title">Balance</div>
-                                <div className="grid-live-consumer-info-data">Paid: {this.state.consumerState.paidBalance}i</div>
-                                <div className="grid-live-consumer-info-data">Owed: {this.state.consumerState.owedBalance}i</div>
-                            </React.Fragment>
-                        )}
+                        <div className="grid-live-consumer-sub-title">Balance</div>
+                        <div className="grid-live-producer-info-data">Paid: {this.state.paidBalance}</div>
+                        <div className="grid-live-producer-info-data">Owed: {this.state.owedBalance}</div>
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -102,7 +117,24 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             )}
                     >
                         <br />
-                        Here will be the expanded details for the consumer.
+                        {this.state.mamRoot && (
+                            <Button
+                                size="extra-small"
+                                color="secondary"
+                                onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                            >
+                                Explore MAM Usage
+                            </Button>
+                        )}
+                        {this.state.mamRootReturn && (
+                            <Button
+                                size="extra-small"
+                                color="secondary"
+                                onClick={() => this._mamExplorer.explore(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
+                            >
+                                Explore MAM Billing
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>

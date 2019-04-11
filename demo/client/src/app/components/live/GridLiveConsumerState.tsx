@@ -1,10 +1,33 @@
-import { IDemoConsumerState } from "../../../models/services/IDemoConsumerState";
-
 export interface GridLiveConsumerState {
     /**
-     * The consumer state.
+     * The mam root.
      */
-    consumerState?: IDemoConsumerState;
+    mamRoot?: string;
+
+    /**
+     * The mam sideKey.
+     */
+    sideKey?: string;
+
+    /**
+     * The mam root for the return channel.
+     */
+    mamRootReturn?: string;
+
+    /**
+     * The mam sideKey for the return channel.
+     */
+    sideKeyReturn?: string;
+
+    /**
+     * The paid balance.
+     */
+    paidBalance: string;
+
+    /**
+     * Owed balance.
+     */
+    owedBalance: string;
 
     /**
      * Are the details expanded.

@@ -17,7 +17,7 @@ export interface IRegistrationManagementService {
      */
     removeRegistration(registrationId: string): Promise<void>;
     /**
-     * Load the registrations to intialise the queues.
+     * Load the registrations to initialise the queues.
      */
     loadRegistrations(): Promise<void>;
     /**

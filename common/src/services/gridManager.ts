@@ -40,7 +40,14 @@ export class GridManager {
     }
 
     /**
-     * Intialise the grid.
+     * Get the state for the manager.
+     */
+    public getState(): IGridManagerState {
+        return this._state;
+    }
+
+    /**
+     * Initialise the grid.
      */
     public async initialise(): Promise<void> {
         await this.loadState();
