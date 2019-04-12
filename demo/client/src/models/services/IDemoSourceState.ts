@@ -1,5 +1,5 @@
+import { ISourceOutputCommand } from "p2p-energy-common/dist/models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
-import { IDemoPowerSlice } from "./IDemoPowerSlice";
 
 export interface IDemoSourceState {
     /**
@@ -8,7 +8,7 @@ export interface IDemoSourceState {
     sourceManagerState: ISourceManagerState;
 
     /**
-     * The power slices from the source.
+     * The output commands from the source.
      */
-    powerSlices?: IDemoPowerSlice[];
+    outputCommands: ISourceOutputCommand[];
 }

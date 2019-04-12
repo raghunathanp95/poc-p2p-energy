@@ -46,7 +46,7 @@ async function start(sourceManager: SourceManager): Promise<void> {
 
     for (let i = 0; i < 5; i++) {
         // tslint:disable-next-line:insecure-random
-        await sourceManager.sendOutputCommand(Math.random() * 1000);
+        await sourceManager.sendOutputCommand(Date.now(), Math.random() * 1000);
     }
 
     // Don't close down unless you want to remove the registration

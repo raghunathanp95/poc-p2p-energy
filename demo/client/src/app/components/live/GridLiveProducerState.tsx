@@ -1,3 +1,5 @@
+import { IDemoSourceState } from "../../../models/services/IDemoSourceState";
+
 export interface GridLiveProducerState {
     /**
      * The mam root.
@@ -23,6 +25,11 @@ export interface GridLiveProducerState {
      * Are the details expanded.
      */
     isExpanded: boolean;
+
+    /**
+     * The selected sources for the graph.
+     */
+    selectedSources: { [id: string]: IDemoSourceState };
 
     /**
      * The data labels for the graph.

@@ -75,16 +75,16 @@ app.build(routes, async (_1, config, _2) => {
             () => new LocalFileStorageService<any>(`${config.localStorageFolder}/${config.producer.id}/storage`));
 
         ServiceFactory.register(
-            "source-store",
+            "producer-source-output-store",
             () => new LocalFileStorageService<ISourceStore>(
-                `${config.localStorageFolder}/${config.producer.id}/source-output`));
+                `${config.localStorageFolder}/source-output`));
     } else {
         ServiceFactory.register(
             "storage",
             () => new ApiStorageService<any>(config.gridApiEndpoint, config.producer.id, "storage")
         );
         ServiceFactory.register(
-            "source-store",
+            "producer-source-output-store",
             () => new ApiStorageService<ISourceStore>(config.gridApiEndpoint, config.producer.id, "source-output")
         );
     }

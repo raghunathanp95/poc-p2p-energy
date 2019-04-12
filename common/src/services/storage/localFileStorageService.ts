@@ -88,7 +88,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
     }> {
         try {
             if (page === 0) {
-                const entries = await fs.promises.readdir(this._folder);
+                const entries = await fs.promises.readdir(path.join(this._folder, context));
 
                 const ids = entries.map(e => e.replace(/\.json$/, ""));
                 const items = [];

@@ -1,5 +1,8 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
+import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
+import { IMamCommand } from "p2p-energy-common/dist/models/mam/IMamCommand";
+import { IRegistrationManagementService } from "p2p-energy-common/dist/models/services/IRegistrationManagementService";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
 import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
@@ -61,7 +64,18 @@ export class DemoGridManager {
     /**
      * The source managers.
      */
-    private _sourceManagers?: { [id: string]: SourceManager };
+    private _sourceManagers?: {
+        [id: string]: {
+            /**
+             * The producer that the source belongs to.
+             */
+            producerId: string;
+            /**
+             * The source manager.
+             */
+            sourceManager: SourceManager;
+        };
+    };
 
     /**
      * Timer used for updates.
@@ -89,6 +103,11 @@ export class DemoGridManager {
     private readonly _subscriptionsSource: { [id: string]: (state: IDemoSourceState | undefined) => void };
 
     /**
+     * Counter for the update loop.
+     */
+    private _updateCounter: number;
+
+    /**
      * Create a new instance of DemoGridManager.
      * @param nodeConfig The configuration for accessing the tangle.
      */
@@ -105,6 +124,8 @@ export class DemoGridManager {
             consumerStates: {},
             sourceStates: {}
         };
+
+        this._updateCounter = 0;
     }
 
     /**
@@ -266,7 +287,7 @@ export class DemoGridManager {
     public getSourceState(id: string): IDemoSourceState | undefined {
         const state = this._gridState && this._gridState.sourceStates[id];
         if (state && this._sourceManagers && this._sourceManagers[id]) {
-            state.sourceManagerState = this._sourceManagers[id].getState();
+            state.sourceManagerState = this._sourceManagers[id].sourceManager.getState();
         }
         return state;
     }
@@ -330,7 +351,7 @@ export class DemoGridManager {
      * Initialise all the service required by the manangers.
      * @param grid Grid to create services for.
      */
-    private initialiseServices(grid: IGrid): void {
+    private async initialiseServices(grid: IGrid): Promise<void> {
         ServiceFactory.register(
             "grid-storage-manager-state",
             () => new BrowserStorageService<IGridManagerState>(`grid-manager-state`));
@@ -341,7 +362,7 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "registration-storage",
-            () => new BrowserStorageService<IRegistration>(`registrations`));
+            () => new BrowserStorageService<IRegistration>(`registrations/${grid.id}`));
 
         ServiceFactory.register(
             "registration-management",
@@ -350,6 +371,10 @@ export class DemoGridManager {
         ServiceFactory.register(
             "producer-registration",
             () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "producer-source-output-store",
+            () => new BrowserStorageService<ISourceStore>(`producer-source-output`));
 
         ServiceFactory.register(
             "consumer-storage-manager-state",
@@ -366,7 +391,6 @@ export class DemoGridManager {
         ServiceFactory.register(
             "source-registration",
             () => new DirectRegistrationService("registration-management"));
-
     }
 
     /**
@@ -387,9 +411,12 @@ export class DemoGridManager {
     private async constructManagers(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
         this.initialiseServices(grid);
 
+        const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+        await registrationManagementService.loadRegistrations();
+
         progressCallback("Initializing Grid.");
         if (!this._gridManager) {
-            this._gridManager = new GridManager({name: grid.name, id: grid.id}, this._nodeConfig);
+            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._nodeConfig);
             await this._gridManager.initialise();
         }
 
@@ -413,11 +440,16 @@ export class DemoGridManager {
 
                 progressCallback(`Initializing Source '${source.name}' [${source.id}].`);
                 if (!this._sourceManagers[source.id]) {
-                    this._sourceManagers[source.id] = new SourceManager({ name: source.name, id: source.id, type: source.type }, this._nodeConfig);
-                    await this._sourceManagers[source.id].initialise();
+                    this._sourceManagers[source.id] = {
+                        producerId: producer.id,
+                        sourceManager: new SourceManager({ name: source.name, id: source.id, type: source.type }, this._nodeConfig)
+                    };
+                    await this._sourceManagers[source.id].sourceManager.initialise();
                 }
 
-                this._gridState.sourceStates[source.id] = this._gridState.sourceStates[source.id] || {};
+                this._gridState.sourceStates[source.id] = this._gridState.sourceStates[source.id] || {
+                    outputCommands: []
+                };
             }
         }
 
@@ -430,10 +462,7 @@ export class DemoGridManager {
                 await this._consumerManagers[consumer.id].initialise();
             }
 
-            this._gridState.consumerStates[consumer.id] = this._gridState.consumerStates[consumer.id] || {
-                paidBalance: 321,
-                owedBalance: 654
-            };
+            this._gridState.consumerStates[consumer.id] = this._gridState.consumerStates[consumer.id] || {};
         }
     }
 
@@ -441,29 +470,40 @@ export class DemoGridManager {
      * Update all the managers.
      */
     private async updateManagers(): Promise<void> {
+        if (this._gridId) {
+            const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+            await registrationManagementService.pollCommands(async (registration: IRegistration, commands: IMamCommand[]) => {
+                // Producers and consumers and registered with the grid, so hand the commands to the grid manager
+                if (registration.itemType === "producer" || registration.itemType === "consumer") {
+                    if (this._gridManager) {
+                        await this._gridManager.handleCommands(registration, commands);
+                    }
+                } else {
+                    // All other registrations are sources with producers, so find which
+                    // producer the source belongs to.
+                    if (this._sourceManagers && this._sourceManagers[registration.id]) {
+                        if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
+                            await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
+                        }
+                    }
+                }
+            });
+
+            // tslint:disable:insecure-random
+            // Add a new source value every minute
+            if (this._sourceManagers && this._updateCounter % 1 === 0) {
+                for (const sourceId in this._sourceManagers) {
+                    // Range the source output from 0 to 1000
+                    const outputCommand = await this._sourceManagers[sourceId].sourceManager.sendOutputCommand(this._updateCounter * 10, Math.random() * 1000);
+
+                    this._gridState.sourceStates[sourceId].outputCommands.push(outputCommand);
+                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+                }
+                this.updateSourceSubscribers();
+            }
+
+            this._updateCounter++;
+            await this._demoGridStateStorageService.set(this._gridId, this._gridState);
+        }
     }
-
-    // /**
-    //  * Populate power data for the producer.
-    //  */
-    // private populatePowerData(): void {
-    //     // Dummy data for now
-    //     this.props.producer.powerSlices = [];
-    //     if (this.props.producer.sources.length > 0) {
-    //         for (let i = 0; i < this.props.producer.sources.length; i++) {
-    //             const powerSlices = [];
-
-    //             for (let k = 0; k < 10; k++) {
-    //                 // tslint:disable-next-line:insecure-random
-    //                 const powerSlice: IPowerSlice = { startTime: k, endTime: ((k + 1)) - 1, value: Math.random() * 180 };
-    //                 powerSlices.push(powerSlice);
-
-    //                 this.props.producer.powerSlices[k] = this.props.producer.powerSlices[k] || { startTime: k, endTime: ((k + 1)) - 1, value: 0 };
-    //                 this.props.producer.powerSlices[k].value += powerSlice.value;
-    //             }
-
-    //             this.props.producer.sources[i].powerSlices = powerSlices;
-    //         }
-    //     }
-    // }
 }

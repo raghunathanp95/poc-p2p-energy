@@ -23,13 +23,9 @@ export declare class RegistrationManagementService implements IRegistrationManag
      */
     private readonly _registrationStorageService;
     /**
-     * All the possible registrations.
+     * All the registrations.
      */
-    private _allRegistrations?;
-    /**
-     * The registration left to process in current queue.
-     */
-    private _registrationsQueue?;
+    private _registrations?;
     /**
      * Initialise a new instance of RegistrationService.
      * @param nodeConfig The configuration.
@@ -75,14 +71,4 @@ export declare class RegistrationManagementService implements IRegistrationManag
      * @returns Log of process.
      */
     private getNewCommands;
-    /**
-     * Add a registration to the queues.
-     * @param registration The registrations to add.
-     */
-    private addQueueRegistration;
-    /**
-     * Remove registration from the queues if they exist.
-     * @param registrationId The registration to remove.
-     */
-    private removeQueueRegistration;
 }

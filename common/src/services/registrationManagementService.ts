@@ -33,14 +33,9 @@ export class RegistrationManagementService implements IRegistrationManagementSer
     private readonly _registrationStorageService: IStorageService<IRegistration>;
 
     /**
-     * All the possible registrations.
+     * All the registrations.
      */
-    private _allRegistrations?: IRegistration[];
-
-    /**
-     * The registration left to process in current queue.
-     */
-    private _registrationsQueue?: IRegistration[];
+    private _registrations?: IRegistration[];
 
     /**
      * Initialise a new instance of RegistrationService.
@@ -80,7 +75,14 @@ export class RegistrationManagementService implements IRegistrationManagementSer
 
         await this._registrationStorageService.set(registration.id, registration);
 
-        this.addQueueRegistration(registration);
+        // Add it to the internal list if it doesn't exist
+        const idx = this._registrations.findIndex(r => r.id === registration.id);
+        if (idx < 0) {
+            this._registrations.push(registration);
+        } else {
+            // Or update it if it does
+            this._registrations[idx] = registration;
+        }
     }
 
     /**
@@ -94,7 +96,11 @@ export class RegistrationManagementService implements IRegistrationManagementSer
             throw new Error(`Registration '${registrationId}' does not exist.`);
         }
 
-        this.removeQueueRegistration(registrationId);
+        // Remove if from the internal list if it exists
+        const idx = this._registrations.findIndex(r => r.id === registration.id);
+        if (idx >= 0) {
+            this._registrations.splice(idx, 1);
+        }
 
         await this._registrationStorageService.remove(registrationId);
 
@@ -106,7 +112,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
      */
     public async loadRegistrations(): Promise<void> {
         this._loggingService.log("registration", `Loading registrations`);
-        this._allRegistrations = [];
+        this._registrations = [];
         let page = 0;
         const pageSize = 20;
         let response;
@@ -114,13 +120,12 @@ export class RegistrationManagementService implements IRegistrationManagementSer
             response = await this._registrationStorageService.page(undefined, page, pageSize);
 
             if (response && response.items && response.items.length > 0) {
-                this._allRegistrations = this._allRegistrations.concat(response.items);
+                this._registrations = this._registrations.concat(response.items);
                 page++;
             }
         } while (response && response.items && response.items.length > 0);
 
-        this._registrationsQueue = [];
-        this._loggingService.log("registration", `Loaded ${this._allRegistrations.length} registrations`);
+        this._loggingService.log("registration", `Loaded ${this._registrations.length} registrations`);
     }
 
     /**
@@ -129,15 +134,9 @@ export class RegistrationManagementService implements IRegistrationManagementSer
      */
     public async pollCommands(
         handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
-        if (this._allRegistrations.length > 0) {
-            if (this._registrationsQueue.length === 0) {
-                this._registrationsQueue = this._allRegistrations.slice(0);
-            }
 
-            if (this._registrationsQueue.length > 0) {
-                const nextRegistration = this._registrationsQueue.shift();
-                await this.getNewCommands(nextRegistration, handleCommands);
-            }
+        for (let i = 0 ; i < this._registrations.length; i++) {
+            await this.getNewCommands(this._registrations[i], handleCommands);
         }
     }
 
@@ -224,41 +223,6 @@ export class RegistrationManagementService implements IRegistrationManagementSer
                 await this._registrationStorageService.set(registration.id, registration);
 
                 await handleCommands(registration, commands);
-            }
-        }
-    }
-
-    /**
-     * Add a registration to the queues.
-     * @param registration The registrations to add.
-     */
-    private addQueueRegistration(registration: IRegistration): void {
-        this.removeQueueRegistration(registration.id);
-
-        // We need to add the new item into work queue if it doesn't already exist
-        // as we only read the registrations form the db on startup
-        this._allRegistrations = this._allRegistrations || [];
-        this._registrationsQueue = this._registrationsQueue || [];
-        this._allRegistrations.push(registration);
-        this._registrationsQueue.push(registration);
-    }
-
-    /**
-     * Remove registration from the queues if they exist.
-     * @param registrationId The registration to remove.
-     */
-    private removeQueueRegistration(registrationId: string): void {
-        if (this._allRegistrations) {
-            const idx = this._allRegistrations.findIndex(r => r.id === registrationId);
-            if (idx >= 0) {
-                this._allRegistrations.splice(idx, 1);
-            }
-        }
-
-        if (this._registrationsQueue) {
-            const idx2 = this._registrationsQueue.findIndex(r => r.id === registrationId);
-            if (idx2 >= 0) {
-                this._registrationsQueue.splice(idx2, 1);
             }
         }
     }

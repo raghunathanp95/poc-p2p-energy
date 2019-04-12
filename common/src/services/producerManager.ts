@@ -162,9 +162,8 @@ export class ProducerManager {
     public async collateSources(
         calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void> {
         if (this._state && this._state.channel) {
-            const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
-            const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
-            this._state.paymentAddressIndex++;
+            const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
+                "producer-source-output-store");
 
             let sources;
             // What is the next block we want to collate
@@ -175,7 +174,7 @@ export class ProducerManager {
             let page = 0;
             do {
                 // Get the sources page at a time
-                sources = await sourceStoreService.page(undefined, page, 20);
+                sources = await sourceStoreService.page(this._config.id, page, 20);
                 if (sources && sources.items) {
                     for (let i = 0; i < sources.items.length; i++) {
                         const sourceStore = sources.items[i];
@@ -241,6 +240,9 @@ export class ProducerManager {
             this._state.lastOutputTime = endTime;
 
             if (totalOutput > 0) {
+                const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
+                this._state.paymentAddressIndex++;
+
                 const command: IProducerOutputCommand = {
                     command: "output",
                     startTime,
@@ -263,8 +265,9 @@ export class ProducerManager {
      * @param commands The commands to process.
      */
     public async handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void> {
-        const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>("source-store");
-        let store = await sourceStoreService.get(registration.id);
+        const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
+            "producer-source-output-store");
+        let store = await sourceStoreService.get(`${this._config.id}/${registration.id}`);
         let updatedStore = false;
 
         for (let i = 0; i < commands.length; i++) {

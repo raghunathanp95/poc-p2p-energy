@@ -1,6 +1,7 @@
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
+import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
 /**
  * Class to handle a source.
@@ -47,13 +48,14 @@ export declare class SourceManager {
     closedown(): Promise<void>;
     /**
      * Send an output command to the mam channel.
+     * @param endTime The end time for the current period.
      * @param value The output to send.
      */
-    sendOutputCommand(value: number): Promise<void>;
+    sendOutputCommand(endTime: number, value: number): Promise<ISourceOutputCommand>;
     /**
      * Send a command to the channel.
      */
-    sendCommand<T extends IMamCommand>(command: T): Promise<void>;
+    sendCommand<T extends IMamCommand>(command: T): Promise<T>;
     /**
      * Load the state for the producer.
      */

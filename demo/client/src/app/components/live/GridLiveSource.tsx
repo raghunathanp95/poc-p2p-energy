@@ -75,6 +75,19 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
     }
 
     /**
+     * The component received an update.
+     * @param prevProps The previous properties.
+     */
+    public componentDidUpdate(prevProps: GridLiveSourceProps): void {
+        if (this.props.isSelected !== prevProps.isSelected) {
+            this.setState({
+                isSelected: this.props.isSelected
+            });
+        }
+
+    }
+
+    /**
      * Render the component.
      * @returns The node to render.
      */

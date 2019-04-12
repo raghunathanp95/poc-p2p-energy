@@ -12,17 +12,28 @@
   }
 }
 
-.ct-line {
-  stroke: var(--jade) !important;
+$steps: 10;
+
+@for $i from 0 to $steps {
+    .ct-series:nth-of-type(#{$i + 1}) .ct-line {
+      stroke: lighten(#1e9a93, percentage(($i / ($steps - 1) / 2))) !important;
+    }
+    .ct-series:nth-of-type(#{$i + 1}) .ct-point {
+      stroke: lighten(#603f98, percentage(($i / ($steps - 1) / 2))) !important;
+    }
 }
 
-.ct-point {
-  stroke: var(--blueberry) !important;
-}
+// .ct-line {
+//   stroke: var(--jade) !important;
+// }
 
-.ct-area {
-  fill: var(--jade) !important;
-}
+// .ct-point {
+//   stroke: var(--blueberry) !important;
+// }
+
+// .ct-area {
+//   fill: var(--jade) !important;
+// }
 
 // sass-lint:disable no-ids
 #root {

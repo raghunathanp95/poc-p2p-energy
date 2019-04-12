@@ -129,13 +129,14 @@ export class SourceManager {
 
     /**
      * Send an output command to the mam channel.
+     * @param endTime The end time for the current period.
      * @param value The output to send.
      */
-    public async sendOutputCommand(value: number): Promise<void> {
+    public async sendOutputCommand(endTime: number, value: number): Promise<ISourceOutputCommand> {
         const command: ISourceOutputCommand = {
             command: "output",
             startTime: this._state.lastOutputTime + 1,
-            endTime: Date.now(),
+            endTime,
             output: value
         };
 
@@ -147,10 +148,11 @@ export class SourceManager {
     /**
      * Send a command to the channel.
      */
-    public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
+    public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
         const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
+        return command;
     }
 
     /**

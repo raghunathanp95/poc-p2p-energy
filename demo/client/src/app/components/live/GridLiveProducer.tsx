@@ -30,11 +30,6 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     private readonly _demoGridManager: DemoGridManager;
 
     /**
-     * The selected sources for the graph.
-     */
-    private readonly _selectedSources: string[];
-
-    /**
      * Mam explorer service.
      */
     private readonly _mamExplorer: MamExplorer;
@@ -55,10 +50,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
-        this._selectedSources = [];
-
         this.state = {
             isExpanded: false,
+            selectedSources: {},
             graphLabels: [],
             graphSeries: [],
             receivedBalance: "-----",
@@ -70,20 +64,21 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this.calculateGraph();
-
         this._demoGridManager.subscribeProducer(this.props.producer.id, (producerState) => {
             const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
             const producerManagerState = producerState && producerState.producerManagerState;
 
-            this.setState({
-                receivedBalance: producerManagerState && producerManagerState.receivedBalance !== undefined
-                    ? `${producerManagerState.receivedBalance}i` : "-----",
-                owedBalance: producerManagerState && producerManagerState.owedBalance !== undefined ?
-                    `${producerManagerState.owedBalance}i` : "-----",
-                mamRoot: mamChannel && mamChannel.initialRoot,
-                sideKey: mamChannel && mamChannel.sideKey
-            });
+            this.setState(
+                {
+                    receivedBalance: producerManagerState && producerManagerState.receivedBalance !== undefined
+                        ? `${producerManagerState.receivedBalance}i` : "-----",
+                    owedBalance: producerManagerState && producerManagerState.owedBalance !== undefined ?
+                        `${producerManagerState.owedBalance}i` : "-----",
+                    mamRoot: mamChannel && mamChannel.initialRoot,
+                    sideKey: mamChannel && mamChannel.sideKey
+                },
+                () => this.calculateGraph()
+            );
         });
     }
 
@@ -157,8 +152,6 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                         series: this.state.graphSeries
                                     }}
                                     options={{
-                                        low: 0,
-                                        showArea: true
                                     } as ILineChartOptions}
                                     type="Line"
                                 />
@@ -167,7 +160,25 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                         <div className="grid-live-producer-sub-title">
                             Sources
                             {this.props.producer.sources.length > 0 && (
-                                <span className="grid-live-producer-sub-title-minor"> - Select a source to add its output to the power graph.</span>
+                                <React.Fragment>
+                                    <Button
+                                        size="extra-small"
+                                        color="secondary"
+                                        onClick={() => this.selectAllSources(true)}
+                                    >
+                                        Select All
+                                    </Button>
+                                    <Button
+                                        size="extra-small"
+                                        color="secondary"
+                                        onClick={() => this.selectAllSources(false)}
+                                    >
+                                        Clear All
+                                    </Button>
+                                    <div className="grid-live-producer-sub-title-minor">
+                                        Select a source to add its output to the power graph.
+                                    </div>
+                                </React.Fragment>
                             )}
                         </div>
                         <div className="grid-live-sources">
@@ -178,7 +189,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 <GridLiveSource
                                     key={idx2}
                                     source={s}
-                                    isSelected={this._selectedSources.indexOf(s.id) >= 0}
+                                    isSelected={this.state.selectedSources[s.id] !== undefined}
                                     onSourceSelected={(source, isSelected) => this.handleSelectSource(source, isSelected)}
                                 />
                             ))}
@@ -190,18 +201,32 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     }
 
     /**
+     * Select or unselect all the sources.
+     * @param isSelected Is the source selected.
+     */
+    private selectAllSources(isSelected: boolean): void {
+        for (let i = 0; i < this.props.producer.sources.length; i++) {
+            this.handleSelectSource(this.props.producer.sources[i], isSelected);
+        }
+    }
+
+    /**
      * A source has been selected.
      * @param source The source that was selected.
      * @param isSelected Is the source selected.
      */
     private handleSelectSource(source: ISource, isSelected: boolean): void {
-        const idx = this._selectedSources.indexOf(source.id);
-        if (isSelected && idx < 0) {
-            this._selectedSources.push(source.id);
-            this.calculateGraph();
-        } else if (!isSelected && idx >= 0) {
-            this._selectedSources.splice(idx, 1);
-            this.calculateGraph();
+        if (isSelected && !this.state.selectedSources[source.id]) {
+            this._demoGridManager.subscribeSource(source.id, (sourceState) => {
+                if (sourceState) {
+                    this.state.selectedSources[source.id] = sourceState;
+                    this.setState({ selectedSources: this.state.selectedSources }, () => this.calculateGraph());
+                }
+            });
+        } else if (!isSelected && this.state.selectedSources[source.id]) {
+            this._demoGridManager.unsubscribeSource(source.id);
+            delete this.state.selectedSources[source.id];
+            this.setState({ selectedSources: this.state.selectedSources }, () => this.calculateGraph());
         }
     }
 
@@ -209,29 +234,16 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * Calculate the graph data.
      */
     private calculateGraph(): void {
-        // if (this.state.producerState) {
-        //     let graphLabels: string[] = [];
-        //     const graphSeries: number[][] = [];
-
-        //     if (this.state.producerState.powerSlices && this.state.producerState.powerSlices.length > 0) {
-        //         graphSeries.push(this.state.producerState.powerSlices.map(p => p.value));
-        //         graphLabels = this.state.producerState.powerSlices.map(p => p.startTime.toString());
-        //     }
-
-        //     for (let i = 0; i < this.props.producer.sources.length; i++) {
-        //         if (this._selectedSources.indexOf(this.props.producer.sources[i].id) >= 0) {
-        //             const sourceState = this.state.producerState.sourceStates[this.props.producer.sources[i].id];
-        //             if (sourceState) {
-        //                 const powerSlices = sourceState.powerSlices;
-        //                 if (powerSlices) {
-        //                     graphSeries.push(powerSlices.map(p => p.value));
-        //                 }
-        //             }
-        //         }
-        //     }
-
-        //     this.setState({ graphSeries, graphLabels });
-        // }
+        const graphLabels: string[] = [];
+        const graphSeries: number[][] = [];
+        if (this.state.mamRoot) {
+            for (const sourceId in this.state.selectedSources) {
+                if (this.state.selectedSources[sourceId].outputCommands.length > 0) {
+                    graphSeries.push(this.state.selectedSources[sourceId].outputCommands.map(p => p.output));
+                }
+            }
+        }
+        this.setState({ graphSeries, graphLabels });
     }
 }
 
