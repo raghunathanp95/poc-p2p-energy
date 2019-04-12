@@ -8,20 +8,10 @@ export declare class LocalFileStorageService<T> implements IStorageService<T> {
      */
     private readonly _folder;
     /**
-     * The registration id.
-     */
-    private readonly _registrationId;
-    /**
-     * The name of the context.
-     */
-    private readonly _contextName;
-    /**
      * Create a new instance of LocalFileStorageService
      * @param folder The local folder to store the data.
-     * @param registrationId The registration id.
-     * @param contextName The name of the context to store with.
      */
-    constructor(folder: string, registrationId: string, contextName: string);
+    constructor(folder: string);
     /**
      * Get the item.
      * @param id The id of the item.

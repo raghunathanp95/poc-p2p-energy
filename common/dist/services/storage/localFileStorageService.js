@@ -47,13 +47,9 @@ var LocalFileStorageService = /** @class */ (function () {
     /**
      * Create a new instance of LocalFileStorageService
      * @param folder The local folder to store the data.
-     * @param registrationId The registration id.
-     * @param contextName The name of the context to store with.
      */
-    function LocalFileStorageService(folder, registrationId, contextName) {
+    function LocalFileStorageService(folder) {
         this._folder = folder;
-        this._registrationId = registrationId;
-        this._contextName = contextName;
     }
     /**
      * Get the item.
@@ -61,13 +57,12 @@ var LocalFileStorageService = /** @class */ (function () {
      */
     LocalFileStorageService.prototype.get = function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullFilename, file, err_1;
+            var file, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        fullFilename = path_1.default.join(this._folder, this._registrationId, this._contextName, id + ".json");
-                        return [4 /*yield*/, fs_1.default.promises.readFile(fullFilename)];
+                        return [4 /*yield*/, fs_1.default.promises.readFile(path_1.default.join(this._folder, id + ".json"))];
                     case 1:
                         file = _a.sent();
                         return [2 /*return*/, JSON.parse(file.toString())];
@@ -86,16 +81,15 @@ var LocalFileStorageService = /** @class */ (function () {
      */
     LocalFileStorageService.prototype.set = function (id, item) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullFolder, err_2;
+            var err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        fullFolder = path_1.default.join(this._folder, this._registrationId, this._contextName);
-                        return [4 /*yield*/, fs_1.default.promises.mkdir(fullFolder, { recursive: true })];
+                        return [4 /*yield*/, fs_1.default.promises.mkdir(this._folder, { recursive: true })];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, fs_1.default.promises.writeFile(path_1.default.join(fullFolder, id + ".json"), JSON.stringify(item, undefined, "\t"))];
+                        return [4 /*yield*/, fs_1.default.promises.writeFile(path_1.default.join(this._folder, id + ".json"), JSON.stringify(item, undefined, "\t"))];
                     case 2:
                         _a.sent();
                         return [3 /*break*/, 4];
@@ -113,13 +107,12 @@ var LocalFileStorageService = /** @class */ (function () {
      */
     LocalFileStorageService.prototype.remove = function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullFilename, err_3;
+            var err_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        fullFilename = path_1.default.join(this._folder, this._registrationId, this._contextName, id + ".json");
-                        return [4 /*yield*/, fs_1.default.promises.unlink(fullFilename)];
+                        return [4 /*yield*/, fs_1.default.promises.unlink(path_1.default.join(this._folder, id + ".json"))];
                     case 1:
                         _a.sent();
                         return [3 /*break*/, 3];
@@ -140,14 +133,13 @@ var LocalFileStorageService = /** @class */ (function () {
      */
     LocalFileStorageService.prototype.page = function (context, page, pageSize) {
         return __awaiter(this, void 0, void 0, function () {
-            var fullFolder, entries, ids, items, i, _a, _b, err_4;
+            var entries, ids, items, i, _a, _b, err_4;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 7, , 8]);
                         if (!(page === 0)) return [3 /*break*/, 6];
-                        fullFolder = path_1.default.join(this._folder, this._registrationId, this._contextName);
-                        return [4 /*yield*/, fs_1.default.promises.readdir(fullFolder)];
+                        return [4 /*yield*/, fs_1.default.promises.readdir(this._folder)];
                     case 1:
                         entries = _c.sent();
                         ids = entries.map(function (e) { return e.replace(/\.json$/, ""); });
@@ -189,4 +181,4 @@ var LocalFileStorageService = /** @class */ (function () {
     return LocalFileStorageService;
 }());
 exports.LocalFileStorageService = LocalFileStorageService;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibG9jYWxGaWxlU3RvcmFnZVNlcnZpY2UuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvc2VydmljZXMvc3RvcmFnZS9sb2NhbEZpbGVTdG9yYWdlU2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsMENBQW9CO0FBQ3BCLDhDQUF3QjtBQUd4Qjs7R0FFRztBQUNIO0lBZ0JJOzs7OztPQUtHO0lBQ0gsaUNBQVksTUFBYyxFQUFFLGNBQXNCLEVBQUUsV0FBbUI7UUFDbkUsSUFBSSxDQUFDLE9BQU8sR0FBRyxNQUFNLENBQUM7UUFDdEIsSUFBSSxDQUFDLGVBQWUsR0FBRyxjQUFjLENBQUM7UUFDdEMsSUFBSSxDQUFDLFlBQVksR0FBRyxXQUFXLENBQUM7SUFDcEMsQ0FBQztJQUVEOzs7T0FHRztJQUNVLHFDQUFHLEdBQWhCLFVBQWlCLEVBQVU7Ozs7Ozs7d0JBRWIsWUFBWSxHQUFHLGNBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLE9BQU8sRUFBRSxJQUFJLENBQUMsZUFBZSxFQUFFLElBQUksQ0FBQyxZQUFZLEVBQUssRUFBRSxVQUFPLENBQUMsQ0FBQzt3QkFDdkYscUJBQU0sWUFBRSxDQUFDLFFBQVEsQ0FBQyxRQUFRLENBQUMsWUFBWSxDQUFDLEVBQUE7O3dCQUEvQyxJQUFJLEdBQUcsU0FBd0M7d0JBQ3JELHNCQUFPLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLFFBQVEsRUFBRSxDQUFDLEVBQUM7Ozt3QkFFbkMsc0JBQU8sU0FBUyxFQUFDOzs7OztLQUV4QjtJQUVEOzs7O09BSUc7SUFDVSxxQ0FBRyxHQUFoQixVQUFpQixFQUFVLEVBQUUsSUFBTzs7Ozs7Ozt3QkFFdEIsVUFBVSxHQUFHLGNBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLE9BQU8sRUFBRSxJQUFJLENBQUMsZUFBZSxFQUFFLElBQUksQ0FBQyxZ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
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibG9jYWxGaWxlU3RvcmFnZVNlcnZpY2UuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvc2VydmljZXMvc3RvcmFnZS9sb2NhbEZpbGVTdG9yYWdlU2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsMENBQW9CO0FBQ3BCLDhDQUF3QjtBQUd4Qjs7R0FFRztBQUNIO0lBTUk7OztPQUdHO0lBQ0gsaUNBQVksTUFBYztRQUN0QixJQUFJLENBQUMsT0FBTyxHQUFHLE1BQU0sQ0FBQztJQUMxQixDQUFDO0lBRUQ7OztPQUdHO0lBQ1UscUNBQUcsR0FBaEIsVUFBaUIsRUFBVTs7Ozs7Ozt3QkFFTixxQkFBTSxZQUFFLENBQUMsUUFBUSxDQUFDLFFBQVEsQ0FBQyxjQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxPQUFPLEVBQUssRUFBRSxVQUFPLENBQUMsQ0FBQyxFQUFBOzt3QkFBeEUsSUFBSSxHQUFHLFNBQWlFO3dCQUM5RSxzQkFBTyxJQUFJLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxRQUFRLEVBQUUsQ0FBQyxFQUFDOzs7d0JBRW5DLHNCQUFPLFNBQVMsRUFBQzs7Ozs7S0FFeEI7SUFFRDs7OztPQUlHO0lBQ1UscUNBQUcsR0FBaEIsVUFBaUIsRUFBVSxFQUFFLElBQU87Ozs7Ozs7d0JBRTVCLHFCQUFNLFlBQUUsQ0FBQyxRQUFRLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxPQUFPLEVBQUUsRUFBRSxTQUFTLEVBQUUsSUFBSSxFQUFFLENBQUMsRUFBQTs7d0JBQTFELFNBQTBELENBQUM7d0JBQzNELHFCQUFNLFlBQUUsQ0FBQyxRQUFRLENBQUMsU0FBUyxDQUFDLGNBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLE9BQU8sRUFBSyxFQUFFLFVBQU8sQ0FBQyxFQUFFLElBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxFQUFFLFNBQVMsRUFBRSxJQUFJLENBQUMsQ0FBQyxFQUFBOzt3QkFBekcsU0FBeUcsQ0FBQzs7Ozt3QkFFMUcsc0JBQU8sU0FBUyxFQUFDOzs7OztLQUV4QjtJQUVEOzs7T0FHRztJQUNVLHdDQUFNLEdBQW5CLFVBQW9CLEVBQVU7Ozs7Ozs7d0JBRXRCLHFCQUFNLFlBQUUsQ0FBQyxRQUFRLENBQUMsTUFBTSxDQUFDLGNBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLE9BQU8sRUFBSyxFQUFFLFVBQU8sQ0FBQyxDQUFDLEVBQUE7O3dCQUEvRCxTQUErRCxDQUFDOzs7Ozs7Ozs7S0FHdkU7SUFFRDs7Ozs7O09BTUc7SUFDVSxzQ0FBSSxHQUFqQixVQUFrQixPQUFnQixFQUFFLElBQXNCLEVBQUUsUUFBMEI7Ozs7Ozs7NkJBdUIxRSxDQUFBLElBQUksS0FBSyxDQUFDLENBQUEsRUFBVix3QkFBVTt3QkFDTSxxQkFBTSxZQUFFLENBQUMsUUFBUSxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsT0FBTyxDQUFDLEVBQUE7O3dCQUFqRCxPQUFPLEdBQUcsU0FBdUM7d0JBRWpELEdBQUcsR0FBRyxPQUFPLENBQUMsR0FBRyxDQUFDLFVBQUEsQ0FBQyxJQUFJLE9BQUEsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxTQUFTLEVBQUUsRUFBRSxDQUFDLEVBQXhCLENBQXdCLENBQUMsQ0FBQzt3QkFDakQsS0FBSyxHQUFHLEVBQUUsQ0FBQzt3QkFDUixDQUFDLEdBQUcsQ0FBQzs7OzZCQUFFLENBQUEsQ0FBQyxHQUFHLEdBQUcsQ0FBQyxNQUFNLENBQUE7d0JBQzFCLEtBQUEsQ0FBQSxLQUFBLEtBQUssQ0FBQSxDQUFDLElBQUksQ0FBQTt3QkFBQyxxQkFBTSxJQUFJLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxFQUFBOzt3QkFBakMsY0FBVyxTQUFzQixFQUFDLENBQUM7Ozt3QkFEUCxDQUFDLEVBQUUsQ0FBQTs7NEJBSW5DLHNCQUFPOzRCQUNILEdBQUcsS0FBQTs0QkFDSCxLQUFLLE9BQUE7NEJBQ0wsVUFBVSxFQUFFLEtBQUssQ0FBQyxNQUFNOzRCQUN4QixVQUFVLEVBQUUsQ0FBQzs0QkFDYixRQUFRLEVBQUUsS0FBSyxDQUFDLE1BQU07eUJBQ3pCLEVBQUM7Ozs7OzRCQUlWLHNCQUFPOzRCQUNILEdBQUcsRUFBRSxFQUFFOzRCQUNQLEtBQUssRUFBRSxFQUFFOzRCQUNULFVBQVUsRUFBRSxDQUFDOzRCQUNiLFVBQVUsRUFBRSxDQUFDOzRCQUNiLFFBQVEsRUFBRSxDQUFDO3lCQUNkLEVBQUM7Ozs7S0FDTDtJQUNMLDhCQUFDO0FBQUQsQ0FBQyxBQTdHRCxJQTZHQztBQTdHWSwwREFBdUIifQ==

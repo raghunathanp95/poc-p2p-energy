@@ -22,7 +22,7 @@ if (config.localStorageFolder) {
     ServiceFactory.register(
         "consumer-storage-manager-state",
         () => new LocalFileStorageService<IConsumerManagerState>(
-            config.localStorageFolder, config.consumer.id, "config"));
+            `${config.localStorageFolder}/consumer/state`));
 } else {
     ServiceFactory.register("consumer-storage-manager-state", () => new ApiStorageService<IConsumerManagerState>(
         config.gridApiEndpoint,

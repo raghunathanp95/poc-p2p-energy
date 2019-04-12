@@ -327,6 +327,49 @@ export class DemoGridManager {
     }
 
     /**
+     * Initialise all the service required by the manangers.
+     * @param grid Grid to create services for.
+     */
+    private initialiseServices(grid: IGrid): void {
+        ServiceFactory.register(
+            "grid-storage-manager-state",
+            () => new BrowserStorageService<IGridManagerState>(`grid-manager-state`));
+
+        ServiceFactory.register(
+            "producer-storage-manager-state",
+            () => new BrowserStorageService<IProducerManagerState>(`producer-manager-state`));
+
+        ServiceFactory.register(
+            "registration-storage",
+            () => new BrowserStorageService<IRegistration>(`registrations`));
+
+        ServiceFactory.register(
+            "registration-management",
+            () => new RegistrationManagementService(this._nodeConfig, (registration) => registration.itemType === "consumer"));
+
+        ServiceFactory.register(
+            "producer-registration",
+            () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "consumer-storage-manager-state",
+            () => new BrowserStorageService<IConsumerManagerState>(`consumer-manager-state`));
+
+        ServiceFactory.register(
+            "consumer-registration",
+            () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "source-storage-manager-state",
+            () => new BrowserStorageService<ISourceManagerState>(`source-manager-state`));
+
+        ServiceFactory.register(
+            "source-registration",
+            () => new DirectRegistrationService("registration-management"));
+
+    }
+
+    /**
      * Clear the managers for each of the entities.
      */
     private clearManagers(): void {
@@ -346,7 +389,7 @@ export class DemoGridManager {
 
         progressCallback("Initializing Grid.");
         if (!this._gridManager) {
-            this._gridManager = new GridManager(this._nodeConfig);
+            this._gridManager = new GridManager({name: grid.name, id: grid.id}, this._nodeConfig);
             await this._gridManager.initialise();
         }
 
@@ -398,49 +441,6 @@ export class DemoGridManager {
      * Update all the managers.
      */
     private async updateManagers(): Promise<void> {
-    }
-
-    /**
-     * Initialise all the service required by the manangers.
-     * @param grid Grid to create services for.
-     */
-    private initialiseServices(grid: IGrid): void {
-        ServiceFactory.register(
-            "grid-storage-manager-state",
-            () => new BrowserStorageService<IGridManagerState>(`grid-manager/${grid.id}/config`));
-
-        ServiceFactory.register(
-            "producer-storage-manager-state",
-            () => new BrowserStorageService<IProducerManagerState>(`producer-manager-state`));
-
-        ServiceFactory.register(
-            "registration-storage",
-            () => new BrowserStorageService<IRegistration>(`registrations`));
-
-        ServiceFactory.register(
-            "registration-management",
-            () => new RegistrationManagementService(this._nodeConfig, (registration) => registration.itemType === "consumer"));
-
-        ServiceFactory.register(
-            "producer-registration",
-            () => new DirectRegistrationService("registration-management"));
-
-        ServiceFactory.register(
-            "consumer-storage-manager-state",
-            () => new BrowserStorageService<IConsumerManagerState>(`consumer-manager-state`));
-
-        ServiceFactory.register(
-            "consumer-registration",
-            () => new DirectRegistrationService("registration-management"));
-
-        ServiceFactory.register(
-            "source-storage-manager-state",
-            () => new BrowserStorageService<ISourceManagerState>(`source-manager-state`));
-
-        ServiceFactory.register(
-            "source-registration",
-            () => new DirectRegistrationService("registration-management"));
-
     }
 
     // /**

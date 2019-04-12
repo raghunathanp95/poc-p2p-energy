@@ -127,7 +127,9 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                             <div className="grid-live-consumer-column">
                                 <div className="grid-live-caption">Consumers</div>
                                 {this.props.grid.consumers.length === 0 && (
-                                    <div>There are no consumers configured.</div>
+                                    <div className="grid-live-producer">
+                                        <div>There are no consumers configured.</div>
+                                    </div>
                                 )}
                                 {this.props.grid.consumers.map((c, idx) => (
                                     <GridLiveConsumer key={idx} consumer={c} idx={idx} />

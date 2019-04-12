@@ -147,6 +147,18 @@ export class ConsumerManager {
     }
 
     /**
+     * Remove the state for the consumer.
+     */
+    public async removeState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+            "consumer-storage-manager-state");
+
+        this._loggingService.log("consumer", `Removing State`);
+        await storageConfigService.remove(this._config.id);
+        this._loggingService.log("consumer", `Removing State Complete`);
+    }
+
+    /**
      * Load the state for the consumer.
      */
     private async loadState(): Promise<void> {

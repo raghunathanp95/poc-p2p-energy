@@ -1,5 +1,6 @@
 import { composeAPI } from "@iota/core";
 import { ServiceFactory } from "../factories/serviceFactory";
+import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IProducerOutput } from "../models/db/grid/IProducerOutput";
 import { IProducerOutputPayment } from "../models/db/grid/IProducerOutputPayment";
@@ -15,6 +16,11 @@ import { TrytesHelper } from "../utils/trytesHelper";
  * Service to handle the grid.
  */
 export class GridManager {
+    /**
+     * Configuration for the grid.
+     */
+    private readonly _config: IGridConfiguration;
+
     /**
      * Service to log output to.
      */
@@ -34,7 +40,8 @@ export class GridManager {
      * Create a new instance of GridService.
      * @param nodeConfig Configuration for tangle communication.
      */
-    constructor(nodeConfig: INodeConfiguration) {
+    constructor(gridConfig: IGridConfiguration, nodeConfig: INodeConfiguration) {
+        this._config = gridConfig;
         this._nodeConfig = nodeConfig;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
@@ -241,6 +248,18 @@ export class GridManager {
     }
 
     /**
+     * Remove the state for the grid.
+     */
+    public async removeState(): Promise<void> {
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+            "grid-storage-manager-state");
+
+        this._loggingService.log("grid", `Removing State`);
+        await storageConfigService.remove(this._config.id);
+        this._loggingService.log("grid", `Removing State Complete`);
+    }
+
+    /**
      * Load the state for the grid.
      */
     private async loadState(): Promise<void> {
@@ -248,7 +267,7 @@ export class GridManager {
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Loading State`);
-        this._state = await storageConfigService.get(`state`);
+        this._state = await storageConfigService.get(this._config.id);
         this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {
@@ -269,7 +288,7 @@ export class GridManager {
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Storing State`);
-        await storageConfigService.set("state", this._state);
+        await storageConfigService.set(this._config.id, this._state);
         this._loggingService.log("grid", `Storing State Complete`);
     }
 }

@@ -12,25 +12,11 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
     private readonly _folder: string;
 
     /**
-     * The registration id.
-     */
-    private readonly _registrationId: string;
-
-    /**
-     * The name of the context.
-     */
-    private readonly _contextName: string;
-
-    /**
      * Create a new instance of LocalFileStorageService
      * @param folder The local folder to store the data.
-     * @param registrationId The registration id.
-     * @param contextName The name of the context to store with.
      */
-    constructor(folder: string, registrationId: string, contextName: string) {
+    constructor(folder: string) {
         this._folder = folder;
-        this._registrationId = registrationId;
-        this._contextName = contextName;
     }
 
     /**
@@ -39,8 +25,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
      */
     public async get(id: string): Promise<T> {
         try {
-            const fullFilename = path.join(this._folder, this._registrationId, this._contextName, `${id}.json`);
-            const file = await fs.promises.readFile(fullFilename);
+            const file = await fs.promises.readFile(path.join(this._folder, `${id}.json`));
             return JSON.parse(file.toString());
         } catch (err) {
             return undefined;
@@ -54,9 +39,8 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
      */
     public async set(id: string, item: T): Promise<void> {
         try {
-            const fullFolder = path.join(this._folder, this._registrationId, this._contextName);
-            await fs.promises.mkdir(fullFolder, { recursive: true });
-            await fs.promises.writeFile(path.join(fullFolder, `${id}.json`), JSON.stringify(item, undefined, "\t"));
+            await fs.promises.mkdir(this._folder, { recursive: true });
+            await fs.promises.writeFile(path.join(this._folder, `${id}.json`), JSON.stringify(item, undefined, "\t"));
         } catch (err) {
             return undefined;
         }
@@ -68,8 +52,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
      */
     public async remove(id: string): Promise<void> {
         try {
-            const fullFilename = path.join(this._folder, this._registrationId, this._contextName, `${id}.json`);
-            await fs.promises.unlink(fullFilename);
+            await fs.promises.unlink(path.join(this._folder, `${id}.json`));
         } catch (err) {
         }
     }
@@ -105,8 +88,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
     }> {
         try {
             if (page === 0) {
-                const fullFolder = path.join(this._folder, this._registrationId, this._contextName);
-                const entries = await fs.promises.readdir(fullFolder);
+                const entries = await fs.promises.readdir(this._folder);
 
                 const ids = entries.map(e => e.replace(/\.json$/, ""));
                 const items = [];

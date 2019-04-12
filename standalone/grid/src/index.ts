@@ -36,12 +36,12 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "registration-storage",
-            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "registration")
+            () => new LocalFileStorageService(`${config.localStorageFolder}/grid/registration`)
         );
 
         ServiceFactory.register(
             "grid-storage-manager-state",
-            () => new LocalFileStorageService<IGridManagerState>(config.localStorageFolder, config.grid.id, "config"));
+            () => new LocalFileStorageService<IGridManagerState>(`${config.localStorageFolder}/grid/state`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "registration-storage",
@@ -52,7 +52,7 @@ app.build(routes, async (_1, config, _2) => {
             () => new AmazonS3StorageService(config.s3Connection, "config"));
     }
 
-    const gridManager = new GridManager(config.node);
+    const gridManager = new GridManager(config.grid, config.node);
     const registrationManagementService =
         new RegistrationManagementService(config.node, (registration) => registration.itemType === "consumer");
 
@@ -62,7 +62,7 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "storage",
-            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "storage"));
+            () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/storage`));
     } else if (config.s3Connection) {
         ServiceFactory.register(
             "storage",
@@ -71,10 +71,10 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "producer-output",
-            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "producer"));
+            () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/producer`));
         ServiceFactory.register(
             "producer-output-payment",
-            () => new LocalFileStorageService(config.localStorageFolder, config.grid.id, "producer-paid"));
+            () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/producer-paid`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "producer-output",

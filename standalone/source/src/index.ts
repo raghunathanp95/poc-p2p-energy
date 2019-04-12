@@ -21,7 +21,9 @@ ServiceFactory.register("source-registration", () => new ApiRegistrationService(
 if (config.localStorageFolder) {
     ServiceFactory.register(
         "source-storage-manager-state",
-        () => new LocalFileStorageService<ISourceManagerState>(config.localStorageFolder, config.source.id, "config"));
+        () => new LocalFileStorageService<ISourceManagerState>(
+            `${config.localStorageFolder}/${config.source.id}/state`
+        ));
 } else {
     ServiceFactory.register("source-storage-manager-state", () => new ApiStorageService<ISourceManagerState>(
         config.producerApiEndpoint,

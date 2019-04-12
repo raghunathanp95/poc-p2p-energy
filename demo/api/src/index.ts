@@ -25,7 +25,7 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "storage",
-            () => new LocalFileStorageService(config.localStorageFolder, "grids", "")
+            () => new LocalFileStorageService(`${config.localStorageFolder}/grids`)
         );
     } else if (config.s3Connection) {
         ServiceFactory.register(

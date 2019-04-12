@@ -55,7 +55,7 @@ class App extends Component<RouteComponentProps, AppState> {
             ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, config.node.provider));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
-            ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid"));
+            ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
             ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(config.node));
 
             this._configuration = config;

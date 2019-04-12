@@ -40,13 +40,14 @@ app.build(routes, async (_1, config, _2) => {
         ServiceFactory.register(
             "registration-storage",
             () => new LocalFileStorageService<IRegistration>(
-                config.localStorageFolder, config.producer.id, "registration")
+                `${config.localStorageFolder}/${config.producer.id}/registration`)
         );
 
         ServiceFactory.register(
             "producer-storage-manager-state",
             () => new LocalFileStorageService<IProducerManagerState>(
-                config.localStorageFolder, config.producer.id, "config"));
+                `${config.localStorageFolder}/${config.producer.id}/state`)
+        );
     } else {
         ServiceFactory.register(
             "registration-storage",
@@ -71,12 +72,12 @@ app.build(routes, async (_1, config, _2) => {
     if (config.localStorageFolder) {
         ServiceFactory.register(
             "storage",
-            () => new LocalFileStorageService<any>(config.localStorageFolder, config.producer.id, "storage"));
+            () => new LocalFileStorageService<any>(`${config.localStorageFolder}/${config.producer.id}/storage`));
 
         ServiceFactory.register(
             "source-store",
             () => new LocalFileStorageService<ISourceStore>(
-                config.localStorageFolder, config.producer.id, "source-output"));
+                `${config.localStorageFolder}/${config.producer.id}/source-output`));
     } else {
         ServiceFactory.register(
             "storage",

@@ -47,6 +47,10 @@ export declare class ConsumerManager {
      */
     closedown(): Promise<void>;
     /**
+     * Remove the state for the consumer.
+     */
+    removeState(): Promise<void>;
+    /**
      * Load the state for the consumer.
      */
     private loadState;
