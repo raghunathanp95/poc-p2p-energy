@@ -1,10 +1,10 @@
 import { IAWSDynamoDbConfiguration } from "../../models/config/IAWSDynamoDbConfiguration";
-import { IProducerOutputPayment } from "../../models/db/grid/IProducerOutputPayment";
+import { IProducerOutput } from "../../models/db/grid/IProducerOutput";
 import { AmazonDynamoDbService } from "../amazon/amazonDynamoDbService";
 /**
  * Service to handle the producer store.
  */
-export declare class ProducerOutputPaymentService extends AmazonDynamoDbService<IProducerOutputPayment> {
+export declare class ProducerOutputStoreService extends AmazonDynamoDbService<IProducerOutput> {
     /**
      * The name of the database table.
      */

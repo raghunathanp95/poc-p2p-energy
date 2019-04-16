@@ -44,6 +44,9 @@ loggingService.log("app", `   Type: ${config.source.type}`);
 async function start(sourceManager: SourceManager): Promise<void> {
     await sourceManager.initialise();
 
+    // Now we create some dummy data for the source
+    // In a real life scenario this would come from the actual device
+    // and at an interval of the implementers choice
     for (let i = 0; i < 5; i++) {
         // tslint:disable-next-line:insecure-random
         await sourceManager.sendOutputCommand(Date.now(), Math.random() * 1000);

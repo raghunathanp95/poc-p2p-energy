@@ -156,110 +156,6 @@ export class ProducerManager {
     }
 
     /**
-     * Combine the information from the sources and generate an output command.
-     * @param calculatePrice Calculate the price for an output.
-     */
-    public async collateSources(
-        calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void> {
-        if (this._state && this._state.channel) {
-            const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
-                "producer-source-output-store");
-
-            let sources;
-            // What is the next block we want to collate
-            const startTime = this._state.lastOutputTime + 1;
-            const endTime = Date.now();
-            let totalOutput = 0;
-            const idsToRemove = [];
-            let page = 0;
-            do {
-                // Get the sources page at a time
-                sources = await sourceStoreService.page(this._config.id, page, 20);
-                if (sources && sources.items) {
-                    for (let i = 0; i < sources.items.length; i++) {
-                        const sourceStore = sources.items[i];
-                        const remaining: ISourceStoreOutput[] = [];
-
-                        // Are there output entries in the source
-                        if (sourceStore.output) {
-                            // Walk the outputs from the source
-                            for (let j = 0; j < sourceStore.output.length; j++) {
-                                // Does the output from the source overlap
-                                // with our current collated block
-                                if (sourceStore.output[j].startTime < endTime) {
-                                    const totalTime = sourceStore.output[j].endTime - sourceStore.output[j].startTime;
-                                    // The time used end either at the end of the current collated block
-                                    // or the end of the source block
-                                    const totalTimeUsed =
-                                        Math.min(endTime, sourceStore.output[j].endTime) -
-                                        sourceStore.output[j].startTime;
-
-                                    // What percentage of the time have we used
-                                    const totalTimeUsedPercent = totalTimeUsed / totalTime;
-
-                                    // Calculate how much of the output is used for the time
-                                    const totalUsedOutput = totalTimeUsedPercent * sourceStore.output[j].output;
-
-                                    totalOutput += totalUsedOutput;
-
-                                    // Is there any time remaining in the block
-                                    if (totalTimeUsed < totalTime) {
-                                        // Added a new source block that starts after
-                                        // the current collated block and with the output reduced
-                                        // by the amount we have collated
-                                        remaining.push({
-                                            startTime: endTime + 1,
-                                            endTime: sourceStore.output[j].endTime,
-                                            output: sourceStore.output[j] - totalUsedOutput
-                                        });
-                                    }
-                                } else {
-                                    // No overlap so just store the block
-                                    remaining.push(sourceStore.output[j]);
-                                }
-                            }
-                        }
-                        if (remaining.length === 0) {
-                            // If there are no more outputs in the source remove the storage for it
-                            idsToRemove.push(sources.ids[i]);
-                        } else {
-                            // There are remaining source outputs so save them
-                            sourceStore.output = remaining;
-                            await sourceStoreService.set(sources.ids[i], sourceStore);
-                        }
-                    }
-                }
-                page++;
-            } while (sources && sources.items && sources.items.length > 0);
-
-            // Remove the sources that have no more output
-            for (let i = 0; i < idsToRemove.length; i++) {
-                await sourceStoreService.remove(idsToRemove[i]);
-            }
-
-            this._state.lastOutputTime = endTime;
-
-            if (totalOutput > 0) {
-                const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
-                this._state.paymentAddressIndex++;
-
-                const command: IProducerOutputCommand = {
-                    command: "output",
-                    startTime,
-                    endTime,
-                    askingPrice: calculatePrice(startTime, endTime, totalOutput),
-                    output: totalOutput,
-                    paymentAddress
-                };
-
-                await this.sendCommand(command);
-            } else {
-                await this.saveState();
-            }
-        }
-    }
-
-    /**
      * Process commands for the registration.
      * @param registration The registration.
      * @param commands The commands to process.
@@ -299,13 +195,142 @@ export class ProducerManager {
         }
 
         if (updatedStore) {
-            await sourceStoreService.set(registration.id, store);
+            await sourceStoreService.set(`${this._config.id}/${registration.id}`, store);
         }
 
         this._loggingService.log(
             "producer",
             `Processed ${commands ? commands.length : 0} commands for '${registration.itemName}'`
         );
+    }
+
+    /**
+     * Combine the information from the sources and generate an output command.
+     * @param endTime The end time of the block we want to collate.
+     * @param calculatePrice Calculate the price for an output.
+     * @param archiveSourceOutput The source outputs combined are removed, you can archive them with this callback.
+     * @returns Any new producer output commands.
+     */
+    public async update(
+        endTime: number,
+        calculatePrice: (startTime: number, endTime: number, combinedValue: number) => number,
+        archiveSourceOutput: (sourceId: string, archiveOutputs: ISourceStoreOutput[]) => void):
+        Promise<IProducerOutputCommand[]> {
+        const newCommands = [];
+        if (this._state && this._state.channel) {
+            const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
+                "producer-source-output-store");
+
+            let pageResponse;
+            // What is the next block we want to collate
+            const startTime = this._state.lastOutputTime + 1;
+            let totalOutput = 0;
+            const idsToRemove = [];
+            let pageSize = 10;
+            let page = 0;
+            do {
+                // Get the sources page at a time
+                pageResponse = await sourceStoreService.page(this._config.id, page, pageSize);
+                if (pageResponse && pageResponse.items) {
+                    for (let i = 0; i < pageResponse.items.length; i++) {
+                        const sourceStore = pageResponse.items[i];
+                        const remaining: ISourceStoreOutput[] = [];
+                        const archive: ISourceStoreOutput[] = [];
+
+                        // Are there output entries in the source
+                        if (sourceStore.output) {
+                            // Walk the outputs from the source
+                            for (let j = 0; j < sourceStore.output.length; j++) {
+                                // Does the output from the source overlap
+                                // with our current collated block
+                                const sourceOutput = sourceStore.output[j];
+                                if (sourceOutput.startTime < endTime) {
+                                    const totalTime = sourceOutput.endTime - sourceOutput.startTime + 1;
+                                    // The time used end either at the end of the current collated block
+                                    // or the end of the source block
+                                    const totalTimeUsed =
+                                        (Math.min(endTime, sourceOutput.endTime) -
+                                        sourceOutput.startTime) + 1;
+
+                                    // What percentage of the time have we used
+                                    const totalTimeUsedPercent = totalTimeUsed / totalTime;
+
+                                    // Calculate how much of the output is used for the time
+                                    const totalUsedOutput = totalTimeUsedPercent * sourceOutput.output;
+
+                                    totalOutput += totalUsedOutput;
+
+                                    // Is there any time remaining in the block
+                                    if (totalTimeUsed < totalTime) {
+                                        // Archive the part of the source we have used
+                                        archive.push({
+                                            startTime: sourceOutput.startTime,
+                                            endTime: endTime,
+                                            output: totalUsedOutput
+                                        });
+                                        // Add a new source block that starts after
+                                        // the current collated block and with the output reduced
+                                        // by the amount we have collated
+                                        remaining.push({
+                                            startTime: endTime + 1,
+                                            endTime: sourceOutput.endTime,
+                                            output: sourceOutput.output - totalUsedOutput
+                                        });
+                                    } else {
+                                        // Used the whole block so archive it
+                                        archive.push(sourceOutput);
+                                    }
+                                } else {
+                                    // No overlap so just store the slice again
+                                    remaining.push(sourceOutput);
+                                }
+                            }
+                        }
+                        if (remaining.length === 0) {
+                            // If there are no more outputs in the source remove the storage for it
+                            idsToRemove.push(`${this._config.id}/${pageResponse.ids[i]}`);
+                        } else {
+                            // There are remaining source outputs so save them
+                            sourceStore.output = remaining;
+                            await sourceStoreService.set(`${this._config.id}/${pageResponse.ids[i]}`, sourceStore);
+                        }
+                        if (archive.length > 0) {
+                            archiveSourceOutput(pageResponse.ids[i], archive);
+                        }
+                    }
+                }
+                page++;
+                pageSize = pageResponse.pageSize;
+            } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
+
+            // Remove the sources that have no more output
+            for (let i = 0; i < idsToRemove.length; i++) {
+                await sourceStoreService.remove(idsToRemove[i]);
+            }
+
+            if (totalOutput > 0) {
+                this._state.lastOutputTime = endTime;
+
+                const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
+                this._state.paymentAddressIndex++;
+
+                const command: IProducerOutputCommand = {
+                    command: "output",
+                    startTime,
+                    endTime,
+                    price: calculatePrice(startTime, endTime, totalOutput),
+                    output: totalOutput,
+                    paymentAddress
+                };
+
+                await this.sendCommand(command);
+
+                newCommands.push(command);
+            } else {
+                await this.saveState();
+            }
+        }
+        return newCommands;
     }
 
     /**
@@ -331,7 +356,7 @@ export class ProducerManager {
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),
             paymentAddressIndex: 0,
-            lastOutputTime: Date.now(),
+            lastOutputTime: 0,
             owedBalance: 0,
             receivedBalance: 0
         };

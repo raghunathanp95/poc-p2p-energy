@@ -42,6 +42,15 @@ loggingService.log("app", `   Name: ${config.consumer.name}`);
 async function start(consumerManager: ConsumerManager): Promise<void> {
     await consumerManager.initialise();
 
+    // Now we create some dummy data for the consumer
+    // In a real life scenario this would come from a device such as a meter
+    // and at an interval of the implementers choice
+    for (let i = 0; i < 5; i++) {
+        // tslint:disable-next-line:insecure-random
+        await consumerManager.sendUsageCommand(Date.now(), Math.random() * 10);
+    }
+
+    // Don't close down unless you want to remove the registration
     // await consumerService.closedown();
 }
 

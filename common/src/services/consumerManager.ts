@@ -1,6 +1,8 @@
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
+import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
@@ -147,6 +149,34 @@ export class ConsumerManager {
     }
 
     /**
+     * Send a usage command to the mam channel.
+     * @param endTime The end time for the current period.
+     * @param value The usage to send.
+     */
+    public async sendUsageCommand(endTime: number, value: number): Promise<IConsumerUsageCommand> {
+        const command: IConsumerUsageCommand = {
+            command: "usage",
+            startTime: this._state.lastUsageTime + 1,
+            endTime,
+            usage: value
+        };
+
+        this._state.lastUsageTime = command.endTime;
+
+        return this.sendCommand(command);
+    }
+
+    /**
+     * Send a command to the channel.
+     */
+    public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
+        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
+        await mamCommandChannel.sendCommand(this._state.channel, command);
+        await this.saveState();
+        return command;
+    }
+
+    /**
      * Remove the state for the consumer.
      */
     public async removeState(): Promise<void> {
@@ -171,7 +201,8 @@ export class ConsumerManager {
 
         this._state = this._state || {
             paidBalance: 0,
-            owedBalance: 0
+            owedBalance: 0,
+            lastUsageTime: 0
         };
     }
 

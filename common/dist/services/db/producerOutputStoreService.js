@@ -6,7 +6,7 @@ const amazonDynamoDbService_1 = require("../amazon/amazonDynamoDbService");
  */
 class ProducerOutputStoreService extends amazonDynamoDbService_1.AmazonDynamoDbService {
     /**
-     * Create a new instance of ProducerStoreService.
+     * Create a new instance of ProducerOutputPaymentService.
      * @param config Configuration for DB.
      */
     constructor(config) {
@@ -18,4 +18,4 @@ class ProducerOutputStoreService extends amazonDynamoDbService_1.AmazonDynamoDbS
  */
 ProducerOutputStoreService.TABLE_NAME = "producerOutputStore";
 exports.ProducerOutputStoreService = ProducerOutputStoreService;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHJvZHVjZXJTdG9yZVNlcnZpY2UuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvc2VydmljZXMvZGIvcHJvZHVjZXJTdG9yZVNlcnZpY2UudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQSwyRUFBd0U7QUFFeEU7O0dBRUc7QUFDSCxNQUFhLDBCQUEyQixTQUFRLDZDQUFzQztJQU1sRjs7O09BR0c7SUFDSCxZQUFZLE1BQWlDO1FBQ3pDLEtBQUssQ0FBQyxNQUFNLEVBQUUsMEJBQTBCLENBQUMsVUFBVSxFQUFFLElBQUksQ0FBQyxDQUFDO0lBQy9ELENBQUM7O0FBWEQ7O0dBRUc7QUFDb0IscUNBQVUsR0FBVyxxQkFBcUIsQ0FBQztBQUp0RSxnRUFhQyJ9
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHJvZHVjZXJPdXRwdXRTdG9yZVNlcnZpY2UuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvc2VydmljZXMvZGIvcHJvZHVjZXJPdXRwdXRTdG9yZVNlcnZpY2UudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQSwyRUFBd0U7QUFFeEU7O0dBRUc7QUFDSCxNQUFhLDBCQUEyQixTQUFRLDZDQUFzQztJQU1sRjs7O09BR0c7SUFDSCxZQUFZLE1BQWlDO1FBQ3pDLEtBQUssQ0FBQyxNQUFNLEVBQUUsMEJBQTBCLENBQUMsVUFBVSxFQUFFLElBQUksQ0FBQyxDQUFDO0lBQy9ELENBQUM7O0FBWEQ7O0dBRUc7QUFDb0IscUNBQVUsR0FBVyxxQkFBcUIsQ0FBQztBQUp0RSxnRUFhQyJ9

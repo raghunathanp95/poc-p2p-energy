@@ -104,7 +104,10 @@ export class BrowserStorageService<T> implements IStorageService<T> {
                 const ids = [];
                 const allKeys = window.localStorage.length;
 
-                const keySep = `${this._rootFolder}/`;
+                let keySep = `${this._rootFolder}/`;
+                if (context) {
+                    keySep += `${context}/`;
+                }
 
                 for (let i = 0; i < allKeys; i++) {
                     const key = window.localStorage.key(i);

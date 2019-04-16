@@ -15,6 +15,11 @@ export interface IConsumerManagerState {
     returnChannel?: IMamChannelConfiguration;
 
     /**
+     * The last usage time slot.
+     */
+    lastUsageTime?: number;
+
+    /**
      * Paid balance.
      */
     paidBalance?: number;

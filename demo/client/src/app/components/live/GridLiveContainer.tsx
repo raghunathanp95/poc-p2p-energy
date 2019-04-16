@@ -58,12 +58,12 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
         this._walletBalanceInterval = setInterval(() => this.checkWalletBalance(), 30000);
         this.checkWalletBalance();
 
-        this._demoGridManager.subscribeGrid("gridLiveContainer", (gridState) => {
+        this._demoGridManager.subscribeGrid("liveContainer", (gridState) => {
             this.setState({ gridState });
         });
 
         try {
-            await this._demoGridManager.load(this.props.grid, (progress) => {
+            await this._demoGridManager.initialise(this.props.grid, (progress) => {
                 this.setState({
                     status: progress
                 });
@@ -73,7 +73,6 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                 status: ""
             });
         } catch (err) {
-            console.log(err);
             this.setState({
                 isBusy: false,
                 isError: true,
@@ -86,12 +85,14 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
+        this._demoGridManager.closedown();
+
         if (this._walletBalanceInterval) {
             clearInterval(this._walletBalanceInterval);
             this._walletBalanceInterval = undefined;
         }
 
-        this._demoGridManager.unsubscribeGrid("gridLiveContainer");
+        this._demoGridManager.unsubscribeGrid("liveContainer");
     }
 
     /**

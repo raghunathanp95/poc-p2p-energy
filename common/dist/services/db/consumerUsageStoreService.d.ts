@@ -1,16 +1,16 @@
 import { IAWSDynamoDbConfiguration } from "../../models/config/IAWSDynamoDbConfiguration";
-import { IProducerOutputPayment } from "../../models/db/grid/IProducerOutputPayment";
+import { IConsumerUsage } from "../../models/db/grid/IConsumerUsage";
 import { AmazonDynamoDbService } from "../amazon/amazonDynamoDbService";
 /**
- * Service to handle the producer store.
+ * Service to handle the consumer usage.
  */
-export declare class ProducerOutputPaymentService extends AmazonDynamoDbService<IProducerOutputPayment> {
+export declare class ConsumerUsageStoreService extends AmazonDynamoDbService<IConsumerUsage> {
     /**
      * The name of the database table.
      */
     static readonly TABLE_NAME: string;
     /**
-     * Create a new instance of ProducerOutputPaymentService.
+     * Create a new instance of ConsumerUsageStoreService.
      * @param config Configuration for DB.
      */
     constructor(config: IAWSDynamoDbConfiguration);

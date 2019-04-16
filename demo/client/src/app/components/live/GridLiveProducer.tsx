@@ -1,4 +1,3 @@
-import { ILineChartOptions } from "chartist";
 import classnames from "classnames";
 import { Button } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
@@ -53,8 +52,10 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         this.state = {
             isExpanded: false,
             selectedSources: {},
-            graphLabels: [],
-            graphSeries: [],
+            producerGraphLabels: [],
+            producerGraphSeries: [],
+            sourceGraphLabels: [],
+            sourceGraphSeries: [],
             receivedBalance: "-----",
             owedBalance: "-----"
         };
@@ -64,29 +65,29 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridManager.subscribeProducer(this.props.producer.id, (producerState) => {
+        this._demoGridManager.subscribeProducer("liveProducer", this.props.producer.id, (producerState) => {
             const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
             const producerManagerState = producerState && producerState.producerManagerState;
 
-            this.setState(
-                {
+            this.setState({
                     receivedBalance: producerManagerState && producerManagerState.receivedBalance !== undefined
                         ? `${producerManagerState.receivedBalance}i` : "-----",
                     owedBalance: producerManagerState && producerManagerState.owedBalance !== undefined ?
                         `${producerManagerState.owedBalance}i` : "-----",
                     mamRoot: mamChannel && mamChannel.initialRoot,
-                    sideKey: mamChannel && mamChannel.sideKey
-                },
-                () => this.calculateGraph()
-            );
+                    sideKey: mamChannel && mamChannel.sideKey,
+                    producerGraphSeries: producerState && producerState.outputCommands && producerState.outputCommands.map(o => o.output) || [],
+                    producerGraphLabels: producerState && producerState.outputCommands && producerState.outputCommands.map(o => o.endTime.toString()) || []
+                });
         });
+        this.selectAllSources(true);
     }
 
     /**
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridManager.unsubscribeProducer(this.props.producer.id);
+        this._demoGridManager.unsubscribeProducer("liveProducer", this.props.producer.id);
     }
 
     /**
@@ -141,22 +142,21 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 </Button>
                             )}
                         </div>
-                        {this.state.graphSeries.length === 0 && (
-                            <div>There is no power data for this producer.</div>
+                        {this.state.producerGraphSeries.length === 0 && (
+                            <div>There is no combined power data for the producer.</div>
                         )}
-                        {this.state.graphSeries.length > 0 && (
+                        {this.state.producerGraphSeries.length > 0 && (
                             <div className="charts">
                                 <ChartistGraph
                                     data={{
-                                        labels: this.state.graphLabels,
-                                        series: this.state.graphSeries
+                                        labels: this.state.producerGraphLabels,
+                                        series: [this.state.producerGraphSeries]
                                     }}
-                                    options={{
-                                    } as ILineChartOptions}
                                     type="Line"
                                 />
                             </div>
                         )}
+                        <hr />
                         <div className="grid-live-producer-sub-title">
                             Sources
                             {this.props.producer.sources.length > 0 && (
@@ -194,6 +194,23 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 />
                             ))}
                         </div>
+                        {this.props.producer.sources.length > 0 && Object.keys(this.state.selectedSources).length === 0 && (
+                            <div>Please select some sources to view their output.</div>
+                        )}
+                        {Object.keys(this.state.selectedSources).length > 0 && this.state.sourceGraphSeries.length === 0 && (
+                            <div>There is no power data for the selected sources.</div>
+                        )}
+                        {this.state.sourceGraphSeries.length > 0 && (
+                            <div className="charts">
+                                <ChartistGraph
+                                    data={{
+                                        labels: this.state.sourceGraphLabels,
+                                        series: this.state.sourceGraphSeries
+                                    }}
+                                    type="Line"
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -217,14 +234,14 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      */
     private handleSelectSource(source: ISource, isSelected: boolean): void {
         if (isSelected && !this.state.selectedSources[source.id]) {
-            this._demoGridManager.subscribeSource(source.id, (sourceState) => {
+            this._demoGridManager.subscribeSource("liveProducer", source.id, (sourceState) => {
                 if (sourceState) {
                     this.state.selectedSources[source.id] = sourceState;
                     this.setState({ selectedSources: this.state.selectedSources }, () => this.calculateGraph());
                 }
             });
         } else if (!isSelected && this.state.selectedSources[source.id]) {
-            this._demoGridManager.unsubscribeSource(source.id);
+            this._demoGridManager.unsubscribeSource("liveProducer", source.id);
             delete this.state.selectedSources[source.id];
             this.setState({ selectedSources: this.state.selectedSources }, () => this.calculateGraph());
         }
@@ -234,16 +251,15 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * Calculate the graph data.
      */
     private calculateGraph(): void {
-        const graphLabels: string[] = [];
+        let graphLabels: string[] = [];
         const graphSeries: number[][] = [];
-        if (this.state.mamRoot) {
-            for (const sourceId in this.state.selectedSources) {
-                if (this.state.selectedSources[sourceId].outputCommands.length > 0) {
-                    graphSeries.push(this.state.selectedSources[sourceId].outputCommands.map(p => p.output));
-                }
+        for (const sourceId in this.state.selectedSources) {
+            if (this.state.selectedSources[sourceId].outputCommands.length > 0) {
+                graphSeries.push(this.state.selectedSources[sourceId].outputCommands.map(p => p.output));
+                graphLabels = this.state.selectedSources[sourceId].outputCommands.map(p => p.endTime.toString());
             }
         }
-        this.setState({ graphSeries, graphLabels });
+        this.setState({ sourceGraphSeries: graphSeries, sourceGraphLabels: graphLabels });
     }
 }
 

@@ -12,7 +12,7 @@ export class ProducerOutputPaymentService extends AmazonDynamoDbService<IProduce
     public static readonly TABLE_NAME: string = "producerOutputPayment";
 
     /**
-     * Create a new instance of ProducerStoreService.
+     * Create a new instance of ProducerOutputPaymentService.
      * @param config Configuration for DB.
      */
     constructor(config: IAWSDynamoDbConfiguration) {

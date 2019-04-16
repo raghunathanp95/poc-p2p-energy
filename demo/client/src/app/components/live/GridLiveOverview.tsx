@@ -37,7 +37,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridManager.subscribeGrid("gridLiveOverview", (gridState) => {
+        this._demoGridManager.subscribeGrid("liveOverview", (gridState) => {
             const gridManagerState = gridState && gridState.gridManagerState;
 
             this.setState({
@@ -59,7 +59,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridManager.unsubscribeGrid("gridLiveOverview");
+        this._demoGridManager.unsubscribeGrid("liveOverview");
     }
 
     /**

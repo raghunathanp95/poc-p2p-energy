@@ -17,13 +17,9 @@ export interface IProducerOutputEntry {
     /**
      * The price the producer would like for this output per kWh.
      */
-    producerAskingPrice: number;
+    producerPrice: number;
     /**
      * The payment address for this output.
      */
     paymentAddress: string;
-    /**
-     * The price the grid is actually going to pay for output per kWh.
-     */
-    gridActualPrice?: number;
 }

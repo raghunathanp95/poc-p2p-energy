@@ -32,12 +32,22 @@ export interface GridLiveProducerState {
     selectedSources: { [id: string]: IDemoSourceState };
 
     /**
-     * The data labels for the graph.
+     * The data labels for the producer graph.
      */
-    graphLabels: string[];
+    producerGraphLabels: string[];
 
     /**
-     * The data series for the graph.
+     * The data series for the producer graph.
      */
-    graphSeries: number[][];
+    producerGraphSeries: number[];
+
+    /**
+     * The data labels for the source graph.
+     */
+    sourceGraphLabels: string[];
+
+    /**
+     * The data series for the source graph.
+     */
+    sourceGraphSeries: number[][];
 }

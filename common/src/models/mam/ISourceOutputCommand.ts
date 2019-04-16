@@ -12,7 +12,7 @@ export interface ISourceOutputCommand extends IMamCommand {
     endTime: number;
 
     /**
-     * The output for the producer in kWh.
+     * The output for the source in kWh.
      */
     output: number;
 }

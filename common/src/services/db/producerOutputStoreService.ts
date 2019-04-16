@@ -5,17 +5,17 @@ import { AmazonDynamoDbService } from "../amazon/amazonDynamoDbService";
 /**
  * Service to handle the producer store.
  */
-export class ProducerStoreService extends AmazonDynamoDbService<IProducerOutput> {
+export class ProducerOutputStoreService extends AmazonDynamoDbService<IProducerOutput> {
     /**
      * The name of the database table.
      */
-    public static readonly TABLE_NAME: string = "producerStore";
+    public static readonly TABLE_NAME: string = "producerOutputStore";
 
     /**
-     * Create a new instance of ProducerStoreService.
+     * Create a new instance of ProducerOutputPaymentService.
      * @param config Configuration for DB.
      */
     constructor(config: IAWSDynamoDbConfiguration) {
-        super(config, ProducerStoreService.TABLE_NAME, "id");
+        super(config, ProducerOutputStoreService.TABLE_NAME, "id");
     }
 }

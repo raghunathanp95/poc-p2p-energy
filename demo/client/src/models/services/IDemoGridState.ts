@@ -23,4 +23,9 @@ export interface IDemoGridState {
      * The source states.
      */
     sourceStates: { [id: string]: IDemoSourceState };
+
+    /**
+     * Counter use for output timing.
+     */
+    secondsCounter: number;
 }

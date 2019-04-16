@@ -6,8 +6,13 @@
 
 ## Grid
 
-* Business logic to handle usage/payment from consumer
+* Payments from consumer
+* Payments to producer
+
+## Producer
+
+* Payments from grid
 
 ## Consumer
 
-* Usage and Payments logic
+* Payments to grid

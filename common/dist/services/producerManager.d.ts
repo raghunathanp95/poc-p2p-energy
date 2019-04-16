@@ -1,6 +1,8 @@
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
+import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IMamCommand } from "../models/mam/IMamCommand";
+import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
 /**
@@ -50,16 +52,19 @@ export declare class ProducerManager {
      */
     closedown(): Promise<void>;
     /**
-     * Combine the information from the sources and generate an output command.
-     * @param calculatePrice Calculate the price for an output.
-     */
-    collateSources(calculatePrice: (startTime: number, endTime: number, value: number) => number): Promise<void>;
-    /**
      * Process commands for the registration.
      * @param registration The registration.
      * @param commands The commands to process.
      */
     handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void>;
+    /**
+     * Combine the information from the sources and generate an output command.
+     * @param endTime The end time of the block we want to collate.
+     * @param calculatePrice Calculate the price for an output.
+     * @param archiveSourceOutput The source outputs combined are removed, you can archive them with this callback.
+     * @returns Any new producer output commands.
+     */
+    update(endTime: number, calculatePrice: (startTime: number, endTime: number, combinedValue: number) => number, archiveSourceOutput: (sourceId: string, archiveOutputs: ISourceStoreOutput[]) => void): Promise<IProducerOutputCommand[]>;
     /**
      * Send a command to the channel.
      */

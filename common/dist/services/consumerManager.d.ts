@@ -1,5 +1,7 @@
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
+import { IMamCommand } from "../models/mam/IMamCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 /**
  * Class to handle a consumer.
@@ -46,6 +48,16 @@ export declare class ConsumerManager {
      * Unregister the source from the Grid.
      */
     closedown(): Promise<void>;
+    /**
+     * Send a usage command to the mam channel.
+     * @param endTime The end time for the current period.
+     * @param value The usage to send.
+     */
+    sendUsageCommand(endTime: number, value: number): Promise<IConsumerUsageCommand>;
+    /**
+     * Send a command to the channel.
+     */
+    sendCommand<T extends IMamCommand>(command: T): Promise<T>;
     /**
      * Remove the state for the consumer.
      */

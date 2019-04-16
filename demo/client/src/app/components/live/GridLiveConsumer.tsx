@@ -2,6 +2,7 @@ import classnames from "classnames";
 import { Button } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
+import ChartistGraph from "react-chartist";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
@@ -47,7 +48,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
         this.state = {
             isExpanded: false,
             paidBalance: "-----",
-            owedBalance: "-----"
+            owedBalance: "-----",
+            graphLabels: [],
+            graphSeries: []
         };
     }
 
@@ -55,20 +58,25 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridManager.subscribeConsumer(this.props.consumer.id, (consumerState) => {
-            const mamChannel = consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.channel;
-            const mamChannelReturn = consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.returnChannel;
+        this._demoGridManager.subscribeConsumer("liveConsumer", this.props.consumer.id, (consumerState) => {
+            const consumerManagerState = consumerState && consumerState.consumerManagerState;
+            const mamChannel = consumerManagerState && consumerManagerState.channel;
+            const mamChannelReturn = consumerManagerState && consumerManagerState.returnChannel;
 
-            this.setState({
-                paidBalance: consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.paidBalance !== undefined ?
-                    `${consumerState.consumerManagerState.paidBalance}i` : "-----",
-                owedBalance: consumerState && consumerState.consumerManagerState && consumerState.consumerManagerState.owedBalance !== undefined ?
-                    `${consumerState.consumerManagerState.owedBalance}i` : "-----",
-                mamRoot: mamChannel && mamChannel.initialRoot,
-                sideKey: mamChannel && mamChannel.sideKey,
-                mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
-                sideKeyReturn: mamChannelReturn && mamChannelReturn.sideKey
-            });
+            this.setState(
+                {
+                    paidBalance: consumerState && consumerManagerState && consumerManagerState.paidBalance !== undefined ?
+                        `${consumerState.consumerManagerState.paidBalance}i` : "-----",
+                    owedBalance: consumerManagerState && consumerManagerState.owedBalance !== undefined ?
+                        `${consumerManagerState.owedBalance}i` : "-----",
+                    mamRoot: mamChannel && mamChannel.initialRoot,
+                    sideKey: mamChannel && mamChannel.sideKey,
+                    mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
+                    sideKeyReturn: mamChannelReturn && mamChannelReturn.sideKey,
+                    graphSeries: consumerState && consumerState.usageCommands && consumerState.usageCommands.map(u => u.usage) || [],
+                    graphLabels: consumerState && consumerState.usageCommands && consumerState.usageCommands.map(u => u.endTime.toString()) || []
+                }
+            );
         });
     }
 
@@ -76,7 +84,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridManager.unsubscribeConsumer(this.props.consumer.id);
+        this._demoGridManager.unsubscribeConsumer("liveConsumer", this.props.consumer.id);
     }
 
     /**
@@ -137,6 +145,20 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             >
                                 MAM Billing
                             </Button>
+                        )}
+                        {this.state.graphSeries.length === 0 && (
+                            <p>There is no usage data for this consumer.</p>
+                        )}
+                        {this.state.graphSeries.length > 0 && (
+                            <div className="charts">
+                                <ChartistGraph
+                                    data={{
+                                        labels: this.state.graphLabels,
+                                        series: [ this.state.graphSeries ]
+                                    }}
+                                    type="Line"
+                                />
+                            </div>
                         )}
                     </div>
                 )}

@@ -8,8 +8,9 @@ import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-c
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
 import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/consumerUsageStoreService";
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
-import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
+import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
@@ -70,15 +71,21 @@ app.build(routes, async (_1, config, _2) => {
     }
     if (config.localStorageFolder) {
         ServiceFactory.register(
-            "producer-output",
+            "grid-producer-output-store",
             () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/producer`));
+        ServiceFactory.register(
+            "grid-consumer-usage-store",
+            () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/consumer`));
         ServiceFactory.register(
             "producer-output-payment",
             () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/producer-paid`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
-            "producer-output",
-            () => new ProducerStoreService(config.dynamoDbConnection));
+            "grid-producer-output-store",
+            () => new ProducerOutputStoreService(config.dynamoDbConnection));
+        ServiceFactory.register(
+            "grid-consumer-usage-store",
+            () => new ConsumerUsageStoreService(config.dynamoDbConnection));
         ServiceFactory.register(
             "producer-output-payment",
             () => new ProducerOutputPaymentService(config.dynamoDbConnection));
@@ -93,14 +100,6 @@ app.build(routes, async (_1, config, _2) => {
             schedule: "*/15 * * * * *",
             func: async () => registrationManagementService.pollCommands(
                 (registration, commands) => gridManager.handleCommands(registration, commands))
-        },
-        {
-            name: "Calculate asking prices",
-            schedule: "*/15 * * * * *",
-            func: async () => gridManager.calculateAskingPrices((startTime, endTime, output, askingPrice) => {
-                // Calculate a price for the output based on its details and the asking price
-                return Math.floor(askingPrice * 0.95);
-            })
         },
         {
             name: "Check Payments",

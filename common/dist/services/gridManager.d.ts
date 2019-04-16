@@ -48,11 +48,6 @@ export declare class GridManager {
     handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void>;
     /**
      * Check if payments have been confirmed for producer outputs.
-     * @param calculatePrice Calculate a price based on the output details and asking price.
-     */
-    calculateAskingPrices(calculatePrice: (startTime: number, endTime: number, output: number, askingPrice: number) => number): Promise<void>;
-    /**
-     * Check if payments have been confirmed for producer outputs.
      */
     checkPayments(): Promise<void>;
     /**

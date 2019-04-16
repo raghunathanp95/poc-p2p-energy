@@ -102,10 +102,18 @@ app.build(routes, async (_1, config, _2) => {
         {
             name: "Collate Sources",
             schedule: "*/60 * * * * *",
-            func: async () => producerManager.collateSources((startTime, endTime, value) => {
-                // Calculate a cost for the output slice, you could base this on time of day, value etc
-                return 1000;
-            })
+            func: async () => {
+                await producerManager.update(
+                    Date.now(),
+                    (startTime, endTime, combinedValue) => {
+                        // Calculate a cost for the producer output slice, you could base this on time of day, value etc
+                        return 1000;
+                    },
+                    (sourceId, sourceStoreOutput) => {
+                        // Source outputs are removed when they are collated
+                        // but you can archive the used blocks if required in this callback
+                    });
+            }
         }
     ];
 

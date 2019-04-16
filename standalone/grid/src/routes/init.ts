@@ -4,8 +4,9 @@ import { ILoggingService } from "p2p-energy-common/dist/models/services/ILogging
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
 import { BundleCacheService } from "p2p-energy-common/dist/services/db/bundleCacheService";
+import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/consumerUsageStoreService";
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
-import { ProducerStoreService } from "p2p-energy-common/dist/services/db/producerStoreService";
+import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { TransactionCacheService } from "p2p-energy-common/dist/services/db/transactionCacheService";
 
 /**
@@ -25,7 +26,9 @@ export async function init(config: IGridServiceConfiguration): Promise<string[]>
                 .createTable(loggingService);
             await new AmazonS3RegistrationService(config.dynamoDbConnection)
                 .createTable(loggingService);
-            await new ProducerStoreService(config.dynamoDbConnection)
+            await new ProducerOutputStoreService(config.dynamoDbConnection)
+                .createTable(loggingService);
+            await new ConsumerUsageStoreService(config.dynamoDbConnection)
                 .createTable(loggingService);
             await new ProducerOutputPaymentService(config.dynamoDbConnection)
                 .createTable(loggingService);

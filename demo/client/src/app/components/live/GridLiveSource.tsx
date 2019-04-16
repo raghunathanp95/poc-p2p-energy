@@ -57,7 +57,7 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridManager.subscribeSource(this.props.source.id, (sourceState) => {
+        this._demoGridManager.subscribeSource("liveSource", this.props.source.id, (sourceState) => {
             const mamChannel = sourceState && sourceState.sourceManagerState && sourceState.sourceManagerState.channel;
 
             this.setState({
@@ -71,7 +71,7 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
      * The component is going to unmount so tidy up.
      */
     public componentWillUnmount(): void {
-        this._demoGridManager.unsubscribeSource(this.props.source.id);
+        this._demoGridManager.unsubscribeSource("liveSource", this.props.source.id);
     }
 
     /**
@@ -84,7 +84,6 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
                 isSelected: this.props.isSelected
             });
         }
-
     }
 
     /**

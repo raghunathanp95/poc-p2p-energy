@@ -4,7 +4,7 @@ import { AmazonDynamoDbService } from "../amazon/amazonDynamoDbService";
 /**
  * Service to handle the producer store.
  */
-export declare class ProducerStoreService extends AmazonDynamoDbService<IProducerOutput> {
+export declare class ProducerOutputStoreService extends AmazonDynamoDbService<IProducerOutput> {
     /**
      * The name of the database table.
      */

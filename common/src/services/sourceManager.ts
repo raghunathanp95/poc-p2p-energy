@@ -167,7 +167,7 @@ export class SourceManager {
         this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
-            lastOutputTime: Date.now()
+            lastOutputTime: 0
         };
     }
 

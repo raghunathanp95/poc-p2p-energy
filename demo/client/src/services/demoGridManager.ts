@@ -2,6 +2,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
 import { IMamCommand } from "p2p-energy-common/dist/models/mam/IMamCommand";
+import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { IRegistrationManagementService } from "p2p-energy-common/dist/models/services/IRegistrationManagementService";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
@@ -35,6 +36,11 @@ export class DemoGridManager {
      * The demo grid storage service.
      */
     private _demoGridStateStorageService: IStorageService<IDemoGridState>;
+
+    /**
+     * Service to log output to.
+     */
+    private readonly _loggingService: ILoggingService;
 
     /**
      * The id of the loaded grid.
@@ -103,11 +109,6 @@ export class DemoGridManager {
     private readonly _subscriptionsSource: { [id: string]: (state: IDemoSourceState | undefined) => void };
 
     /**
-     * Counter for the update loop.
-     */
-    private _updateCounter: number;
-
-    /**
      * Create a new instance of DemoGridManager.
      * @param nodeConfig The configuration for accessing the tangle.
      */
@@ -115,6 +116,8 @@ export class DemoGridManager {
         this._nodeConfig = nodeConfig;
 
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
+        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
         this._subscriptionsConsumer = {};
@@ -122,36 +125,27 @@ export class DemoGridManager {
         this._gridState = {
             producerStates: {},
             consumerStates: {},
-            sourceStates: {}
+            sourceStates: {},
+            secondsCounter: 0
         };
-
-        this._updateCounter = 0;
     }
 
     /**
-     * Load the state from the grid.
+     * Initialise the state from the grid.
      * @param grid The grid to populate from.
      * @param progressCallback Send callback messages.
      */
-    public async load(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
-        this.stopUpdates();
+    public async initialise(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
+        this.closedown();
 
-        let newState;
-        if (this._gridId !== grid.id) {
-            this.clearManagers();
-            // It is a different grid to the current loaded state
-            // so load it and trigger subscriptions
-            // See if we have the grid state in local storage
-            newState = await this._demoGridStateStorageService.get(grid.id);
-        } else {
-            newState = this._gridState;
-        }
+        const loadedState = await this._demoGridStateStorageService.get(grid.id);
 
         this._gridId = grid.id;
-        this._gridState = newState || {
+        this._gridState = loadedState || {
             producerStates: {},
             consumerStates: {},
-            sourceStates: {}
+            sourceStates: {},
+            secondsCounter: 0
         };
 
         await this.constructManagers(grid, progressCallback);
@@ -170,75 +164,89 @@ export class DemoGridManager {
     }
 
     /**
+     * Closedown the grid.
+     */
+    public closedown(): void {
+        this.stopUpdates();
+        this.clearManagers();
+    }
+
+    /**
      * Subscribe to grid state changes.
-     * @param id The id of the item to subscribe to.
+     * @param context The context of the item subscribing.
      * @param callback The callback for the subscription.
      */
-    public subscribeGrid(id: string, callback: (state: IDemoGridState | undefined) => void): void {
-        this._subscriptionsGrid[id] = callback;
+    public subscribeGrid(context: string, callback: (state: IDemoGridState | undefined) => void): void {
+        this._subscriptionsGrid[context] = callback;
         callback(this.getGridState());
     }
 
     /**
      * Unsubscribe from grid state changes.
-     * @param id The id of the grid to subscribe to.
+     * @param context The context of the item subscribing.
      */
-    public unsubscribeGrid(id: string): void {
-        delete this._subscriptionsGrid[id];
+    public unsubscribeGrid(context: string): void {
+        delete this._subscriptionsGrid[context];
     }
 
     /**
      * Subscribe to producer state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeProducer(id: string, callback: (state: IDemoProducerState | undefined) => void): void {
-        this._subscriptionsProducer[id] = callback;
+    public subscribeProducer(context: string, id: string, callback: (state: IDemoProducerState | undefined) => void): void {
+        this._subscriptionsProducer[`${id}/${context}`] = callback;
         callback(this.getProducerState(id));
     }
 
     /**
      * Unsubscribe from producer state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the grid to subscribe to.
      */
-    public unsubscribeProducer(id: string): void {
-        delete this._subscriptionsProducer[id];
+    public unsubscribeProducer(context: string, id: string): void {
+        delete this._subscriptionsProducer[`${id}/${context}`];
     }
 
     /**
      * Subscribe to consumer state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeConsumer(id: string, callback: (state: IDemoConsumerState | undefined) => void): void {
-        this._subscriptionsConsumer[id] = callback;
+    public subscribeConsumer(context: string, id: string, callback: (state: IDemoConsumerState | undefined) => void): void {
+        this._subscriptionsConsumer[`${id}/${context}`] = callback;
         callback(this.getConsumerState(id));
     }
 
     /**
      * Unsubscribe from consumer state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the consumer to unsubscribe.
      */
-    public unsubscribeConsumer(id: string): void {
-        delete this._subscriptionsConsumer[id];
+    public unsubscribeConsumer(context: string, id: string): void {
+        delete this._subscriptionsConsumer[`${id}/${context}`];
     }
 
     /**
      * Subscribe to source state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeSource(id: string, callback: (state: IDemoSourceState | undefined) => void): void {
-        this._subscriptionsSource[id] = callback;
+    public subscribeSource(context: string, id: string, callback: (state: IDemoSourceState | undefined) => void): void {
+        this._subscriptionsSource[`${id}/${context}`] = callback;
         callback(this.getSourceState(id));
     }
 
     /**
      * Unsubscribe from source state changes.
+     * @param context The context of the item subscribing.
      * @param id The id of the source to unsubscribe from.
      */
-    public unsubscribeSource(id: string): void {
-        delete this._subscriptionsSource[id];
+    public unsubscribeSource(context: string, id: string): void {
+        delete this._subscriptionsSource[`${id}/${context}`];
     }
 
     /**
@@ -296,8 +304,9 @@ export class DemoGridManager {
      * Update the subscribers for the grid.
      */
     private updateGridSubscribers(): void {
-        for (const id in this._subscriptionsGrid) {
-            this._subscriptionsGrid[id](this.getGridState());
+        const state = this.getGridState();
+        for (const context in this._subscriptionsGrid) {
+            this._subscriptionsGrid[context](state);
         }
     }
 
@@ -305,8 +314,9 @@ export class DemoGridManager {
      * Update the subscribers for the producers.
      */
     private updateProducerSubscribers(): void {
-        for (const id in this._subscriptionsProducer) {
-            this._subscriptionsProducer[id](this.getProducerState(id));
+        for (const idContext in this._subscriptionsProducer) {
+            const parts = idContext.split("/");
+            this._subscriptionsProducer[idContext](this.getProducerState(parts[0]));
         }
     }
 
@@ -314,8 +324,9 @@ export class DemoGridManager {
      * Update the subscribers for the consumers.
      */
     private updateConsumerSubscribers(): void {
-        for (const id in this._subscriptionsConsumer) {
-            this._subscriptionsConsumer[id](this.getConsumerState(id));
+        for (const idContext in this._subscriptionsConsumer) {
+            const parts = idContext.split("/");
+            this._subscriptionsConsumer[idContext](this.getConsumerState(parts[0]));
         }
     }
 
@@ -323,8 +334,9 @@ export class DemoGridManager {
      * Update the subscribers for the sources.
      */
     private updateSourceSubscribers(): void {
-        for (const id in this._subscriptionsSource) {
-            this._subscriptionsSource[id](this.getSourceState(id));
+        for (const idContext in this._subscriptionsSource) {
+            const parts = idContext.split("/");
+            this._subscriptionsSource[idContext](this.getSourceState(parts[0]));
         }
     }
 
@@ -391,6 +403,14 @@ export class DemoGridManager {
         ServiceFactory.register(
             "source-registration",
             () => new DirectRegistrationService("registration-management"));
+
+        ServiceFactory.register(
+            "grid-producer-output-store",
+            () => new BrowserStorageService<ISourceStore>(`grid-producer-output`));
+
+        ServiceFactory.register(
+            "grid-consumer-usage-store",
+            () => new BrowserStorageService<ISourceStore>(`grid-consumer-usage`));
     }
 
     /**
@@ -433,7 +453,9 @@ export class DemoGridManager {
                 await this._producerManagers[producer.id].initialise();
             }
 
-            this._gridState.producerStates[producer.id] = this._gridState.producerStates[producer.id] || {};
+            this._gridState.producerStates[producer.id] = this._gridState.producerStates[producer.id] || {
+                outputCommands: []
+            };
 
             for (let s = 0; s < producer.sources.length; s++) {
                 const source = producer.sources[s];
@@ -462,7 +484,9 @@ export class DemoGridManager {
                 await this._consumerManagers[consumer.id].initialise();
             }
 
-            this._gridState.consumerStates[consumer.id] = this._gridState.consumerStates[consumer.id] || {};
+            this._gridState.consumerStates[consumer.id] = this._gridState.consumerStates[consumer.id] || {
+                usageCommands: []
+            };
         }
     }
 
@@ -471,39 +495,123 @@ export class DemoGridManager {
      */
     private async updateManagers(): Promise<void> {
         if (this._gridId) {
-            const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
-            await registrationManagementService.pollCommands(async (registration: IRegistration, commands: IMamCommand[]) => {
-                // Producers and consumers and registered with the grid, so hand the commands to the grid manager
-                if (registration.itemType === "producer" || registration.itemType === "consumer") {
-                    if (this._gridManager) {
-                        await this._gridManager.handleCommands(registration, commands);
-                    }
-                } else {
-                    // All other registrations are sources with producers, so find which
-                    // producer the source belongs to.
-                    if (this._sourceManagers && this._sourceManagers[registration.id]) {
-                        if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
-                            await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
-                        }
+            // In a real system the individual manager updates would be performed
+            // by the standalone entities.
+            this._gridState.secondsCounter += 10;
+
+            await this.updateRegistrations();
+
+            await this.updateSourceManagers();
+
+            await this.updateProducerManagers();
+
+            await this.updateConsumerManagers();
+
+            await this._demoGridStateStorageService.set(this._gridId, this._gridState);
+        }
+    }
+
+    /**
+     * Update all the registrations.
+     */
+    private async updateRegistrations(): Promise<void> {
+        // First step on an update is to check all the mam registrations for new
+        // commands in their channels
+        const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+        await registrationManagementService.pollCommands(async (registration: IRegistration, commands: IMamCommand[]) => {
+            // Producers and consumers are registered with the grid, so hand the commands to the grid manager
+            if (registration.itemType === "producer" || registration.itemType === "consumer") {
+                if (this._gridManager) {
+                    await this._gridManager.handleCommands(registration, commands);
+                }
+            } else {
+                // All other registrations are sources with producers, so find which
+                // producer the source belongs to.
+                if (this._sourceManagers && this._sourceManagers[registration.id]) {
+                    if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
+                        await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
                     }
                 }
-            });
+            }
+        });
+    }
 
-            // tslint:disable:insecure-random
-            // Add a new source value every minute
-            if (this._sourceManagers && this._updateCounter % 1 === 0) {
-                for (const sourceId in this._sourceManagers) {
-                    // Range the source output from 0 to 1000
-                    const outputCommand = await this._sourceManagers[sourceId].sourceManager.sendOutputCommand(this._updateCounter * 10, Math.random() * 1000);
+    /**
+     * Update the managers for the sources.
+     */
+    private async updateSourceManagers(): Promise<void> {
+        // tslint:disable:insecure-random
+        // Create some dummy output data for the sources using the loop counter as the time
+        // In a real life scenario this would come from the actual device
+        // and at an interval of the implementers choice
+        if (this._sourceManagers) {
+            for (const sourceId in this._sourceManagers) {
+                // Range the source output from 0 to 1000
+                const outputCommand = await this._sourceManagers[sourceId].sourceManager.sendOutputCommand(this._gridState.secondsCounter, Math.random() * 1000);
+                // Add the output to the local state and keep just the most recent 10
+                this._gridState.sourceStates[sourceId].outputCommands.push(outputCommand);
+                this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+            }
+            // Notify any local subscribers of the source updates
+            this.updateSourceSubscribers();
+        }
+    }
 
-                    this._gridState.sourceStates[sourceId].outputCommands.push(outputCommand);
-                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+    /**
+     * Update the managers for the producers.
+     */
+    private async updateProducerManagers(): Promise<void> {
+        // Update the producers so they can collate the output from all their sources
+        // They need to use an end time in the past otherwise the may not have seen the updated
+        // commands from all the sources
+        if (this._producerManagers) {
+            // Collate only up to 3 readings ago allowing sources to propogate their data
+            const endTimeCollate = this._gridState.secondsCounter - 30;
+            if (endTimeCollate > 0) {
+                for (const producerId in this._producerManagers) {
+                    const commands = await this._producerManagers[producerId].update(
+                        endTimeCollate,
+                        (startTime, endTime, combinedValue) => {
+                            // Calculate a cost for the producer output slice, you could base this on time of day, value etc
+                            return 1000;
+                        },
+                        (sourceId, sourceStoreOutput) => {
+                            // Source outputs are removed when they are collated
+                            // but you can archive the used blocks if required in this callback
+                            this._loggingService.log("demo-grid-manager", `Archive source outputs '${sourceId}'`, sourceStoreOutput);
+                        });
+
+                    if (commands.length > 0) {
+                        // Add the output to the local state and keep just the most recent 10
+                        this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.concat(commands);
+                        this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.slice(-10);
+
+                        // Notify any local subscribers of the producer updates
+                        this.updateProducerSubscribers();
+                    }
                 }
-                this.updateSourceSubscribers();
+            }
+        }
+    }
+
+    /**
+     * Update the managers for the consumers.
+     */
+    private async updateConsumerManagers(): Promise<void> {
+        // Create some dummy usage data for the consumers every 10s
+        // In a real life scenario this would come from the consumers meter
+        // and at an interval of the implementers choice
+        if (this._consumerManagers) {
+            for (const consumerId in this._consumerManagers) {
+                // Range the source output from 0 to 10
+                const usageCommand = await this._consumerManagers[consumerId].sendUsageCommand(this._gridState.secondsCounter, Math.random() * 10);
+                // Add the usage to the local state and keep just the most recent 10
+                this._gridState.consumerStates[consumerId].usageCommands.push(usageCommand);
+                this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.slice(-10);
             }
 
-            this._updateCounter++;
-            await this._demoGridStateStorageService.set(this._gridId, this._gridState);
+            // Notify any local subscribers of the consumer updates
+            this.updateConsumerSubscribers();
         }
     }
 }
