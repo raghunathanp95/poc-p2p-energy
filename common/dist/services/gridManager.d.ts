@@ -3,6 +3,7 @@ import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
+import { IGridStrategy } from "../models/strategies/IGridStrategy";
 /**
  * Service to handle the grid.
  */
@@ -20,6 +21,10 @@ export declare class GridManager {
      */
     private readonly _loggingService;
     /**
+     * The strategy for generating processing outputs, usage and payments.
+     */
+    private readonly _strategy;
+    /**
      * The current state for the producer.
      */
     private _state?;
@@ -27,8 +32,9 @@ export declare class GridManager {
      * Create a new instance of GridService.
      * @param gridConfig The configuration for the grid.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param strategy The strategy for generating processing outputs, usage and payments.
      */
-    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings);
+    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IGridStrategy);
     /**
      * Get the state for the manager.
      */
@@ -48,9 +54,17 @@ export declare class GridManager {
      */
     handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void>;
     /**
-     * Check if payments have been confirmed for producer outputs.
+     * Update strategy to process payments for registered entites.
      */
-    checkPayments(): Promise<void>;
+    updateStrategy(): Promise<void>;
+    /**
+     * Update the consumers using the strategy.
+     */
+    updateConsumers(): Promise<void>;
+    /**
+     * Update the producers using the strategy.
+     */
+    updateProducers(): Promise<void>;
     /**
      * Remove the state for the grid.
      */

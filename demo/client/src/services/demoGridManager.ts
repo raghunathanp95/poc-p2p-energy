@@ -1,9 +1,7 @@
-import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
-import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
 import { IMamCommand } from "p2p-energy-common/dist/models/mam/IMamCommand";
-import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { IRegistrationManagementService } from "p2p-energy-common/dist/models/services/IRegistrationManagementService";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
@@ -11,6 +9,8 @@ import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/ICons
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
+import { IGridStrategy } from "p2p-energy-common/dist/models/strategies/IGridStrategy";
+import { IProducerStrategy } from "p2p-energy-common/dist/models/strategies/IProducerStrategy";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
@@ -18,6 +18,8 @@ import { DirectRegistrationService } from "p2p-energy-common/dist/services/regis
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
 import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
+import { BasicGridStrategy } from "p2p-energy-common/dist/strategies/basicGridStrategy";
+import { BasicProducerStrategy } from "p2p-energy-common/dist/strategies/basicProducerStrategy";
 import { IGrid } from "../models/api/IGrid";
 import { IDemoConsumerState } from "../models/services/IDemoConsumerState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
@@ -39,9 +41,14 @@ export class DemoGridManager {
     private _demoGridStateStorageService: IStorageService<IDemoGridState>;
 
     /**
-     * Service to log output to.
+     * The producer strategy.
      */
-    private readonly _loggingService: ILoggingService;
+    private readonly _producerStrategy: IProducerStrategy;
+
+    /**
+     * The grid strategy.
+     */
+    private readonly _gridStrategy: IGridStrategy;
 
     /**
      * The id of the loaded grid.
@@ -117,7 +124,8 @@ export class DemoGridManager {
         this._loadBalancerSettings = loadBalancerSettings;
 
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
-        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._producerStrategy = new BasicProducerStrategy();
+        this._gridStrategy = new BasicGridStrategy();
 
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
@@ -437,7 +445,7 @@ export class DemoGridManager {
 
         progressCallback("Initializing Grid.");
         if (!this._gridManager) {
-            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._loadBalancerSettings);
+            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._loadBalancerSettings, this._gridStrategy);
             await this._gridManager.initialise();
         }
 
@@ -450,7 +458,11 @@ export class DemoGridManager {
 
             progressCallback(`Initializing Producer '${producer.name}' [${producer.id}].`);
             if (!this._producerManagers[producer.id]) {
-                this._producerManagers[producer.id] = new ProducerManager({ name: producer.name, id: producer.id }, this._loadBalancerSettings);
+                this._producerManagers[producer.id] = new ProducerManager(
+                    { name: producer.name, id: producer.id },
+                    this._loadBalancerSettings,
+                    this._producerStrategy
+                );
                 await this._producerManagers[producer.id].initialise();
             }
 
@@ -570,17 +582,7 @@ export class DemoGridManager {
             const endTimeCollate = this._gridState.secondsCounter - 30;
             if (endTimeCollate > 0) {
                 for (const producerId in this._producerManagers) {
-                    const commands = await this._producerManagers[producerId].update(
-                        endTimeCollate,
-                        (startTime, endTime, combinedValue) => {
-                            // Calculate a cost for the producer output slice, you could base this on time of day, value etc
-                            return 1000;
-                        },
-                        (sourceId, sourceStoreOutput) => {
-                            // Source outputs are removed when they are collated
-                            // but you can archive the used blocks if required in this callback
-                            this._loggingService.log("demo-grid-manager", `Archive source outputs '${sourceId}'`, sourceStoreOutput);
-                        });
+                    const commands = await this._producerManagers[producerId].updateStrategy(endTimeCollate);
 
                     if (commands.length > 0) {
                         // Add the output to the local state and keep just the most recent 10

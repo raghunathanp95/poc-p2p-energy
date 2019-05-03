@@ -10,6 +10,7 @@ import { ILoggingService } from "../models/services/ILoggingService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
+import { IGridStrategy } from "../models/strategies/IGridStrategy";
 import { TrytesHelper } from "../utils/trytesHelper";
 
 /**
@@ -32,6 +33,11 @@ export class GridManager {
     private readonly _loggingService: ILoggingService;
 
     /**
+     * The strategy for generating processing outputs, usage and payments.
+     */
+    private readonly _strategy: IGridStrategy;
+
+    /**
      * The current state for the producer.
      */
     private _state?: IGridManagerState;
@@ -40,10 +46,15 @@ export class GridManager {
      * Create a new instance of GridService.
      * @param gridConfig The configuration for the grid.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param strategy The strategy for generating processing outputs, usage and payments.
      */
-    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings) {
+    constructor(
+        gridConfig: IGridConfiguration,
+        loadBalancerSettings: LoadBalancerSettings,
+        strategy: IGridStrategy) {
         this._config = gridConfig;
         this._loadBalancerSettings = loadBalancerSettings;
+        this._strategy = strategy;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
 
@@ -156,9 +167,55 @@ export class GridManager {
     }
 
     /**
-     * Check if payments have been confirmed for producer outputs.
+     * Update strategy to process payments for registered entites.
      */
-    public async checkPayments(): Promise<void> {
+    public async updateStrategy(): Promise<void> {
+        await this.updateConsumers();
+        await this.updateProducers();
+    }
+
+    /**
+     * Update the consumers using the strategy.
+     */
+    public async updateConsumers(): Promise<void> {
+        // const consumerUsageStoreService = ServiceFactory.get<IStorageService<IConsumerUsage>>(
+        //     "grid-consumer-usage-store");
+
+        // const toRemove = [];
+
+        // let pageSize = 10;
+        // let page = 0;
+        // let pageResponse;
+        // do {
+        //     pageResponse = await consumerUsageStoreService.page(undefined, page, pageSize);
+
+        //     for (let i = 0; i < pageResponse.items.length; i++) {
+        //         const consumerUsage: IConsumerUsage = pageResponse.items[i];
+        //         if (consumerUsage.usage && consumerUsage.usage.length > 0) {
+        //             let totalUsage = 0;
+        //             for (let j = 0; j < consumerUsage.usage.length; j++) {
+        //                 const consumerUsageUse = consumerUsage.usage[j];
+        //                 totalUsage += consumerUsageUse.usage;
+        //             }
+        //             // No more unpaid entries so delete the producer output
+        //             toRemove.push(consumerUsage.id);
+        //         }
+        //     }
+        //     page++;
+        //     pageSize = pageResponse.pageSize;
+        // } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
+
+        // for (let i = 0; i < toRemove.length; i++) {
+        //     await consumerUsageStoreService.remove(toRemove[i]);
+        // }
+
+        // await this._strategy.process();
+    }
+
+    /**
+     * Update the producers using the strategy.
+     */
+    public async updateProducers(): Promise<void> {
         // const producerOutputService = ServiceFactory.get<IStorageService<IProducerOutput>>(
         //     "grid-producer-output-store");
         // const producerOutputPaymentService = ServiceFactory.get<IStorageService<IProducerOutputPayment>>(
@@ -240,6 +297,8 @@ export class GridManager {
         // for (let i = 0; i < toRemove.length; i++) {
         //     await producerOutputService.remove(toRemove[i]);
         // }
+
+        await this._strategy.process();
     }
 
     /**

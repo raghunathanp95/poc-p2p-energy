@@ -12,6 +12,7 @@ import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
+import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
 import { TrytesHelper } from "../utils/trytesHelper";
 import { MamCommandChannel } from "./mamCommandChannel";
 
@@ -40,6 +41,11 @@ export class ProducerManager {
     private readonly _registrationService: IRegistrationService;
 
     /**
+     * The strategy for generating output commands.
+     */
+    private readonly _strategy: IProducerStrategy;
+
+    /**
      * The current state for the producer.
      */
     private _state?: IProducerManagerState;
@@ -48,10 +54,15 @@ export class ProducerManager {
      * Create a new instance of ProducerService.
      * @param producerConfig The configuration for the producer.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param strategy The strategy for producing output commands.
      */
-    constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings) {
+    constructor(
+        producerConfig: IProducerConfiguration,
+        loadBalancerSettings: LoadBalancerSettings,
+        strategy: IProducerStrategy) {
         this._config = producerConfig;
         this._loadBalancerSettings = loadBalancerSettings;
+        this._strategy = strategy;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("producer-registration");
     }
@@ -207,15 +218,9 @@ export class ProducerManager {
     /**
      * Combine the information from the sources and generate an output command.
      * @param endTime The end time of the block we want to collate.
-     * @param calculatePrice Calculate the price for an output.
-     * @param archiveSourceOutput The source outputs combined are removed, you can archive them with this callback.
      * @returns Any new producer output commands.
      */
-    public async update(
-        endTime: number,
-        calculatePrice: (startTime: number, endTime: number, combinedValue: number) => number,
-        archiveSourceOutput: (sourceId: string, archiveOutputs: ISourceStoreOutput[]) => void):
-        Promise<IProducerOutputCommand[]> {
+    public async updateStrategy(endTime: number): Promise<IProducerOutputCommand[]> {
         const newCommands = [];
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
@@ -250,7 +255,7 @@ export class ProducerManager {
                                     // or the end of the source block
                                     const totalTimeUsed =
                                         (Math.min(endTime, sourceOutput.endTime) -
-                                        sourceOutput.startTime) + 1;
+                                            sourceOutput.startTime) + 1;
 
                                     // What percentage of the time have we used
                                     const totalTimeUsedPercent = totalTimeUsed / totalTime;
@@ -295,7 +300,7 @@ export class ProducerManager {
                             await sourceStoreService.set(`${this._config.id}/${pageResponse.ids[i]}`, sourceStore);
                         }
                         if (archive.length > 0) {
-                            archiveSourceOutput(pageResponse.ids[i], archive);
+                            await this._strategy.archiveSourceOutput(pageResponse.ids[i], archive);
                         }
                     }
                 }
@@ -311,14 +316,17 @@ export class ProducerManager {
             if (totalOutput > 0) {
                 this._state.lastOutputTime = endTime;
 
-                const paymentAddress = generateAddress(this._state.paymentSeed, this._state.paymentAddressIndex, 2);
-                this._state.paymentAddressIndex++;
+                const addressIndex = await this._strategy.addressIndex(this._state.producerCreated, startTime);
+
+                const paymentAddress = generateAddress(this._state.paymentSeed, addressIndex, 2);
+
+                const price = await this._strategy.price(startTime, endTime, totalOutput);
 
                 const command: IProducerOutputCommand = {
                     command: "output",
                     startTime,
                     endTime,
-                    price: calculatePrice(startTime, endTime, totalOutput),
+                    price,
                     output: totalOutput,
                     paymentAddress
                 };
@@ -355,7 +363,7 @@ export class ProducerManager {
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),
-            paymentAddressIndex: 0,
+            producerCreated: Date.now(),
             lastOutputTime: 0,
             owedBalance: 0,
             receivedBalance: 0

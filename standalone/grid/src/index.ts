@@ -15,6 +15,7 @@ import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/p
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { BasicGridStrategy } from "p2p-energy-common/dist/strategies/basicGridStrategy";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
 
@@ -61,7 +62,7 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
 
-    const gridManager = new GridManager(config.grid, loadBalancerSettings);
+    const gridManager = new GridManager(config.grid, loadBalancerSettings, new BasicGridStrategy());
     const registrationManagementService =
         new RegistrationManagementService(loadBalancerSettings, (registration) => registration.itemType === "consumer");
 
@@ -110,9 +111,9 @@ app.build(routes, async (_1, config, _2) => {
                 (registration, commands) => gridManager.handleCommands(registration, commands))
         },
         {
-            name: "Check Payments",
+            name: "Update Strategy",
             schedule: "*/15 * * * * *",
-            func: async () => gridManager.checkPayments()
+            func: async () => gridManager.updateStrategy()
         }
     ];
 

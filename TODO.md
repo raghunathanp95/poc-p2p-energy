@@ -2,17 +2,25 @@
 
 ## Demo (React Front-end)
 
-* Live UI for grid/producers/sources/consumers
+* Grid - running costs
+* Grid - producers owed
+* Grid - producers received
+* Grid - consumers owe
+* Grid - consumers paid
+* Producer - received
+* Producer - owed
+* Consumer - Paid
+* Consumer - owed
 
 ## Grid
 
-* Payments from consumer
-* Payments to producer
+* Strategy - payments from consumer
+* Strategy - payments to producer
 
 ## Producer
 
-* Payments from grid
+* Payments from grid receivedBalance, owedBalance
 
 ## Consumer
 
-* Payments to grid
+* Payments to grid paidBalance, owedBalance

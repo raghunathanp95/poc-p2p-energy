@@ -14,6 +14,7 @@ import { ApiRegistrationService } from "p2p-energy-common/dist/services/registra
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { BasicProducerStrategy } from "p2p-energy-common/dist/strategies/basicProducerStrategy";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
 
@@ -70,7 +71,7 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
-    const producerManager = new ProducerManager(config.producer, loadBalancerSettings);
+    const producerManager = new ProducerManager(config.producer, loadBalancerSettings, new BasicProducerStrategy());
     const registrationManagementService =
         new RegistrationManagementService(loadBalancerSettings, () => false);
 
@@ -108,19 +109,10 @@ app.build(routes, async (_1, config, _2) => {
                 (registration, commands) => producerManager.handleCommands(registration, commands))
         },
         {
-            name: "Collate Sources",
+            name: "Update Strategy",
             schedule: "*/60 * * * * *",
             func: async () => {
-                await producerManager.update(
-                    Date.now(),
-                    (startTime, endTime, combinedValue) => {
-                        // Calculate a cost for the producer output slice, you could base this on time of day, value etc
-                        return 1000;
-                    },
-                    (sourceId, sourceStoreOutput) => {
-                        // Source outputs are removed when they are collated
-                        // but you can archive the used blocks if required in this callback
-                    });
+                await producerManager.updateStrategy(Date.now());
             }
         }
     ];

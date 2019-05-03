@@ -10,9 +10,9 @@ export interface IProducerManagerState {
     paymentSeed: string;
 
     /**
-     * The current address index to user for payments.
+     * The time the producer was created.
      */
-    paymentAddressIndex: number;
+    producerCreated: number;
 
     /**
      * The channel configuration for the producer.
