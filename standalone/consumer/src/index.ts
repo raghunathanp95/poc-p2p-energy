@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IConsumerServiceConfiguration } from "p2p-energy-common/dist/models/config/consumer/IConsumerServiceConfiguration";
 import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
@@ -14,6 +15,11 @@ const configId = process.env.CONFIG_ID || "local";
 const config: IConsumerServiceConfiguration = require(`./data/config.${configId}.json`);
 
 const loggingService = new ConsoleLoggingService();
+
+const loadBalancerSettings: LoadBalancerSettings = {
+    nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
+    timeoutMs: 10000
+};
 
 ServiceFactory.register("logging", () => loggingService);
 ServiceFactory.register("consumer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
@@ -54,5 +60,5 @@ async function start(consumerManager: ConsumerManager): Promise<void> {
     // await consumerService.closedown();
 }
 
-start(new ConsumerManager(config.consumer, config.node))
+start(new ConsumerManager(config.consumer, loadBalancerSettings))
     .catch(err => console.log(err));

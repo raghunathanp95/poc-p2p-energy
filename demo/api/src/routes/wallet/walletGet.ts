@@ -1,4 +1,5 @@
-import { composeAPI, generateAddress } from "@iota/core";
+import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
+import { generateAddress } from "@iota/core";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IWalletGetResponse } from "../../models/api/IWalletGetResponse";
 import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
@@ -17,9 +18,9 @@ export async function walletGet(
 
     if (!walletState) {
         try {
-            const iota = composeAPI({
-                provider: config.node.provider
-            });
+            const iota = composeAPI(
+                ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
+            );
 
             const addresses = [generateAddress(config.walletSeed, 0, 2)];
             const balancesResponse = await iota.getBalances(addresses, 100);

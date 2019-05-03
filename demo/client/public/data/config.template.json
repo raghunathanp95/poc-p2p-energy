@@ -1,9 +1,16 @@
 {
-    "node": {
-        "provider": "https://MYNODE/",
-        "depth": 3,
-        "mwm": 9
-    },
+    "nodes": [
+        {
+            "provider": "https://MYNODE1",
+            "depth": 3,
+            "mwm": 9
+        },
+        {
+            "provider": "https://MYNODE2",
+            "depth": 3,
+            "mwm": 9
+        }
+    ],
     "apiEndpoint": "API-ENDPOINT",
     "mamExplorer": "https://mam-explorer.firebaseapp.com/?root=:root&provider=:provider&mode=:mode&key=:sideKey",
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"

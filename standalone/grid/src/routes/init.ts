@@ -1,3 +1,4 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
@@ -18,11 +19,13 @@ export async function init(config: IGridServiceConfiguration): Promise<string[]>
     loggingService.startCapture(["init", "dynamoDb", "s3"]);
     loggingService.log("init", "Initializing");
 
+    const loadBalancerSettings = ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings");
+
     try {
         if (config.dynamoDbConnection) {
-            await new BundleCacheService(config.dynamoDbConnection, config.node.provider)
+            await new BundleCacheService(config.dynamoDbConnection)
                 .createTable(loggingService);
-            await new TransactionCacheService(config.dynamoDbConnection, config.node.provider)
+            await new TransactionCacheService(config.dynamoDbConnection, loadBalancerSettings)
                 .createTable(loggingService);
             await new AmazonS3RegistrationService(config.dynamoDbConnection)
                 .createTable(loggingService);

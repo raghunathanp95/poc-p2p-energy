@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
@@ -31,7 +32,7 @@ const loggingService = new ConsoleLoggingService();
 const app = new App<IGridServiceConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
-    loggingService.log("app", `Tangle Provider ${config.node.provider}`);
+    loggingService.log("app", `Tangle Providers ${config.nodes.map(t => t.provider).join(", ")}`);
 
     ServiceFactory.register("logging", () => loggingService);
     if (config.localStorageFolder) {
@@ -53,9 +54,16 @@ app.build(routes, async (_1, config, _2) => {
             () => new AmazonS3StorageService(config.s3Connection, "config"));
     }
 
-    const gridManager = new GridManager(config.grid, config.node);
+    const loadBalancerSettings: LoadBalancerSettings = {
+        nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
+        timeoutMs: 10000
+    };
+
+    ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
+
+    const gridManager = new GridManager(config.grid, loadBalancerSettings);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, (registration) => registration.itemType === "consumer");
+        new RegistrationManagementService(loadBalancerSettings, (registration) => registration.itemType === "consumer");
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("grid", () => gridManager);

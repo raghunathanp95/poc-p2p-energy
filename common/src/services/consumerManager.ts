@@ -1,6 +1,6 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
@@ -19,9 +19,9 @@ export class ConsumerManager {
     private readonly _config: IConsumerConfiguration;
 
     /**
-     * Configuration for the tangle node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig: INodeConfiguration;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * Logging service.
@@ -41,15 +41,13 @@ export class ConsumerManager {
     /**
      * Create a new instance of ConsumerService.
      * @param consumerConfig The configuration for the consumer.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      * @param registrationService The service used to store registrations.
      * @param loggingService To send log output.
      */
-    constructor(
-        consumerConfig: IConsumerConfiguration,
-        nodeConfig: INodeConfiguration) {
+    constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings) {
         this._config = consumerConfig;
-        this._nodeConfig = nodeConfig;
+        this._loadBalancerSettings = loadBalancerSettings;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("consumer-registration");
     }
@@ -89,7 +87,7 @@ export class ConsumerManager {
                 sideKey: response.sideKey
             };
 
-            const returnMamChannel = new MamCommandChannel(this._nodeConfig);
+            const returnMamChannel = new MamCommandChannel(this._loadBalancerSettings);
             if (await returnMamChannel.openReadable(this._state.returnChannel)) {
                 this._loggingService.log("consumer-init", `Opening return channel success`);
             } else {
@@ -103,7 +101,7 @@ export class ConsumerManager {
             this._loggingService.log("consumer-init", `Channel Config not found`);
             this._loggingService.log("consumer-init", `Creating Channel`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             this._state.channel = {};
             await itemMamChannel.openWritable(this._state.channel);
@@ -132,7 +130,7 @@ export class ConsumerManager {
         if (this._state && this._state.channel) {
             this._loggingService.log("consumer-closedown", `Sending Goodbye`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             await itemMamChannel.closeWritable(this._state.channel);
 
@@ -170,7 +168,7 @@ export class ConsumerManager {
      * Send a command to the channel.
      */
     public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
-        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
+        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
         return command;

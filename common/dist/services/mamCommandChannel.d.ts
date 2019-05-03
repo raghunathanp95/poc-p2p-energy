@@ -1,4 +1,4 @@
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 /**
@@ -6,18 +6,18 @@ import { IMamCommand } from "../models/mam/IMamCommand";
  */
 export declare class MamCommandChannel {
     /**
-     * Node configuration for tangle operations.
+     * The load balancer settings for communications.
      */
-    private readonly _config;
+    private readonly _loadBalancerSettings;
     /**
      * Logging service.
      */
     private readonly _loggingService;
     /**
      * Create a new instance of MamChannel.
-     * @param config The configuration to use.
+     * @param nodeWalkStrategy The load balancer settings for communications.
      */
-    constructor(config: INodeConfiguration);
+    constructor(loadBalancerSettings: LoadBalancerSettings);
     /**
      * Create a new writable mam channel.
      * @param channelConfiguration The configuration to be populated for the channel.

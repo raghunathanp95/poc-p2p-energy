@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import "iota-css-theme";
 import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
@@ -51,12 +52,17 @@ class App extends Component<RouteComponentProps, AppState> {
             const configId = process.env.REACT_APP_CONFIG_ID || "local";
             const config = await configService.load(`/data/config.${configId}.json`);
 
+            const loadBalancerSettings: LoadBalancerSettings = {
+                nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
+                timeoutMs: 10000
+            };
+
             ServiceFactory.register("configuration", () => configService);
-            ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, config.node.provider));
+            ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
-            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(config.node));
+            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings));
 
             this._configuration = config;
 

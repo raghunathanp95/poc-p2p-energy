@@ -8,9 +8,9 @@ import { IGridConfiguration } from "./IGridConfiguration";
  */
 export interface IGridServiceConfiguration {
     /**
-     * The provider to use for IOTA communication.
+     * The nodes to use for IOTA communication.
      */
-    node: INodeConfiguration;
+    nodes: INodeConfiguration[];
 
     /**
      * Local storage location.

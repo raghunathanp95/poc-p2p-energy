@@ -1,4 +1,4 @@
-import { composeAPI } from "@iota/core";
+import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IAWSDynamoDbConfiguration } from "../../models/config/IAWSDynamoDbConfiguration";
 import { ITransaction } from "../../models/db/ITransaction";
 import { AmazonDynamoDbService } from "../amazon/amazonDynamoDbService";
@@ -13,13 +13,18 @@ export class TransactionCacheService extends AmazonDynamoDbService<ITransaction>
     public static readonly TABLE_NAME: string = "transactionCache";
 
     /**
-     * Configuration to connection to tangle.
+     * Load balancer settings for communications.
      */
-    private readonly _provider: string;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
-    constructor(config: IAWSDynamoDbConfiguration, provider: string) {
+    /**
+     * Create a new instance of TransactionCacheService.
+     * @param config The configuration to use.
+     * @param loadBalancerSettings Load balancer settings for communications.
+     */
+    constructor(config: IAWSDynamoDbConfiguration, loadBalancerSettings: LoadBalancerSettings) {
         super(config, TransactionCacheService.TABLE_NAME, "id");
-        this._provider = provider;
+        this._loadBalancerSettings = loadBalancerSettings;
     }
 
     /**
@@ -28,9 +33,7 @@ export class TransactionCacheService extends AmazonDynamoDbService<ITransaction>
      */
     public async get(id: string): Promise<ITransaction> {
         try {
-            const iota = composeAPI({
-                provider: this._provider
-            });
+            const iota = composeAPI(this._loadBalancerSettings);
 
             const getTrytesResponse = await iota.getTrytes([id]);
             if (getTrytesResponse && getTrytesResponse.length > 0) {

@@ -2,9 +2,9 @@ import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeCo
 
 export interface IConfiguration {
     /**
-     * The provider to use for IOTA communication.
+     * The nodes to use for IOTA communication.
      */
-    node: INodeConfiguration;
+    nodes: INodeConfiguration[];
 
     /**
      * The endpoint for the demo api.

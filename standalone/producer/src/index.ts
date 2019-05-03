@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
@@ -32,9 +33,16 @@ const loggingService = new ConsoleLoggingService();
 const app = new App<IProducerServiceConfiguration>(4001, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
-    loggingService.log("app", `Tangle Provider ${config.node.provider}`);
+    loggingService.log("app", `Tangle Providers ${config.nodes.map(t => t.provider).join(", ")}`);
 
     ServiceFactory.register("logging", () => loggingService);
+
+    const loadBalancerSettings: LoadBalancerSettings = {
+        nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
+        timeoutMs: 10000
+    };
+
+    ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
 
     if (config.localStorageFolder) {
         ServiceFactory.register(
@@ -62,9 +70,9 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
-    const producerManager = new ProducerManager(config.producer, config.node);
+    const producerManager = new ProducerManager(config.producer, loadBalancerSettings);
     const registrationManagementService =
-        new RegistrationManagementService(config.node, () => false);
+        new RegistrationManagementService(loadBalancerSettings, () => false);
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("producer", () => producerManager);

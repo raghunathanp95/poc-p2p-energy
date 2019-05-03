@@ -1,5 +1,5 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
@@ -12,9 +12,9 @@ export declare class ConsumerManager {
      */
     private readonly _config;
     /**
-     * Configuration for the tangle node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig;
+    private readonly _loadBalancerSettings;
     /**
      * Logging service.
      */
@@ -30,11 +30,11 @@ export declare class ConsumerManager {
     /**
      * Create a new instance of ConsumerService.
      * @param consumerConfig The configuration for the consumer.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      * @param registrationService The service used to store registrations.
      * @param loggingService To send log output.
      */
-    constructor(consumerConfig: IConsumerConfiguration, nodeConfig: INodeConfiguration);
+    constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings);
     /**
      * Get the state for the manager.
      */

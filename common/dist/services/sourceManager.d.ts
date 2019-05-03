@@ -1,4 +1,4 @@
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
@@ -12,13 +12,13 @@ export declare class SourceManager {
      */
     private readonly _config;
     /**
+     * Load balancer settings for communications.
+     */
+    private readonly _loadBalancerSettings;
+    /**
      * Registration service.
      */
     private readonly _registrationService;
-    /**
-     * Configuration for the tangle node.
-     */
-    private readonly _nodeConfig;
     /**
      * Logging service.
      */
@@ -30,9 +30,9 @@ export declare class SourceManager {
     /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(sourceConfig: ISourceConfiguration, nodeConfig: INodeConfiguration);
+    constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings);
     /**
      * Get the state for the manager.
      */

@@ -1,6 +1,6 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { generateAddress } from "@iota/core";
 import { ServiceFactory } from "../factories/serviceFactory";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { ISourceStore } from "../models/db/producer/ISourceStore";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
@@ -25,9 +25,9 @@ export class ProducerManager {
     private readonly _config: IProducerConfiguration;
 
     /**
-     * Configuration for the node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig: INodeConfiguration;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * Service to log output to.
@@ -47,11 +47,11 @@ export class ProducerManager {
     /**
      * Create a new instance of ProducerService.
      * @param producerConfig The configuration for the producer.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(producerConfig: IProducerConfiguration, nodeConfig: INodeConfiguration) {
+    constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings) {
         this._config = producerConfig;
-        this._nodeConfig = nodeConfig;
+        this._loadBalancerSettings = loadBalancerSettings;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("producer-registration");
     }
@@ -86,7 +86,7 @@ export class ProducerManager {
             this._loggingService.log("producer-init", `Channel Config not found`);
             this._loggingService.log("producer-init", `Creating Channel`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             this._state.channel = {};
             await itemMamChannel.openWritable(this._state.channel);
@@ -115,7 +115,7 @@ export class ProducerManager {
         if (this._state && this._state.channel) {
             this._loggingService.log("producer-reset", `Send Channel Reset`);
 
-            const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
+            const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
             await mamCommandChannel.reset(this._state.channel);
 
             await this.saveState();
@@ -139,7 +139,7 @@ export class ProducerManager {
         if (this._state && this._state.channel) {
             this._loggingService.log("producer-closedown", `Sending Goodbye`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             await itemMamChannel.closeWritable(this._state.channel);
 
@@ -337,7 +337,7 @@ export class ProducerManager {
      * Send a command to the channel.
      */
     public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
-        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
+        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
     }

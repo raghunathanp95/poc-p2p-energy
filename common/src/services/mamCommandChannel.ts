@@ -1,6 +1,5 @@
-import Mam from "@iota/mam";
+import { LoadBalancerSettings, Mam } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
@@ -11,9 +10,9 @@ import { TrytesHelper } from "../utils/trytesHelper";
  */
 export class MamCommandChannel {
     /**
-     * Node configuration for tangle operations.
+     * The load balancer settings for communications.
      */
-    private readonly _config: INodeConfiguration;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * Logging service.
@@ -22,10 +21,10 @@ export class MamCommandChannel {
 
     /**
      * Create a new instance of MamChannel.
-     * @param config The configuration to use.
+     * @param nodeWalkStrategy The load balancer settings for communications.
      */
-    constructor(config: INodeConfiguration) {
-        this._config = config;
+    constructor(loadBalancerSettings: LoadBalancerSettings) {
+        this._loadBalancerSettings = loadBalancerSettings;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
 
@@ -102,7 +101,8 @@ export class MamCommandChannel {
     public async sendCommand(channelConfiguration: IMamChannelConfiguration, command: IMamCommand): Promise<void> {
         this._loggingService.log("mam", "Send Command", command);
 
-        let mamState = Mam.init(this._config.provider, channelConfiguration.seed);
+        let mamState = Mam.init(this._loadBalancerSettings, channelConfiguration.seed);
+
         mamState = Mam.changeMode(mamState, "restricted", channelConfiguration.sideKey);
 
         if (!channelConfiguration.initialRoot) {
@@ -115,7 +115,7 @@ export class MamCommandChannel {
         mamState.channel.start = channelConfiguration.start;
 
         const message = Mam.create(mamState, TrytesHelper.toTrytes(command));
-        await Mam.attach(message.payload, message.address, this._config.depth, this._config.mwm);
+        await Mam.attach(message.payload, message.address);
 
         channelConfiguration.nextRoot = mamState.channel.next_root;
         channelConfiguration.start = mamState.channel.start;
@@ -135,7 +135,7 @@ export class MamCommandChannel {
         if (channelConfiguration) {
             let nextRoot = channelConfiguration.nextRoot || channelConfiguration.initialRoot;
             if (nextRoot) {
-                Mam.init(this._config.provider);
+                Mam.init(this._loadBalancerSettings);
 
                 let fetchResponse;
 

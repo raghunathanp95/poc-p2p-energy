@@ -1,4 +1,4 @@
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IMamCommand } from "../models/mam/IMamCommand";
@@ -14,9 +14,9 @@ export declare class ProducerManager {
      */
     private readonly _config;
     /**
-     * Configuration for the node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig;
+    private readonly _loadBalancerSettings;
     /**
      * Service to log output to.
      */
@@ -32,9 +32,9 @@ export declare class ProducerManager {
     /**
      * Create a new instance of ProducerService.
      * @param producerConfig The configuration for the producer.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(producerConfig: IProducerConfiguration, nodeConfig: INodeConfiguration);
+    constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings);
     /**
      * Get the state for the manager.
      */

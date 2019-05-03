@@ -1,7 +1,6 @@
-import { composeAPI } from "@iota/core";
+import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IConsumerUsage } from "../models/db/grid/IConsumerUsage";
 import { IProducerOutput } from "../models/db/grid/IProducerOutput";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
@@ -23,6 +22,11 @@ export class GridManager {
     private readonly _config: IGridConfiguration;
 
     /**
+     * Load balancer settings for communications.
+     */
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
+
+    /**
      * Service to log output to.
      */
     private readonly _loggingService: ILoggingService;
@@ -33,17 +37,13 @@ export class GridManager {
     private _state?: IGridManagerState;
 
     /**
-     * Node configuration.
-     */
-    private readonly _nodeConfig?: INodeConfiguration;
-
-    /**
      * Create a new instance of GridService.
-     * @param nodeConfig Configuration for tangle communication.
+     * @param gridConfig The configuration for the grid.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(gridConfig: IGridConfiguration, nodeConfig: INodeConfiguration) {
+    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings) {
         this._config = gridConfig;
-        this._nodeConfig = nodeConfig;
+        this._loadBalancerSettings = loadBalancerSettings;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
     }
 
@@ -164,9 +164,7 @@ export class GridManager {
         // const producerOutputPaymentService = ServiceFactory.get<IStorageService<IProducerOutputPayment>>(
         //     "producer-output-payment");
 
-        composeAPI({
-            provider: this._nodeConfig.provider
-        });
+        composeAPI(this._loadBalancerSettings);
 
         // const iota = composeAPI({
         //     provider: this._nodeConfig.provider

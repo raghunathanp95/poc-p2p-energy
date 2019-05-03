@@ -6,9 +6,9 @@ import { ISourceConfiguration } from "./ISourceConfiguration";
  */
 export interface ISourceServiceConfiguration {
     /**
-     * The provider to use for IOTA communication.
+     * The nodes to use for IOTA communication.
      */
-    node: INodeConfiguration;
+    nodes: INodeConfiguration[];
 
     /**
      * Local storage location.

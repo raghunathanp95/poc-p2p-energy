@@ -1,5 +1,5 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
@@ -18,14 +18,14 @@ export class SourceManager {
     private readonly _config: ISourceConfiguration;
 
     /**
+     * Load balancer settings for communications.
+     */
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
+
+    /**
      * Registration service.
      */
     private readonly _registrationService: IRegistrationService;
-
-    /**
-     * Configuration for the tangle node.
-     */
-    private readonly _nodeConfig: INodeConfiguration;
 
     /**
      * Logging service.
@@ -40,13 +40,11 @@ export class SourceManager {
     /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
-     * @param nodeConfig The configuration for a tangle node.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(
-        sourceConfig: ISourceConfiguration,
-        nodeConfig: INodeConfiguration) {
+    constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings) {
         this._config = sourceConfig;
-        this._nodeConfig = nodeConfig;
+        this._loadBalancerSettings = loadBalancerSettings;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("source-registration");
     }
@@ -82,7 +80,7 @@ export class SourceManager {
             this._loggingService.log("source-init", `Channel Config not found`);
             this._loggingService.log("source-init", `Creating Channel`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             this._state.channel = {};
             await itemMamChannel.openWritable(this._state.channel);
@@ -111,7 +109,7 @@ export class SourceManager {
         if (this._state && this._state.channel) {
             this._loggingService.log("source", `Sending Goodbye`);
 
-            const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+            const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             await itemMamChannel.closeWritable(this._state.channel);
 
@@ -149,7 +147,7 @@ export class SourceManager {
      * Send a command to the channel.
      */
     public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
-        const mamCommandChannel = new MamCommandChannel(this._nodeConfig);
+        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
         return command;

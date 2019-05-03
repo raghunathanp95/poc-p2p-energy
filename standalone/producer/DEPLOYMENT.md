@@ -6,11 +6,13 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
 
 ```js
 {
-    "node": {
-        "provider": "https://MYNODE/",               /* A node to perform Tangle operations */
-        "depth": 3,                                  /* Depth to use for attaches */
-        "mwm": 9                                     /* MWM to use for attaches */
-    },
+    "nodes": [                                      /* List of node to load balance across */  
+        {
+            "provider": "https://MYNODE/",          /* A node to perform Tangle operations */
+            "depth": 3,                             /* Depth to use for attaches */
+            "mwm": 9                                /* MWM to use for attaches */
+        }
+    ],
     "gridApiEndpoint": "https://GRID-ENDPOINT",      /* Endpoint for the grid api */
     "producer": {
         "id": "PRODUCER-UNIQUE-ID",                  /* Unique ID, has no format */

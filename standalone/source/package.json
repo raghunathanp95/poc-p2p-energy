@@ -24,8 +24,7 @@
         "node": "10.x.x"
     },
     "dependencies": {
-        "@iota/core": "^1.0.0-beta.11",
-        "@iota/mam": "github:iotaledger/mam.client.js",
+        "@iota/client-load-balancer": "github:obany/iota-client-load-balancer",
         "axios": "github:axios/axios",
         "node-schedule": "^1.3.2",
         "p2p-energy-common": "file:../../common"

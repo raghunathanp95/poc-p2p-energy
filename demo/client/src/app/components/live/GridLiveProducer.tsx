@@ -256,7 +256,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         for (const sourceId in this.state.selectedSources) {
             if (this.state.selectedSources[sourceId].outputCommands.length > 0) {
                 graphSeries.push(this.state.selectedSources[sourceId].outputCommands.map(p => p.output));
-                graphLabels = this.state.selectedSources[sourceId].outputCommands.map(p => p.endTime.toString());
+                if (graphLabels.length < this.state.selectedSources[sourceId].outputCommands.length) {
+                    graphLabels = this.state.selectedSources[sourceId].outputCommands.map(p => p.endTime.toString());
+                }
             }
         }
         this.setState({ sourceGraphSeries: graphSeries, sourceGraphLabels: graphLabels });

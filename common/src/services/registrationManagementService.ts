@@ -1,5 +1,5 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
@@ -13,9 +13,9 @@ import { MamCommandChannel } from "./mamCommandChannel";
  */
 export class RegistrationManagementService implements IRegistrationManagementService {
     /**
-     * Configuration for the tangle node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig: INodeConfiguration;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * Should we create return channels for registrations.
@@ -39,13 +39,13 @@ export class RegistrationManagementService implements IRegistrationManagementSer
 
     /**
      * Initialise a new instance of RegistrationService.
-     * @param nodeConfig The configuration.
+     * @param loadBalancerSettings Load balancer settings for communications.
      * @param shouldCreateReturnChannel The callback to determine when to create return mam channel.
      */
     constructor(
-        nodeConfig: INodeConfiguration,
+        loadBalancerSettings: LoadBalancerSettings,
         shouldCreateReturnChannel: (registration: IRegistration) => boolean) {
-        this._nodeConfig = nodeConfig;
+        this._loadBalancerSettings = loadBalancerSettings;
         this._shouldCreateReturnChannel = shouldCreateReturnChannel;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationStorageService = ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
@@ -161,7 +161,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
                     sideKey: itemSideKey
                 };
 
-                const itemMamChannel = new MamCommandChannel(this._nodeConfig);
+                const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
                 const openSuccess = await itemMamChannel.openReadable(itemMamChannelConfiguration);
 
                 if (!openSuccess) {
@@ -178,7 +178,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
         if (registration.returnMamChannel === undefined && this._shouldCreateReturnChannel(registration)) {
             this._loggingService.log("registration", `Generating return channel hello`);
 
-            const returnMamChannel = new MamCommandChannel(this._nodeConfig);
+            const returnMamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             registration.returnMamChannel = {};
             await returnMamChannel.openWritable(registration.returnMamChannel);
@@ -193,7 +193,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
      */
     private async closeMamChannels(registration: IRegistration): Promise<void> {
         if (registration.returnMamChannel) {
-            const gridMamChannel = new MamCommandChannel(this._nodeConfig);
+            const gridMamChannel = new MamCommandChannel(this._loadBalancerSettings);
             await gridMamChannel.closeWritable(registration.returnMamChannel);
             registration.returnMamChannel = undefined;
         }
@@ -208,7 +208,7 @@ export class RegistrationManagementService implements IRegistrationManagementSer
         registration: IRegistration,
         handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
         if (registration.itemMamChannel) {
-            const mamChannel = new MamCommandChannel(this._nodeConfig);
+            const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
             const commands = await mamChannel.receiveCommands(registration.itemMamChannel);
 

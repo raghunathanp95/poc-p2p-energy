@@ -1,3 +1,5 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
+
 /**
  * Explorer MAM Channels.
  */
@@ -8,18 +10,18 @@ export class MamExplorer {
     private readonly _url: string;
 
     /**
-     * The provider for getting the data.
+     * Load balancer settings for communications.
      */
-    private readonly _provider: string;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * Create a new instance of MamExplorer.
      * @param url The url to use for opening the links.
-     * @param provider The provider for getting the data.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(url: string, provider: string) {
+    constructor(url: string, loadBalancerSettings: LoadBalancerSettings) {
         this._url = url;
-        this._provider = provider;
+        this._loadBalancerSettings = loadBalancerSettings;
     }
 
     /**
@@ -31,7 +33,7 @@ export class MamExplorer {
     public explore(root?: string, mode: "public" | "private" | "restricted" = "public", sideKey?: string): void {
         let finalUrl = this._url;
         finalUrl = finalUrl.replace(":root", root || "");
-        finalUrl = finalUrl.replace(":provider", this._provider || "");
+        finalUrl = finalUrl.replace(":provider", this._loadBalancerSettings.nodeWalkStrategy.current().provider || "");
         finalUrl = finalUrl.replace(":mode", mode || "");
         finalUrl = finalUrl.replace(":sideKey", sideKey || "");
         window.open(finalUrl, "_blank");

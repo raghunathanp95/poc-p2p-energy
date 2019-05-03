@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
@@ -28,9 +29,9 @@ import { IDemoSourceState } from "../models/services/IDemoSourceState";
  */
 export class DemoGridManager {
     /**
-     * The node configuration.
+     * Load balancer settings for communications.
      */
-    private _nodeConfig: INodeConfiguration;
+    private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
      * The demo grid storage service.
@@ -110,10 +111,10 @@ export class DemoGridManager {
 
     /**
      * Create a new instance of DemoGridManager.
-     * @param nodeConfig The configuration for accessing the tangle.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(nodeConfig: INodeConfiguration) {
-        this._nodeConfig = nodeConfig;
+    constructor(loadBalancerSettings: LoadBalancerSettings) {
+        this._loadBalancerSettings = loadBalancerSettings;
 
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
@@ -378,7 +379,7 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "registration-management",
-            () => new RegistrationManagementService(this._nodeConfig, (registration) => registration.itemType === "consumer"));
+            () => new RegistrationManagementService(this._loadBalancerSettings, (registration) => registration.itemType === "consumer"));
 
         ServiceFactory.register(
             "producer-registration",
@@ -436,7 +437,7 @@ export class DemoGridManager {
 
         progressCallback("Initializing Grid.");
         if (!this._gridManager) {
-            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._nodeConfig);
+            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._loadBalancerSettings);
             await this._gridManager.initialise();
         }
 
@@ -449,7 +450,7 @@ export class DemoGridManager {
 
             progressCallback(`Initializing Producer '${producer.name}' [${producer.id}].`);
             if (!this._producerManagers[producer.id]) {
-                this._producerManagers[producer.id] = new ProducerManager({ name: producer.name, id: producer.id }, this._nodeConfig);
+                this._producerManagers[producer.id] = new ProducerManager({ name: producer.name, id: producer.id }, this._loadBalancerSettings);
                 await this._producerManagers[producer.id].initialise();
             }
 
@@ -464,7 +465,7 @@ export class DemoGridManager {
                 if (!this._sourceManagers[source.id]) {
                     this._sourceManagers[source.id] = {
                         producerId: producer.id,
-                        sourceManager: new SourceManager({ name: source.name, id: source.id, type: source.type }, this._nodeConfig)
+                        sourceManager: new SourceManager({ name: source.name, id: source.id, type: source.type }, this._loadBalancerSettings)
                     };
                     await this._sourceManagers[source.id].sourceManager.initialise();
                 }
@@ -480,7 +481,7 @@ export class DemoGridManager {
 
             progressCallback(`Initializing Consumer '${consumer.name}' [${consumer.id}].`);
             if (!this._consumerManagers[consumer.id]) {
-                this._consumerManagers[consumer.id] = new ConsumerManager({ name: consumer.name, id: consumer.id }, this._nodeConfig);
+                this._consumerManagers[consumer.id] = new ConsumerManager({ name: consumer.name, id: consumer.id }, this._loadBalancerSettings);
                 await this._consumerManagers[consumer.id].initialise();
             }
 

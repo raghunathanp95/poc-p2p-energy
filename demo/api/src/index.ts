@@ -1,3 +1,4 @@
+import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
@@ -36,6 +37,13 @@ app.build(routes, async (_1, config, _2) => {
     ServiceFactory.register(
         "wallet-state",
         () => new WalletStateService(config.dynamoDbConnection));
+
+    const loadBalancerSettings: LoadBalancerSettings = {
+        nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
+        timeoutMs: 10000
+    };
+
+    ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
 }).catch(err => {
     loggingService.error("app", `Failed during app build`, err);
 });

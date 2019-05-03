@@ -1,4 +1,4 @@
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IRegistrationManagementService } from "../models/services/IRegistrationManagementService";
 import { IRegistration } from "../models/services/registration/IRegistration";
@@ -7,9 +7,9 @@ import { IRegistration } from "../models/services/registration/IRegistration";
  */
 export declare class RegistrationManagementService implements IRegistrationManagementService {
     /**
-     * Configuration for the tangle node.
+     * Load balancer settings for communications.
      */
-    private readonly _nodeConfig;
+    private readonly _loadBalancerSettings;
     /**
      * Should we create return channels for registrations.
      */
@@ -28,10 +28,10 @@ export declare class RegistrationManagementService implements IRegistrationManag
     private _registrations?;
     /**
      * Initialise a new instance of RegistrationService.
-     * @param nodeConfig The configuration.
+     * @param loadBalancerSettings Load balancer settings for communications.
      * @param shouldCreateReturnChannel The callback to determine when to create return mam channel.
      */
-    constructor(nodeConfig: INodeConfiguration, shouldCreateReturnChannel: (registration: IRegistration) => boolean);
+    constructor(loadBalancerSettings: LoadBalancerSettings, shouldCreateReturnChannel: (registration: IRegistration) => boolean);
     /**
      * Add a new registration.
      * @param registration The registration details.

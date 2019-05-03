@@ -1,5 +1,5 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
-import { INodeConfiguration } from "../models/config/INodeConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
@@ -12,6 +12,10 @@ export declare class GridManager {
      */
     private readonly _config;
     /**
+     * Load balancer settings for communications.
+     */
+    private readonly _loadBalancerSettings;
+    /**
      * Service to log output to.
      */
     private readonly _loggingService;
@@ -20,14 +24,11 @@ export declare class GridManager {
      */
     private _state?;
     /**
-     * Node configuration.
-     */
-    private readonly _nodeConfig?;
-    /**
      * Create a new instance of GridService.
-     * @param nodeConfig Configuration for tangle communication.
+     * @param gridConfig The configuration for the grid.
+     * @param loadBalancerSettings Load balancer settings for communications.
      */
-    constructor(gridConfig: IGridConfiguration, nodeConfig: INodeConfiguration);
+    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings);
     /**
      * Get the state for the manager.
      */
