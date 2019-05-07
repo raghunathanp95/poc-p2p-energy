@@ -3,10 +3,11 @@ import { ISourceConfiguration } from "../models/config/source/ISourceConfigurati
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
+import { ISourceStrategy } from "../models/strategies/ISourceStrategy";
 /**
  * Class to handle a source.
  */
-export declare class SourceManager {
+export declare class SourceManager<S> {
     /**
      * Configuration for the source.
      */
@@ -28,15 +29,20 @@ export declare class SourceManager {
      */
     private _state?;
     /**
+     * The strategy for generating output commands.
+     */
+    private readonly _strategy;
+    /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param strategy The strategy for producing output commands.
      */
-    constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings);
+    constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: ISourceStrategy<S>);
     /**
      * Get the state for the manager.
      */
-    getState(): ISourceManagerState;
+    getState(): ISourceManagerState<S>;
     /**
      * Register the source with the Producer.
      * @param configuration The configuration to use.
@@ -47,11 +53,10 @@ export declare class SourceManager {
      */
     closedown(): Promise<void>;
     /**
-     * Send an output command to the mam channel.
-     * @param endTime The end time for the current period.
-     * @param value The output to send.
+     * Call the strategy to produce values for the source.
+     * @returns Any new source output commands.
      */
-    sendOutputCommand(endTime: number, value: number): Promise<ISourceOutputCommand>;
+    updateStrategy(): Promise<ISourceOutputCommand[]>;
     /**
      * Send a command to the channel.
      */

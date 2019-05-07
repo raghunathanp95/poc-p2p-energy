@@ -9,8 +9,14 @@ import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/ICons
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
+import { IBasicConsumerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicConsumerStrategyState";
+import { IBasicGridStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicGridStrategyState";
+import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
+import { IBasicSourceStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicSourceStrategyState";
+import { IConsumerStrategy } from "p2p-energy-common/dist/models/strategies/IConsumerStrategy";
 import { IGridStrategy } from "p2p-energy-common/dist/models/strategies/IGridStrategy";
 import { IProducerStrategy } from "p2p-energy-common/dist/models/strategies/IProducerStrategy";
+import { ISourceStrategy } from "p2p-energy-common/dist/models/strategies/ISourceStrategy";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
@@ -18,8 +24,10 @@ import { DirectRegistrationService } from "p2p-energy-common/dist/services/regis
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
 import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
+import { BasicConsumerStrategy } from "p2p-energy-common/dist/strategies/basicConsumerStrategy";
 import { BasicGridStrategy } from "p2p-energy-common/dist/strategies/basicGridStrategy";
 import { BasicProducerStrategy } from "p2p-energy-common/dist/strategies/basicProducerStrategy";
+import { BasicSourceStrategy } from "p2p-energy-common/dist/strategies/basicSourceStrategy";
 import { IGrid } from "../models/api/IGrid";
 import { IDemoConsumerState } from "../models/services/IDemoConsumerState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
@@ -41,14 +49,24 @@ export class DemoGridManager {
     private _demoGridStateStorageService: IStorageService<IDemoGridState>;
 
     /**
-     * The producer strategy.
-     */
-    private readonly _producerStrategy: IProducerStrategy;
-
-    /**
      * The grid strategy.
      */
-    private readonly _gridStrategy: IGridStrategy;
+    private readonly _gridStrategy: IGridStrategy<IBasicGridStrategyState>;
+
+    /**
+     * The producer strategy.
+     */
+    private readonly _producerStrategy: IProducerStrategy<IBasicProducerStrategyState>;
+
+    /**
+     * The consumer strategy.
+     */
+    private readonly _consumerStrategy: IConsumerStrategy<IBasicConsumerStrategyState>;
+
+    /**
+     * The source strategy.
+     */
+    private readonly _sourceStrategy: ISourceStrategy<IBasicSourceStrategyState>;
 
     /**
      * The id of the loaded grid.
@@ -63,17 +81,17 @@ export class DemoGridManager {
     /**
      * The grid manager.
      */
-    private _gridManager?: GridManager;
+    private _gridManager?: GridManager<IBasicGridStrategyState>;
 
     /**
      * The producer managers.
      */
-    private _producerManagers?: { [id: string]: ProducerManager };
+    private _producerManagers?: { [id: string]: ProducerManager<IBasicProducerStrategyState> };
 
     /**
      * The consumer managers.
      */
-    private _consumerManagers?: { [id: string]: ConsumerManager };
+    private _consumerManagers?: { [id: string]: ConsumerManager<IBasicConsumerStrategyState> };
 
     /**
      * The source managers.
@@ -87,7 +105,7 @@ export class DemoGridManager {
             /**
              * The source manager.
              */
-            sourceManager: SourceManager;
+            sourceManager: SourceManager<IBasicSourceStrategyState>;
         };
     };
 
@@ -126,6 +144,8 @@ export class DemoGridManager {
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
         this._producerStrategy = new BasicProducerStrategy();
         this._gridStrategy = new BasicGridStrategy();
+        this._consumerStrategy = new BasicConsumerStrategy();
+        this._sourceStrategy = new BasicSourceStrategy();
 
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
@@ -375,11 +395,11 @@ export class DemoGridManager {
     private async initialiseServices(grid: IGrid): Promise<void> {
         ServiceFactory.register(
             "grid-storage-manager-state",
-            () => new BrowserStorageService<IGridManagerState>(`grid-manager-state`));
+            () => new BrowserStorageService<IGridManagerState<IBasicGridStrategyState>>(`grid-manager-state`));
 
         ServiceFactory.register(
             "producer-storage-manager-state",
-            () => new BrowserStorageService<IProducerManagerState>(`producer-manager-state`));
+            () => new BrowserStorageService<IProducerManagerState<IBasicProducerStrategyState>>(`producer-manager-state`));
 
         ServiceFactory.register(
             "registration-storage",
@@ -399,7 +419,7 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "consumer-storage-manager-state",
-            () => new BrowserStorageService<IConsumerManagerState>(`consumer-manager-state`));
+            () => new BrowserStorageService<IConsumerManagerState<IBasicConsumerStrategyState>>(`consumer-manager-state`));
 
         ServiceFactory.register(
             "consumer-registration",
@@ -407,7 +427,7 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "source-storage-manager-state",
-            () => new BrowserStorageService<ISourceManagerState>(`source-manager-state`));
+            () => new BrowserStorageService<ISourceManagerState<IBasicSourceStrategyState>>(`source-manager-state`));
 
         ServiceFactory.register(
             "source-registration",
@@ -477,7 +497,10 @@ export class DemoGridManager {
                 if (!this._sourceManagers[source.id]) {
                     this._sourceManagers[source.id] = {
                         producerId: producer.id,
-                        sourceManager: new SourceManager({ name: source.name, id: source.id, type: source.type }, this._loadBalancerSettings)
+                        sourceManager: new SourceManager(
+                            { name: source.name, id: source.id, type: source.type },
+                            this._loadBalancerSettings,
+                            this._sourceStrategy)
                     };
                     await this._sourceManagers[source.id].sourceManager.initialise();
                 }
@@ -493,7 +516,10 @@ export class DemoGridManager {
 
             progressCallback(`Initializing Consumer '${consumer.name}' [${consumer.id}].`);
             if (!this._consumerManagers[consumer.id]) {
-                this._consumerManagers[consumer.id] = new ConsumerManager({ name: consumer.name, id: consumer.id }, this._loadBalancerSettings);
+                this._consumerManagers[consumer.id] = new ConsumerManager(
+                    { name: consumer.name, id: consumer.id },
+                    this._loadBalancerSettings,
+                    this._consumerStrategy);
                 await this._consumerManagers[consumer.id].initialise();
             }
 
@@ -559,11 +585,13 @@ export class DemoGridManager {
         // and at an interval of the implementers choice
         if (this._sourceManagers) {
             for (const sourceId in this._sourceManagers) {
-                // Range the source output from 0 to 1000
-                const outputCommand = await this._sourceManagers[sourceId].sourceManager.sendOutputCommand(this._gridState.secondsCounter, Math.random() * 1000);
-                // Add the output to the local state and keep just the most recent 10
-                this._gridState.sourceStates[sourceId].outputCommands.push(outputCommand);
-                this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+                const outputCommands = await this._sourceManagers[sourceId].sourceManager.updateStrategy();
+
+                if (outputCommands.length > 0) {
+                    // Add the output to the local state and keep just the most recent 10
+                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.concat(outputCommands);
+                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+                }
             }
             // Notify any local subscribers of the source updates
             this.updateSourceSubscribers();
@@ -578,20 +606,16 @@ export class DemoGridManager {
         // They need to use an end time in the past otherwise the may not have seen the updated
         // commands from all the sources
         if (this._producerManagers) {
-            // Collate only up to 3 readings ago allowing sources to propogate their data
-            const endTimeCollate = this._gridState.secondsCounter - 30;
-            if (endTimeCollate > 0) {
-                for (const producerId in this._producerManagers) {
-                    const commands = await this._producerManagers[producerId].updateStrategy(endTimeCollate);
+            for (const producerId in this._producerManagers) {
+                const commands = await this._producerManagers[producerId].updateStrategy();
 
-                    if (commands.length > 0) {
-                        // Add the output to the local state and keep just the most recent 10
-                        this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.concat(commands);
-                        this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.slice(-10);
+                if (commands.length > 0) {
+                    // Add the output to the local state and keep just the most recent 10
+                    this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.concat(commands);
+                    this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.slice(-10);
 
-                        // Notify any local subscribers of the producer updates
-                        this.updateProducerSubscribers();
-                    }
+                    // Notify any local subscribers of the producer updates
+                    this.updateProducerSubscribers();
                 }
             }
         }
@@ -606,11 +630,13 @@ export class DemoGridManager {
         // and at an interval of the implementers choice
         if (this._consumerManagers) {
             for (const consumerId in this._consumerManagers) {
-                // Range the source output from 0 to 10
-                const usageCommand = await this._consumerManagers[consumerId].sendUsageCommand(this._gridState.secondsCounter, Math.random() * 10);
-                // Add the usage to the local state and keep just the most recent 10
-                this._gridState.consumerStates[consumerId].usageCommands.push(usageCommand);
-                this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.slice(-10);
+                const usageCommands = await this._consumerManagers[consumerId].updateStrategy();
+
+                if (usageCommands.length > 0) {
+                    // Add the usage to the local state and keep just the most recent 10
+                    this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.concat(usageCommands);
+                    this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.slice(-10);
+                }
             }
 
             // Notify any local subscribers of the consumer updates

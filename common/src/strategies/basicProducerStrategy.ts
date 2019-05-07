@@ -1,58 +1,72 @@
-import { ServiceFactory } from "../factories/serviceFactory";
+import { generateAddress } from "@iota/core";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
-import { ILoggingService } from "../models/services/ILoggingService";
+import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
+import { IProducerManagerState } from "../models/state/IProducerManagerState";
+import { IBasicProducerStrategyState } from "../models/strategies/IBasicProducerStrategyState";
 import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
 
 /**
  * Basic implementation of a producer strategy.
  */
-export class BasicProducerStrategy implements IProducerStrategy {
+export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerStrategyState> {
     /**
-     * Service to log output to.
+     * Initialise the state.
      */
-    private readonly _loggingService: ILoggingService;
-
-    /**
-     * Create a new instance of ProducerService.
-     * @param producerConfig The configuration for the producer.
-     * @param loadBalancerSettings Load balancer settings for communications.
-     * @param strategy The strategy for producing output commands.
-     */
-    constructor() {
-        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+    public async init(): Promise<IBasicProducerStrategyState> {
+        return {
+            initialTime: Date.now(),
+            lastOutputTime: Date.now(),
+            receivedBalance: 0,
+            owedBalance: 0
+        };
     }
 
     /**
-     * Calculate the price for an output command.
-     * @param startTime The start time of the output value.
-     * @param endTime The end time of the output value.
-     * @param combinedValue The combined value of the sources for the time slice.
+     * Collated sources output.
+     * @param sourceOutputById The unread output from the sources.
+     * @param producerState The current state of the producer.
+     * @returns The list of commands for the producer to output.
      */
-    public async price(startTime: number, endTime: number, combinedValue: number): Promise<number> {
-        // Calculate a cost for the producer output slice
-        // You could base this on your own costs, time of day, value etc
-        return 10;
-    }
+    public async sources(
+        sourceOutputById: { [id: string]: ISourceStoreOutput[] },
+        producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<IProducerOutputCommand[]> {
+        // For this basic strategy we just add the output of the sources together irrespective
+        // of the time of day, for a more complicated strategy you could charge more during different
+        // time of the day or based on demand etc
+        // Source outputs are discarded after being passed to this method, but you could archive
+        // them if you want to
+        const commands: IProducerOutputCommand[] = [];
 
-    /**
-     * Calculate the address index to use for the output command.
-     * @param producerCreated The time the producer was created.
-     * @param outputTime The start time of the current output value.
-     */
-    public async addressIndex(producerCreated: number, outputTime: number): Promise<number> {
-        // Calculate a payment address index to use based on the time, you could just always increment
-        // but for this example we will use a new payment address every hour
-        return Math.floor((outputTime - producerCreated) / 3600000);
-    }
+        let producerTotal = 0;
+        for (const sourceId in sourceOutputById) {
+            producerTotal += sourceOutputById[sourceId].map(s => s.output).reduce((a, b) => a + b, 0);
+        }
 
-    /**
-     * Archive the source output if you need to.
-     * @param sourceId The is of the source.
-     * @param archiveOutputs The source output values to archive.
-     */
-    public async archiveSourceOutput(sourceId: string, archiveOutputs: ISourceStoreOutput[]): Promise<void> {
-        // Source outputs are discarded when they are collated (still in mam stream)
-        // but you can archive the used blocks if required in this callback
-        this._loggingService.log("demo-grid-manager", `Archive source outputs '${sourceId}'`, archiveOutputs);
+        if (producerTotal > 0) {
+            const endTime = producerState.strategyState.lastOutputTime + 10000;
+
+            // Calculate a payment address index to use based on the time, you could just always increment
+            // but for this example we will use a new payment address every hour
+            const addressIndex = Math.floor(
+                (producerState.strategyState.lastOutputTime - producerState.strategyState.initialTime) / 3600000
+            );
+            const paymentAddress = generateAddress(producerState.paymentSeed, addressIndex, 2);
+
+            commands.push({
+                command: "output",
+                startTime: producerState.strategyState.lastOutputTime + 1,
+                endTime,
+                output: producerTotal,
+                // Calculate a cost for the producer output slice
+                // You could base this on your own costs, time of day, value etc
+                // tslint:disable-next-line:insecure-random
+                price: Math.floor(Math.random() * 10) + 1,
+                paymentAddress
+            });
+
+            producerState.strategyState.lastOutputTime = endTime;
+        }
+
+        return commands;
     }
 }

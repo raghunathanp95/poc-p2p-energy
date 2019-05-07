@@ -7,7 +7,7 @@ import { IGridStrategy } from "../models/strategies/IGridStrategy";
 /**
  * Service to handle the grid.
  */
-export declare class GridManager {
+export declare class GridManager<S> {
     /**
      * Configuration for the grid.
      */
@@ -34,11 +34,11 @@ export declare class GridManager {
      * @param loadBalancerSettings Load balancer settings for communications.
      * @param strategy The strategy for generating processing outputs, usage and payments.
      */
-    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IGridStrategy);
+    constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IGridStrategy<S>);
     /**
      * Get the state for the manager.
      */
-    getState(): IGridManagerState;
+    getState(): IGridManagerState<S>;
     /**
      * Initialise the grid.
      */

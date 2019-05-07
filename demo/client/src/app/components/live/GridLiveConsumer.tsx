@@ -60,15 +60,16 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeConsumer("liveConsumer", this.props.consumer.id, (consumerState) => {
             const consumerManagerState = consumerState && consumerState.consumerManagerState;
+            const consumerStrategyState = consumerManagerState && consumerManagerState.strategyState;
             const mamChannel = consumerManagerState && consumerManagerState.channel;
             const mamChannelReturn = consumerManagerState && consumerManagerState.returnChannel;
 
             this.setState(
                 {
-                    paidBalance: consumerState && consumerManagerState && consumerManagerState.paidBalance !== undefined ?
-                        `${consumerState.consumerManagerState.paidBalance}i` : "-----",
-                    owedBalance: consumerManagerState && consumerManagerState.owedBalance !== undefined ?
-                        `${consumerManagerState.owedBalance}i` : "-----",
+                    paidBalance: consumerStrategyState && consumerStrategyState.paidBalance !== undefined ?
+                        `${consumerStrategyState.paidBalance}i` : "-----",
+                    owedBalance: consumerStrategyState && consumerStrategyState.owedBalance !== undefined ?
+                        `${consumerStrategyState.owedBalance}i` : "-----",
                     mamRoot: mamChannel && mamChannel.initialRoot,
                     sideKey: mamChannel && mamChannel.sideKey,
                     mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,

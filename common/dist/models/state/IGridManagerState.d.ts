@@ -1,29 +1,13 @@
 /**
  * Definition of grid state.
  */
-export interface IGridManagerState {
+export interface IGridManagerState<S> {
     /**
      * The seed used to generate payment addressses.
      */
     paymentSeed: string;
     /**
-     * Running costs balance.
+     * The state for the strategy.
      */
-    runningCostsBalance?: number;
-    /**
-     * Producer paid balance.
-     */
-    producerPaidBalance?: number;
-    /**
-     * Producer owed balance.
-     */
-    producerOwedBalance?: number;
-    /**
-     * Consumer owed balance.
-     */
-    consumerOwedBalance?: number;
-    /**
-     * Consumer recieved balance.
-     */
-    consumerReceivedBalance?: number;
+    strategyState?: S;
 }

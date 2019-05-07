@@ -4,6 +4,7 @@ import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
+import { IBasicGridStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicGridStrategyState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
@@ -44,7 +45,8 @@ app.build(routes, async (_1, config, _2) => {
 
         ServiceFactory.register(
             "grid-storage-manager-state",
-            () => new LocalFileStorageService<IGridManagerState>(`${config.localStorageFolder}/grid/state`));
+            () => new LocalFileStorageService<IGridManagerState<IBasicGridStrategyState>>
+                (`${config.localStorageFolder}/grid/state`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "registration-storage",

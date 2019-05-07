@@ -7,11 +7,12 @@ import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
+import { ISourceStrategy } from "../models/strategies/ISourceStrategy";
 import { MamCommandChannel } from "./mamCommandChannel";
 /**
  * Class to handle a source.
  */
-export class SourceManager {
+export class SourceManager<S> {
     /**
      * Configuration for the source.
      */
@@ -35,16 +36,26 @@ export class SourceManager {
     /**
      * The current state for the source.
      */
-    private _state?: ISourceManagerState;
+    private _state?: ISourceManagerState<S>;
+
+    /**
+     * The strategy for generating output commands.
+     */
+    private readonly _strategy: ISourceStrategy<S>;
 
     /**
      * Create a new instance of SourceService.
      * @param sourceConfig The configuration for the source.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param strategy The strategy for producing output commands.
      */
-    constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings) {
+    constructor(
+        sourceConfig: ISourceConfiguration,
+        loadBalancerSettings: LoadBalancerSettings,
+        strategy: ISourceStrategy<S>) {
         this._config = sourceConfig;
         this._loadBalancerSettings = loadBalancerSettings;
+        this._strategy = strategy;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("source-registration");
     }
@@ -52,7 +63,7 @@ export class SourceManager {
     /**
      * Get the state for the manager.
      */
-    public getState(): ISourceManagerState {
+    public getState(): ISourceManagerState<S> {
         return this._state;
     }
 
@@ -126,21 +137,19 @@ export class SourceManager {
     }
 
     /**
-     * Send an output command to the mam channel.
-     * @param endTime The end time for the current period.
-     * @param value The output to send.
+     * Call the strategy to produce values for the source.
+     * @returns Any new source output commands.
      */
-    public async sendOutputCommand(endTime: number, value: number): Promise<ISourceOutputCommand> {
-        const command: ISourceOutputCommand = {
-            command: "output",
-            startTime: this._state.lastOutputTime + 1,
-            endTime,
-            output: value
-        };
+    public async updateStrategy(): Promise<ISourceOutputCommand[]> {
+        const newCommands = await this._strategy.value(this._state);
 
-        this._state.lastOutputTime = command.endTime;
+        for (let i = 0; i < newCommands.length; i++) {
+            await this.sendCommand(newCommands[i]);
+        }
 
-        return this.sendCommand(command);
+        await this.saveState();
+
+        return newCommands;
     }
 
     /**
@@ -157,7 +166,7 @@ export class SourceManager {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState<S>>>(
             "source-storage-manager-state");
 
         this._loggingService.log("source", `Loading State`);
@@ -165,7 +174,7 @@ export class SourceManager {
         this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
-            lastOutputTime: 0
+            strategyState: await this._strategy.init()
         };
     }
 
@@ -173,7 +182,7 @@ export class SourceManager {
      * Store the state for the source.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<ISourceManagerState<S>>>(
             "source-storage-manager-state");
 
         this._loggingService.log("source", `Storing State`);

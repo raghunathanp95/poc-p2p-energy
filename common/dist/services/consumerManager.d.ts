@@ -3,10 +3,11 @@ import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfi
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
+import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
 /**
  * Class to handle a consumer.
  */
-export declare class ConsumerManager {
+export declare class ConsumerManager<S> {
     /**
      * Configuration for the consumer.
      */
@@ -28,17 +29,20 @@ export declare class ConsumerManager {
      */
     private _state?;
     /**
+     * The strategy for generating output commands.
+     */
+    private readonly _strategy;
+    /**
      * Create a new instance of ConsumerService.
      * @param consumerConfig The configuration for the consumer.
      * @param loadBalancerSettings Load balancer settings for communications.
-     * @param registrationService The service used to store registrations.
-     * @param loggingService To send log output.
+     * @param strategy The strategy for producing usage commands.
      */
-    constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings);
+    constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IConsumerStrategy<S>);
     /**
      * Get the state for the manager.
      */
-    getState(): IConsumerManagerState;
+    getState(): IConsumerManagerState<S>;
     /**
      * Register the consumer with the Grid.
      * @param configuration The configuration to use.
@@ -49,11 +53,10 @@ export declare class ConsumerManager {
      */
     closedown(): Promise<void>;
     /**
-     * Send a usage command to the mam channel.
-     * @param endTime The end time for the current period.
-     * @param value The usage to send.
+     * Call the strategy to produce usage values for the consumer.
+     * @returns Any new consumer usage commands.
      */
-    sendUsageCommand(endTime: number, value: number): Promise<IConsumerUsageCommand>;
+    updateStrategy(): Promise<IConsumerUsageCommand[]>;
     /**
      * Send a command to the channel.
      */

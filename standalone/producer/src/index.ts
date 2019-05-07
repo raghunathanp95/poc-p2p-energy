@@ -6,6 +6,7 @@ import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/con
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
+import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
@@ -54,7 +55,7 @@ app.build(routes, async (_1, config, _2) => {
 
         ServiceFactory.register(
             "producer-storage-manager-state",
-            () => new LocalFileStorageService<IProducerManagerState>(
+            () => new LocalFileStorageService<IProducerManagerState<IBasicProducerStrategyState>>(
                 `${config.localStorageFolder}/${config.producer.id}/state`)
         );
     } else {
@@ -63,10 +64,13 @@ app.build(routes, async (_1, config, _2) => {
             () => new ApiStorageService<IRegistration>(config.gridApiEndpoint, config.producer.id, "registration")
         );
 
-        ServiceFactory.register("producer-storage-manager-state", () => new ApiStorageService<IProducerManagerState>(
-            config.gridApiEndpoint,
-            config.producer.id,
-            "config"));
+        ServiceFactory.register(
+            "producer-storage-manager-state",
+            () => new ApiStorageService<IProducerManagerState<IBasicProducerStrategyState>>(
+                config.gridApiEndpoint,
+                config.producer.id,
+                "config"
+            ));
     }
 
     ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
@@ -112,7 +116,7 @@ app.build(routes, async (_1, config, _2) => {
             name: "Update Strategy",
             schedule: "*/60 * * * * *",
             func: async () => {
-                await producerManager.updateStrategy(Date.now());
+                await producerManager.updateStrategy();
             }
         }
     ];

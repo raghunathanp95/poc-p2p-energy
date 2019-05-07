@@ -8,28 +8,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const serviceFactory_1 = require("../factories/serviceFactory");
 /**
  * Basic implementation of a grid strategy.
  */
 class BasicGridStrategy {
     /**
-     * Create a new instance of ProducerService.
-     * @param producerConfig The configuration for the producer.
-     * @param loadBalancerSettings Load balancer settings for communications.
-     * @param strategy The strategy for producing output commands.
+     * Initialise the state.
      */
-    constructor() {
-        this._loggingService = serviceFactory_1.ServiceFactory.get("logging");
+    init() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return {
+                runningCostsBalance: 0,
+                producerPaidBalance: 0,
+                producerOwedBalance: 0,
+                consumerOwedBalance: 0,
+                consumerReceivedBalance: 0
+            };
+        });
     }
     /**
-     * Process the strategy.
+     * Collated consumers usage.
+     * @param consumerUsageById The unread output from the consumers.
+     * @param gridState The current state of the grid.
      */
-    process() {
+    consumers(consumerUsageById, gridState) {
         return __awaiter(this, void 0, void 0, function* () {
-            this._loggingService.log("basic-grid-strategy", "Process");
+        });
+    }
+    /**
+     * Collated producer output.
+     * @param producerUsageById The unread output from the producers.
+     * @param gridState The current state of the grid.
+     */
+    producers(producerUsageById, gridState) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     }
 }
 exports.BasicGridStrategy = BasicGridStrategy;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNHcmlkU3RyYXRlZ3kuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvc3RyYXRlZ2llcy9iYXNpY0dyaWRTdHJhdGVneS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBQUEsZ0VBQTZEO0FBSTdEOztHQUVHO0FBQ0gsTUFBYSxpQkFBaUI7SUFNMUI7Ozs7O09BS0c7SUFDSDtRQUNJLElBQUksQ0FBQyxlQUFlLEdBQUcsK0JBQWMsQ0FBQyxHQUFHLENBQWtCLFNBQVMsQ0FBQyxDQUFDO0lBQzFFLENBQUM7SUFFRDs7T0FFRztJQUNVLE9BQU87O1lBQ2hCLElBQUksQ0FBQyxlQUFlLENBQUMsR0FBRyxDQUFDLHFCQUFxQixFQUFFLFNBQVMsQ0FBQyxDQUFDO1FBQy9ELENBQUM7S0FBQTtDQUNKO0FBdEJELDhDQXNCQyJ9
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNHcmlkU3RyYXRlZ3kuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvc3RyYXRlZ2llcy9iYXNpY0dyaWRTdHJhdGVneS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBTUE7O0dBRUc7QUFDSCxNQUFhLGlCQUFpQjtJQUMxQjs7T0FFRztJQUNVLElBQUk7O1lBQ2IsT0FBTztnQkFDSCxtQkFBbUIsRUFBRSxDQUFDO2dCQUN0QixtQkFBbUIsRUFBRSxDQUFDO2dCQUN0QixtQkFBbUIsRUFBRSxDQUFDO2dCQUN0QixtQkFBbUIsRUFBRSxDQUFDO2dCQUN0Qix1QkFBdUIsRUFBRSxDQUFDO2FBQzdCLENBQUM7UUFDTixDQUFDO0tBQUE7SUFFRDs7OztPQUlHO0lBQ1UsU0FBUyxDQUNsQixpQkFBMEQsRUFDMUQsU0FBcUQ7O1FBRXpELENBQUM7S0FBQTtJQUVEOzs7O09BSUc7SUFDVSxTQUFTLENBQ2xCLGlCQUEyRCxFQUMzRCxTQUFxRDs7UUFDekQsQ0FBQztLQUFBO0NBQ0o7QUFsQ0QsOENBa0NDIn0=

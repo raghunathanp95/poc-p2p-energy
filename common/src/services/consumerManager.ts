@@ -7,12 +7,13 @@ import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
+import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
  * Class to handle a consumer.
  */
-export class ConsumerManager {
+export class ConsumerManager<S> {
     /**
      * Configuration for the consumer.
      */
@@ -36,18 +37,26 @@ export class ConsumerManager {
     /**
      * The current state for the consumer.
      */
-    private _state?: IConsumerManagerState;
+    private _state?: IConsumerManagerState<S>;
+
+    /**
+     * The strategy for generating output commands.
+     */
+    private readonly _strategy: IConsumerStrategy<S>;
 
     /**
      * Create a new instance of ConsumerService.
      * @param consumerConfig The configuration for the consumer.
      * @param loadBalancerSettings Load balancer settings for communications.
-     * @param registrationService The service used to store registrations.
-     * @param loggingService To send log output.
+     * @param strategy The strategy for producing usage commands.
      */
-    constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings) {
+    constructor(
+        consumerConfig: IConsumerConfiguration,
+        loadBalancerSettings: LoadBalancerSettings,
+        strategy: IConsumerStrategy<S>) {
         this._config = consumerConfig;
         this._loadBalancerSettings = loadBalancerSettings;
+        this._strategy = strategy;
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._registrationService = ServiceFactory.get<IRegistrationService>("consumer-registration");
     }
@@ -55,7 +64,7 @@ export class ConsumerManager {
     /**
      * Get the state for the manager.
      */
-    public getState(): IConsumerManagerState {
+    public getState(): IConsumerManagerState<S> {
         return this._state;
     }
 
@@ -147,21 +156,19 @@ export class ConsumerManager {
     }
 
     /**
-     * Send a usage command to the mam channel.
-     * @param endTime The end time for the current period.
-     * @param value The usage to send.
+     * Call the strategy to produce usage values for the consumer.
+     * @returns Any new consumer usage commands.
      */
-    public async sendUsageCommand(endTime: number, value: number): Promise<IConsumerUsageCommand> {
-        const command: IConsumerUsageCommand = {
-            command: "usage",
-            startTime: this._state.lastUsageTime + 1,
-            endTime,
-            usage: value
-        };
+    public async updateStrategy(): Promise<IConsumerUsageCommand[]> {
+        const newCommands = await this._strategy.usage(this._state);
 
-        this._state.lastUsageTime = command.endTime;
+        for (let i = 0; i < newCommands.length; i++) {
+            await this.sendCommand(newCommands[i]);
+        }
 
-        return this.sendCommand(command);
+        await this.saveState();
+
+        return newCommands;
     }
 
     /**
@@ -178,7 +185,7 @@ export class ConsumerManager {
      * Remove the state for the consumer.
      */
     public async removeState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Removing State`);
@@ -190,7 +197,7 @@ export class ConsumerManager {
      * Load the state for the consumer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Loading State`);
@@ -198,9 +205,7 @@ export class ConsumerManager {
         this._loggingService.log("consumer", `Loaded State`);
 
         this._state = this._state || {
-            paidBalance: 0,
-            owedBalance: 0,
-            lastUsageTime: 0
+            strategyState: await this._strategy.init()
         };
     }
 
@@ -208,7 +213,7 @@ export class ConsumerManager {
      * Store the state for the consumer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(
             "consumer-storage-manager-state");
 
         this._loggingService.log("consumer", `Storing State`);

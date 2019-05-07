@@ -3,14 +3,14 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
 /**
  * Definition of source state.
  */
-export interface ISourceManagerState {
+export interface ISourceManagerState<S> {
     /**
      * The channel configuration for the source.
      */
     channel?: IMamChannelConfiguration;
 
     /**
-     * The last output time slot.
+     * The state for the strategy.
      */
-    lastOutputTime?: number;
+    strategyState?: S;
 }

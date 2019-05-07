@@ -1,25 +1,21 @@
 import { ISourceStoreOutput } from "../db/producer/ISourceStoreOutput";
+import { IProducerOutputCommand } from "../mam/IProducerOutputCommand";
+import { IProducerManagerState } from "../state/IProducerManagerState";
 /**
  * Interface definition for producer strategy for calculating outputs and payments
  */
-export interface IProducerStrategy {
+export interface IProducerStrategy<S> {
     /**
-     * Calculate the price for an output command.
-     * @param startTime The start time of the output value.
-     * @param endTime The end time of the output value.
-     * @param combinedValue The combined value of the sources for the time slice.
+     * Initialise the state.
      */
-    price(startTime: number, endTime: number, combinedValue: number): Promise<number>;
+    init(): Promise<S>;
     /**
-     * Calculate the address index to use for the output command.
-     * @param producerCreated The time the producer was created.
-     * @param outputTime The start time of the current output value.
+     * Collated sources output.
+     * @param sourceOutputById The unread output from the sources.
+     * @param producerState The current state of the producer.
+     * @returns The list of commands for the producer to output.
      */
-    addressIndex(producerCreated: number, outputTime: number): Promise<number>;
-    /**
-     * Archive the source output if you need to.
-     * @param sourceId The is of the source.
-     * @param archiveOutputs The source output values to archive.
-     */
-    archiveSourceOutput(sourceId: string, archiveOutputs: ISourceStoreOutput[]): Promise<void>;
+    sources(sourceOutputById: {
+        [id: string]: ISourceStoreOutput[];
+    }, producerState: IProducerManagerState<S>): Promise<IProducerOutputCommand[]>;
 }

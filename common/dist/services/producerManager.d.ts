@@ -8,7 +8,7 @@ import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
 /**
  * Class to maintain a Producer.
  */
-export declare class ProducerManager {
+export declare class ProducerManager<S> {
     /**
      * Configuration for the producer.
      */
@@ -39,11 +39,11 @@ export declare class ProducerManager {
      * @param loadBalancerSettings Load balancer settings for communications.
      * @param strategy The strategy for producing output commands.
      */
-    constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IProducerStrategy);
+    constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IProducerStrategy<S>);
     /**
      * Get the state for the manager.
      */
-    getState(): IProducerManagerState;
+    getState(): IProducerManagerState<S>;
     /**
      * Initialise the producer by registering with the Grid.
      */
@@ -64,10 +64,9 @@ export declare class ProducerManager {
     handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void>;
     /**
      * Combine the information from the sources and generate an output command.
-     * @param endTime The end time of the block we want to collate.
      * @returns Any new producer output commands.
      */
-    updateStrategy(endTime: number): Promise<IProducerOutputCommand[]>;
+    updateStrategy(): Promise<IProducerOutputCommand[]>;
     /**
      * Send a command to the channel.
      */

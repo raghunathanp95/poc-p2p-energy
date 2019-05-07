@@ -1,5 +1,4 @@
 import { LoadBalancerSettings } from "@iota/client-load-balancer";
-import { generateAddress } from "@iota/core";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { ISourceStore } from "../models/db/producer/ISourceStore";
@@ -19,7 +18,7 @@ import { MamCommandChannel } from "./mamCommandChannel";
 /**
  * Class to maintain a Producer.
  */
-export class ProducerManager {
+export class ProducerManager<S> {
     /**
      * Configuration for the producer.
      */
@@ -43,12 +42,12 @@ export class ProducerManager {
     /**
      * The strategy for generating output commands.
      */
-    private readonly _strategy: IProducerStrategy;
+    private readonly _strategy: IProducerStrategy<S>;
 
     /**
      * The current state for the producer.
      */
-    private _state?: IProducerManagerState;
+    private _state?: IProducerManagerState<S>;
 
     /**
      * Create a new instance of ProducerService.
@@ -59,7 +58,7 @@ export class ProducerManager {
     constructor(
         producerConfig: IProducerConfiguration,
         loadBalancerSettings: LoadBalancerSettings,
-        strategy: IProducerStrategy) {
+        strategy: IProducerStrategy<S>) {
         this._config = producerConfig;
         this._loadBalancerSettings = loadBalancerSettings;
         this._strategy = strategy;
@@ -70,7 +69,7 @@ export class ProducerManager {
     /**
      * Get the state for the manager.
      */
-    public getState(): IProducerManagerState {
+    public getState(): IProducerManagerState<S> {
         return this._state;
     }
 
@@ -217,127 +216,51 @@ export class ProducerManager {
 
     /**
      * Combine the information from the sources and generate an output command.
-     * @param endTime The end time of the block we want to collate.
      * @returns Any new producer output commands.
      */
-    public async updateStrategy(endTime: number): Promise<IProducerOutputCommand[]> {
-        const newCommands = [];
+    public async updateStrategy(): Promise<IProducerOutputCommand[]> {
+        let newCommands = [];
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
                 "producer-source-output-store");
 
-            let pageResponse;
-            // What is the next block we want to collate
-            const startTime = this._state.lastOutputTime + 1;
-            let totalOutput = 0;
             const idsToRemove = [];
+            const sourceOutputById: { [id: string]: ISourceStoreOutput[] } = {};
+
             let pageSize = 10;
             let page = 0;
+            let pageResponse;
             do {
                 // Get the sources page at a time
                 pageResponse = await sourceStoreService.page(this._config.id, page, pageSize);
                 if (pageResponse && pageResponse.items) {
                     for (let i = 0; i < pageResponse.items.length; i++) {
-                        const sourceStore = pageResponse.items[i];
-                        const remaining: ISourceStoreOutput[] = [];
-                        const archive: ISourceStoreOutput[] = [];
-
-                        // Are there output entries in the source
-                        if (sourceStore.output) {
-                            // Walk the outputs from the source
-                            for (let j = 0; j < sourceStore.output.length; j++) {
-                                // Does the output from the source overlap
-                                // with our current collated block
-                                const sourceOutput = sourceStore.output[j];
-                                if (sourceOutput.startTime < endTime) {
-                                    const totalTime = sourceOutput.endTime - sourceOutput.startTime + 1;
-                                    // The time used end either at the end of the current collated block
-                                    // or the end of the source block
-                                    const totalTimeUsed =
-                                        (Math.min(endTime, sourceOutput.endTime) -
-                                            sourceOutput.startTime) + 1;
-
-                                    // What percentage of the time have we used
-                                    const totalTimeUsedPercent = totalTimeUsed / totalTime;
-
-                                    // Calculate how much of the output is used for the time
-                                    const totalUsedOutput = totalTimeUsedPercent * sourceOutput.output;
-
-                                    totalOutput += totalUsedOutput;
-
-                                    // Is there any time remaining in the block
-                                    if (totalTimeUsed < totalTime) {
-                                        // Archive the part of the source we have used
-                                        archive.push({
-                                            startTime: sourceOutput.startTime,
-                                            endTime: endTime,
-                                            output: totalUsedOutput
-                                        });
-                                        // Add a new source block that starts after
-                                        // the current collated block and with the output reduced
-                                        // by the amount we have collated
-                                        remaining.push({
-                                            startTime: endTime + 1,
-                                            endTime: sourceOutput.endTime,
-                                            output: sourceOutput.output - totalUsedOutput
-                                        });
-                                    } else {
-                                        // Used the whole block so archive it
-                                        archive.push(sourceOutput);
-                                    }
-                                } else {
-                                    // No overlap so just store the slice again
-                                    remaining.push(sourceOutput);
-                                }
+                        const source: ISourceStore = pageResponse.items[i];
+                        if (source.output && source.output.length > 0) {
+                            if (!sourceOutputById[source.id]) {
+                                sourceOutputById[source.id] = [];
                             }
                         }
-                        if (remaining.length === 0) {
-                            // If there are no more outputs in the source remove the storage for it
-                            idsToRemove.push(`${this._config.id}/${pageResponse.ids[i]}`);
-                        } else {
-                            // There are remaining source outputs so save them
-                            sourceStore.output = remaining;
-                            await sourceStoreService.set(`${this._config.id}/${pageResponse.ids[i]}`, sourceStore);
-                        }
-                        if (archive.length > 0) {
-                            await this._strategy.archiveSourceOutput(pageResponse.ids[i], archive);
-                        }
+                        idsToRemove.push(source.id);
                     }
                 }
                 page++;
                 pageSize = pageResponse.pageSize;
             } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
 
-            // Remove the sources that have no more output
             for (let i = 0; i < idsToRemove.length; i++) {
                 await sourceStoreService.remove(idsToRemove[i]);
             }
 
-            if (totalOutput > 0) {
-                this._state.lastOutputTime = endTime;
+            newCommands = await this._strategy.sources(sourceOutputById, this._state);
 
-                const addressIndex = await this._strategy.addressIndex(this._state.producerCreated, startTime);
-
-                const paymentAddress = generateAddress(this._state.paymentSeed, addressIndex, 2);
-
-                const price = await this._strategy.price(startTime, endTime, totalOutput);
-
-                const command: IProducerOutputCommand = {
-                    command: "output",
-                    startTime,
-                    endTime,
-                    price,
-                    output: totalOutput,
-                    paymentAddress
-                };
-
-                await this.sendCommand(command);
-
-                newCommands.push(command);
-            } else {
-                await this.saveState();
+            for (let i = 0; i < newCommands.length; i++) {
+                await this.sendCommand(newCommands[i]);
             }
+
+            await this.saveState();
         }
+
         return newCommands;
     }
 
@@ -354,7 +277,7 @@ export class ProducerManager {
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState<S>>>(
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Loading State`);
@@ -363,10 +286,7 @@ export class ProducerManager {
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),
-            producerCreated: Date.now(),
-            lastOutputTime: 0,
-            owedBalance: 0,
-            receivedBalance: 0
+            strategyState: await this._strategy.init()
         };
     }
 
@@ -374,7 +294,7 @@ export class ProducerManager {
      * Store the state for the producer.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IProducerManagerState<S>>>(
             "producer-storage-manager-state");
 
         this._loggingService.log("producer", `Storing State`);

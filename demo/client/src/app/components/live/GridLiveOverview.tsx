@@ -39,18 +39,19 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeGrid("liveOverview", (gridState) => {
             const gridManagerState = gridState && gridState.gridManagerState;
+            const gridStrategyState = gridManagerState && gridManagerState.strategyState;
 
             this.setState({
-                runningCostsBalance: gridManagerState && gridManagerState.runningCostsBalance !== undefined
-                    ? `${gridManagerState.runningCostsBalance}i` : "-----",
-                producerPaidBalance: gridManagerState && gridManagerState.producerPaidBalance !== undefined
-                    ? `${gridManagerState.producerPaidBalance}i` : "-----",
-                producerOwedBalance: gridManagerState && gridManagerState.producerOwedBalance !== undefined
-                    ? `${gridManagerState.producerOwedBalance}i` : "-----",
-                consumerOwedBalance: gridManagerState && gridManagerState.consumerOwedBalance !== undefined
-                    ? `${gridManagerState.consumerOwedBalance}i` : "-----",
-                consumerReceivedBalance: gridManagerState && gridManagerState.consumerReceivedBalance !== undefined
-                    ? `${gridManagerState.consumerReceivedBalance}i` : "-----"
+                runningCostsBalance: gridStrategyState && gridStrategyState.runningCostsBalance !== undefined
+                    ? `${gridStrategyState.runningCostsBalance}i` : "-----",
+                producerPaidBalance: gridStrategyState && gridStrategyState.producerPaidBalance !== undefined
+                    ? `${gridStrategyState.producerPaidBalance}i` : "-----",
+                producerOwedBalance: gridStrategyState && gridStrategyState.producerOwedBalance !== undefined
+                    ? `${gridStrategyState.producerOwedBalance}i` : "-----",
+                consumerOwedBalance: gridStrategyState && gridStrategyState.consumerOwedBalance !== undefined
+                    ? `${gridStrategyState.consumerOwedBalance}i` : "-----",
+                consumerReceivedBalance: gridStrategyState && gridStrategyState.consumerReceivedBalance !== undefined
+                    ? `${gridStrategyState.consumerReceivedBalance}i` : "-----"
             });
         });
     }

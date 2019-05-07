@@ -2,11 +2,13 @@ import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-bala
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ISourceServiceConfiguration } from "p2p-energy-common/dist/models/config/source/ISourceServiceConfiguration";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
+import { IBasicSourceStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicSourceStrategyState";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { BasicSourceStrategy } from "p2p-energy-common/dist/strategies/basicSourceStrategy";
 
 // tslint:disable:no-var-requires no-require-imports
 const packageJson = require("../package.json");
@@ -27,14 +29,16 @@ ServiceFactory.register("source-registration", () => new ApiRegistrationService(
 if (config.localStorageFolder) {
     ServiceFactory.register(
         "source-storage-manager-state",
-        () => new LocalFileStorageService<ISourceManagerState>(
+        () => new LocalFileStorageService<ISourceManagerState<IBasicSourceStrategyState>>(
             `${config.localStorageFolder}/${config.source.id}/state`
         ));
 } else {
-    ServiceFactory.register("source-storage-manager-state", () => new ApiStorageService<ISourceManagerState>(
-        config.producerApiEndpoint,
-        config.source.id,
-        "config"));
+    ServiceFactory.register(
+        "source-storage-manager-state",
+        () => new ApiStorageService<ISourceManagerState<IBasicSourceStrategyState>> (
+            config.producerApiEndpoint,
+            config.source.id,
+            "config"));
 }
 
 loggingService.log("app", `Source v${packageJson.version}`);
@@ -47,20 +51,14 @@ loggingService.log("app", `   Type: ${config.source.type}`);
  * Start the source running.
  * @param sourceManager The source manager to start.
  */
-async function start(sourceManager: SourceManager): Promise<void> {
+async function start(sourceManager: SourceManager<IBasicSourceStrategyState>): Promise<void> {
     await sourceManager.initialise();
 
-    // Now we create some dummy data for the source
-    // In a real life scenario this would come from the actual device
-    // and at an interval of the implementers choice
-    for (let i = 0; i < 5; i++) {
-        // tslint:disable-next-line:insecure-random
-        await sourceManager.sendOutputCommand(Date.now(), Math.random() * 1000);
-    }
+    await sourceManager.updateStrategy();
 
     // Don't close down unless you want to remove the registration
     // await sourceService.closedown();
 }
 
-start(new SourceManager(config.source, loadBalancerSettings))
+start(new SourceManager(config.source, loadBalancerSettings, new BasicSourceStrategy()))
     .catch(err => console.log(err));

@@ -1,6 +1,7 @@
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
+import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 
 /**
@@ -14,7 +15,7 @@ export async function closedown(config: IProducerServiceConfiguration): Promise<
     loggingService.log("closedown", "Closing Down");
 
     try {
-        const producerService = ServiceFactory.get<ProducerManager>("producer");
+        const producerService = ServiceFactory.get<ProducerManager<IBasicProducerStrategyState>>("producer");
         await producerService.closedown();
 
         loggingService.log("closedown", "Success");

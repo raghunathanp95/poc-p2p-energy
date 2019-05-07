@@ -2,7 +2,7 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
 /**
  * Definition of consumer state.
  */
-export interface IConsumerManagerState {
+export interface IConsumerManagerState<S> {
     /**
      * The channel configuration for the consumer.
      */
@@ -12,15 +12,7 @@ export interface IConsumerManagerState {
      */
     returnChannel?: IMamChannelConfiguration;
     /**
-     * The last usage time slot.
+     * The state for the strategy.
      */
-    lastUsageTime?: number;
-    /**
-     * Paid balance.
-     */
-    paidBalance?: number;
-    /**
-     * Owed balance.
-     */
-    owedBalance?: number;
+    strategyState?: S;
 }

@@ -68,12 +68,13 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         this._demoGridManager.subscribeProducer("liveProducer", this.props.producer.id, (producerState) => {
             const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
             const producerManagerState = producerState && producerState.producerManagerState;
+            const producerStrategyState = producerManagerState && producerManagerState.strategyState;
 
             this.setState({
-                    receivedBalance: producerManagerState && producerManagerState.receivedBalance !== undefined
-                        ? `${producerManagerState.receivedBalance}i` : "-----",
-                    owedBalance: producerManagerState && producerManagerState.owedBalance !== undefined ?
-                        `${producerManagerState.owedBalance}i` : "-----",
+                    receivedBalance: producerStrategyState && producerStrategyState.receivedBalance !== undefined
+                        ? `${producerStrategyState.receivedBalance}i` : "-----",
+                    owedBalance: producerStrategyState && producerStrategyState.owedBalance !== undefined ?
+                        `${producerStrategyState.owedBalance}i` : "-----",
                     mamRoot: mamChannel && mamChannel.initialRoot,
                     sideKey: mamChannel && mamChannel.sideKey,
                     producerGraphSeries: producerState && producerState.outputCommands && producerState.outputCommands.map(o => o.output) || [],

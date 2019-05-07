@@ -1,8 +1,10 @@
-import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
 import { IConsumerUsage } from "../models/db/grid/IConsumerUsage";
+import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutput } from "../models/db/grid/IProducerOutput";
+import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
@@ -16,7 +18,7 @@ import { TrytesHelper } from "../utils/trytesHelper";
 /**
  * Service to handle the grid.
  */
-export class GridManager {
+export class GridManager<S> {
     /**
      * Configuration for the grid.
      */
@@ -25,6 +27,7 @@ export class GridManager {
     /**
      * Load balancer settings for communications.
      */
+    // @ts-ignore
     private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
@@ -35,12 +38,12 @@ export class GridManager {
     /**
      * The strategy for generating processing outputs, usage and payments.
      */
-    private readonly _strategy: IGridStrategy;
+    private readonly _strategy: IGridStrategy<S>;
 
     /**
      * The current state for the producer.
      */
-    private _state?: IGridManagerState;
+    private _state?: IGridManagerState<S>;
 
     /**
      * Create a new instance of GridService.
@@ -51,7 +54,7 @@ export class GridManager {
     constructor(
         gridConfig: IGridConfiguration,
         loadBalancerSettings: LoadBalancerSettings,
-        strategy: IGridStrategy) {
+        strategy: IGridStrategy<S>) {
         this._config = gridConfig;
         this._loadBalancerSettings = loadBalancerSettings;
         this._strategy = strategy;
@@ -61,7 +64,7 @@ export class GridManager {
     /**
      * Get the state for the manager.
      */
-    public getState(): IGridManagerState {
+    public getState(): IGridManagerState<S> {
         return this._state;
     }
 
@@ -172,140 +175,89 @@ export class GridManager {
     public async updateStrategy(): Promise<void> {
         await this.updateConsumers();
         await this.updateProducers();
+        await this.saveState();
     }
 
     /**
      * Update the consumers using the strategy.
      */
     public async updateConsumers(): Promise<void> {
-        // const consumerUsageStoreService = ServiceFactory.get<IStorageService<IConsumerUsage>>(
-        //     "grid-consumer-usage-store");
+        const consumerUsageStoreService = ServiceFactory.get<IStorageService<IConsumerUsage>>(
+            "grid-consumer-usage-store");
 
-        // const toRemove = [];
+        const toRemove = [];
+        const consumerUsageById: { [id: string]: IConsumerUsageEntry[] } = {};
 
-        // let pageSize = 10;
-        // let page = 0;
-        // let pageResponse;
-        // do {
-        //     pageResponse = await consumerUsageStoreService.page(undefined, page, pageSize);
+        let pageSize = 10;
+        let page = 0;
+        let pageResponse;
+        do {
+            pageResponse = await consumerUsageStoreService.page(undefined, page, pageSize);
 
-        //     for (let i = 0; i < pageResponse.items.length; i++) {
-        //         const consumerUsage: IConsumerUsage = pageResponse.items[i];
-        //         if (consumerUsage.usage && consumerUsage.usage.length > 0) {
-        //             let totalUsage = 0;
-        //             for (let j = 0; j < consumerUsage.usage.length; j++) {
-        //                 const consumerUsageUse = consumerUsage.usage[j];
-        //                 totalUsage += consumerUsageUse.usage;
-        //             }
-        //             // No more unpaid entries so delete the producer output
-        //             toRemove.push(consumerUsage.id);
-        //         }
-        //     }
-        //     page++;
-        //     pageSize = pageResponse.pageSize;
-        // } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
+            for (let i = 0; i < pageResponse.items.length; i++) {
+                const consumerUsage: IConsumerUsage = pageResponse.items[i];
+                if (consumerUsage.usage && consumerUsage.usage.length > 0) {
+                    if (!consumerUsageById[consumerUsage.id]) {
+                        consumerUsageById[consumerUsage.id] = [];
+                    }
+                    consumerUsageById[consumerUsage.id] =
+                        consumerUsageById[consumerUsage.id].concat(consumerUsage.usage);
+                }
+                toRemove.push(consumerUsage.id);
+            }
+            page++;
+            pageSize = pageResponse.pageSize;
+        } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        // for (let i = 0; i < toRemove.length; i++) {
-        //     await consumerUsageStoreService.remove(toRemove[i]);
-        // }
+        for (let i = 0; i < toRemove.length; i++) {
+            await consumerUsageStoreService.remove(toRemove[i]);
+        }
 
-        // await this._strategy.process();
+        await this._strategy.consumers(consumerUsageById, this._state);
     }
 
     /**
      * Update the producers using the strategy.
      */
     public async updateProducers(): Promise<void> {
-        // const producerOutputService = ServiceFactory.get<IStorageService<IProducerOutput>>(
-        //     "grid-producer-output-store");
-        // const producerOutputPaymentService = ServiceFactory.get<IStorageService<IProducerOutputPayment>>(
-        //     "producer-output-payment");
+        const producerOutputService = ServiceFactory.get<IStorageService<IProducerOutput>>(
+            "grid-producer-output-store");
 
-        composeAPI(this._loadBalancerSettings);
+        const toRemove = [];
+        const producerOutputById: { [id: string]: IProducerOutputEntry[] } = {};
 
-        // const iota = composeAPI({
-        //     provider: this._nodeConfig.provider
-        // });
+        let pageSize = 10;
+        let page = 0;
+        let pageResponse;
+        do {
+            pageResponse = await producerOutputService.page(undefined, page, pageSize);
 
-        // const toRemove = [];
+            for (let i = 0; i < pageResponse.items.length; i++) {
+                const producer: IProducerOutput = pageResponse.items[i];
+                if (producer.output && producer.output.length > 0) {
+                    if (!producerOutputById[producer.id]) {
+                        producerOutputById[producer.id] = [];
+                    }
+                    producerOutputById[producer.id] = producerOutputById[producer.id].concat(producer.output);
+                }
+                toRemove.push(producer.id);
+            }
+            page++;
+            pageSize = pageResponse.pageSize;
+        } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        // let pageSize = 10;
-        // let page = 0;
-        // let pageResponse;
-        // do {
-        //     pageResponse = await producerOutputService.page(undefined, page, pageSize);
+        for (let i = 0; i < toRemove.length; i++) {
+            await producerOutputService.remove(toRemove[i]);
+        }
 
-        //     for (let i = 0; i < pageResponse.items.length; i++) {
-        //         const producer: IProducerOutput = pageResponse.items[i];
-        //         if (producer.output && producer.output.length > 0) {
-        //             const unpaid = [];
-        //             for (let j = 0; j < producer.output.length; j++) {
-        //                 const producerOutput = producer.output[j];
-        //                 if (producerOutput.gridActualPrice) {
-        //                     this._loggingService.log(
-        //                         "grid",
-        //                         `Check payments for ${pageResponse.ids[i]} at ${producerOutput.startTime}`
-        //                     );
-
-        //                     const confirmedBalances = await iota.getBalances(
-        //                         [producerOutput.paymentAddress],
-        //                         100);
-
-        //                     if (confirmedBalances &&
-        //                         confirmedBalances.balances &&
-        //                         confirmedBalances.balances.length > 0 &&
-        //                         confirmedBalances.balances[0] === producerOutput.gridActualPrice) {
-        //                         // The confirmed balance on the address matches the
-        //                         // actual price the grid was requesting, so move the output to
-        //                         // the paid archive
-        //                         this._loggingService.log(
-        //                             "grid",
-        //                             `Payment for ${pageResponse.ids[i]} on address ${producerOutput} confirmed`
-        //                         );
-
-        //                         await producerOutputPaymentService.set(
-        //                             `${producer.id}/${producerOutput.startTime}`,
-        //                             {
-        //                                 startTime: producerOutput.startTime,
-        //                                 endTime: producerOutput.endTime,
-        //                                 output: producerOutput.output,
-        //                                 producerAskingPrice: producerOutput.producerAskingPrice,
-        //                                 paymentAddress: producerOutput.paymentAddress,
-        //                                 paymentBundles: []
-        //                             });
-        //                     } else {
-        //                         unpaid.push(producerOutput);
-        //                     }
-        //                 } else {
-        //                     unpaid.push(producerOutput);
-        //                 }
-        //             }
-        //             if (unpaid.length === 0) {
-        //                 // No more unpaid entries so delete the producer output
-        //                 toRemove.push(producer.id);
-        //             } else {
-        //                 // There are still unpaid outputs so update the item and save it
-        //                 producer.output = unpaid;
-        //                 await producerOutputService.set(producer.id, producer);
-        //             }
-        //         }
-        //     }
-        //     page++;
-        //     pageSize = pageResponse.pageSize;
-        // } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
-
-        // for (let i = 0; i < toRemove.length; i++) {
-        //     await producerOutputService.remove(toRemove[i]);
-        // }
-
-        await this._strategy.process();
+        await this._strategy.producers(producerOutputById, this._state);
     }
 
     /**
      * Remove the state for the grid.
      */
     public async removeState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState<S>>>(
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Removing State`);
@@ -317,7 +269,7 @@ export class GridManager {
      * Load the state for the grid.
      */
     private async loadState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState<S>>>(
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Loading State`);
@@ -326,11 +278,7 @@ export class GridManager {
 
         this._state = this._state || {
             paymentSeed: TrytesHelper.generateHash(),
-            runningCostsBalance: 0,
-            producerPaidBalance: 0,
-            producerOwedBalance: 0,
-            consumerOwedBalance: 0,
-            consumerReceivedBalance: 0
+            strategyState: await this._strategy.init()
         };
     }
 
@@ -338,7 +286,7 @@ export class GridManager {
      * Store the state for the grid.
      */
     private async saveState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState>>(
+        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState<S>>>(
             "grid-storage-manager-state");
 
         this._loggingService.log("grid", `Storing State`);
