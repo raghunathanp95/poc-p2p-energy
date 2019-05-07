@@ -20,7 +20,7 @@
         "node": "10.x.x"
     },
     "dependencies": {
-        "@iota/client-load-balancer": "github:obany/iota-client-load-balancer",
+        "@iota/client-load-balancer": "github:iotaledger/client-load-balancer",
         "aws-sdk": "^2.448.0",
         "axios": "github:axios/axios",
         "body-parser": "^1.19.0",

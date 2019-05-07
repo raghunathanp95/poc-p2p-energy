@@ -9,7 +9,7 @@
     },
     "license": "MIT",
     "dependencies": {
-        "@iota/client-load-balancer": "github:obany/iota-client-load-balancer",
+        "@iota/client-load-balancer": "github:iotaledger/client-load-balancer",
         "axios": "github:axios/axios",
         "chartist": "^0.11.0",
         "classnames": "^2.2.6",
