@@ -10,6 +10,11 @@ export interface GridLiveSourceState {
     sideKey?: string;
 
     /**
+     * Total output.
+     */
+    outputTotal?: string;
+
+    /**
      * Is it selected.
      */
     isSelected: boolean;

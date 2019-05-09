@@ -18,8 +18,8 @@ class BasicSourceStrategy {
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             return {
-                initialTime: Date.now(),
-                lastOutputTime: Date.now()
+                lastOutputTime: Date.now() - BasicSourceStrategy.TIME_BASIS,
+                outputTotal: 0
             };
         });
     }
@@ -31,23 +31,34 @@ class BasicSourceStrategy {
     value(sourceState) {
         return __awaiter(this, void 0, void 0, function* () {
             // For this basic demonstration strategy we just supply a new random value
-            // with a time based on a fictional time basis every 10s
+            // with a time based on a fictional time basis
             // in a real setup this would come from hardware
             const commands = [];
-            while ((Date.now() - sourceState.strategyState.lastOutputTime) > 10000) {
-                const endTime = sourceState.strategyState.lastOutputTime + 10000;
+            let updatedState = false;
+            while ((Date.now() - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_BASIS) {
+                const endTime = sourceState.strategyState.lastOutputTime + BasicSourceStrategy.TIME_BASIS;
+                // tslint:disable-next-line:insecure-random
+                const output = (Math.random() * 8) + 2;
                 commands.push({
                     command: "output",
-                    startTime: (sourceState.strategyState.lastOutputTime + 1) - sourceState.strategyState.initialTime,
-                    endTime: endTime - sourceState.strategyState.initialTime,
-                    // tslint:disable-next-line:insecure-random
-                    output: Math.random() * 1000
+                    startTime: sourceState.strategyState.lastOutputTime + 1,
+                    endTime: endTime,
+                    output
                 });
+                updatedState = true;
                 sourceState.strategyState.lastOutputTime = endTime;
+                sourceState.strategyState.outputTotal += output;
             }
-            return commands;
+            return {
+                updatedState,
+                commands
+            };
         });
     }
 }
+/**
+ * The base for timing.
+ */
+BasicSourceStrategy.TIME_BASIS = 30000;
 exports.BasicSourceStrategy = BasicSourceStrategy;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNTb3VyY2VTdHJhdGVneS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9zdHJhdGVnaWVzL2Jhc2ljU291cmNlU3RyYXRlZ3kudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQUtBOztHQUVHO0FBQ0gsTUFBYSxtQkFBbUI7SUFDNUI7O09BRUc7SUFDVSxJQUFJOztZQUNiLE9BQU87Z0JBQ0gsV0FBVyxFQUFFLElBQUksQ0FBQyxHQUFHLEVBQUU7Z0JBQ3ZCLGNBQWMsRUFBRSxJQUFJLENBQUMsR0FBRyxFQUFFO2FBQzdCLENBQUM7UUFDTixDQUFDO0tBQUE7SUFFRDs7OztPQUlHO0lBQ1UsS0FBSyxDQUFDLFdBQTJEOztZQUMxRSwwRUFBMEU7WUFDMUUsd0RBQXdEO1lBQ3hELGdEQUFnRDtZQUNoRCxNQUFNLFFBQVEsR0FBMkIsRUFBRSxDQUFDO1lBQzVDLE9BQU8sQ0FBQyxJQUFJLENBQUMsR0FBRyxFQUFFLEdBQUcsV0FBVyxDQUFDLGFBQWEsQ0FBQyxjQUFjLENBQUMsR0FBRyxLQUFLLEVBQUU7Z0JBQ3BFLE1BQU0sT0FBTyxHQUFHLFdBQVcsQ0FBQyxhQUFhLENBQUMsY0FBYyxHQUFHLEtBQUssQ0FBQztnQkFDakUsUUFBUSxDQUFDLElBQUksQ0FBQztvQkFDVixPQUFPLEVBQUUsUUFBUTtvQkFDakIsU0FBUyxFQUFFLENBQUMsV0FBVyxDQUFDLGFBQWEsQ0FBQyxjQUFjLEdBQUcsQ0FBQyxDQUFDLEdBQUcsV0FBVyxDQUFDLGFBQWEsQ0FBQyxXQUFXO29CQUNqRyxPQUFPLEVBQUUsT0FBTyxHQUFHLFdBQVcsQ0FBQyxhQUFhLENBQUMsV0FBVztvQkFDeEQsMkNBQTJDO29CQUMzQyxNQUFNLEVBQUUsSUFBSSxDQUFDLE1BQU0sRUFBRSxHQUFHLElBQUk7aUJBQy9CLENBQUMsQ0FBQztnQkFFSCxXQUFXLENBQUMsYUFBYSxDQUFDLGNBQWMsR0FBRyxPQUFPLENBQUM7YUFDdEQ7WUFFRCxPQUFPLFFBQVEsQ0FBQztRQUNwQixDQUFDO0tBQUE7Q0FDSjtBQXBDRCxrREFvQ0MifQ==
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNTb3VyY2VTdHJhdGVneS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9zdHJhdGVnaWVzL2Jhc2ljU291cmNlU3RyYXRlZ3kudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQUtBOztHQUVHO0FBQ0gsTUFBYSxtQkFBbUI7SUFNNUI7O09BRUc7SUFDVSxJQUFJOztZQUNiLE9BQU87Z0JBQ0gsY0FBYyxFQUFFLElBQUksQ0FBQyxHQUFHLEVBQUUsR0FBRyxtQkFBbUIsQ0FBQyxVQUFVO2dCQUMzRCxXQUFXLEVBQUUsQ0FBQzthQUNqQixDQUFDO1FBQ04sQ0FBQztLQUFBO0lBRUQ7Ozs7T0FJRztJQUNVLEtBQUssQ0FBQyxXQUEyRDs7WUFVMUUsMEVBQTBFO1lBQzFFLDhDQUE4QztZQUM5QyxnREFBZ0Q7WUFDaEQsTUFBTSxRQUFRLEdBQTJCLEVBQUUsQ0FBQztZQUM1QyxJQUFJLFlBQVksR0FBRyxLQUFLLENBQUM7WUFDekIsT0FBTyxDQUFDLElBQUksQ0FBQyxHQUFHLEVBQUUsR0FBRyxXQUFXLENBQUMsYUFBYSxDQUFDLGNBQWMsQ0FBQyxHQUFHLG1CQUFtQixDQUFDLFVBQVUsRUFBRTtnQkFDN0YsTUFBTSxPQUFPLEdBQUcsV0FBVyxDQUFDLGFBQWEsQ0FBQyxjQUFjLEdBQUcsbUJBQW1CLENBQUMsVUFBVSxDQUFDO2dCQUMxRiwyQ0FBMkM7Z0JBQzNDLE1BQU0sTUFBTSxHQUFHLENBQUMsSUFBSSxDQUFDLE1BQU0sRUFBRSxHQUFHLENBQUMsQ0FBQyxHQUFHLENBQUMsQ0FBQztnQkFFdkMsUUFBUSxDQUFDLElBQUksQ0FBQztvQkFDVixPQUFPLEVBQUUsUUFBUTtvQkFDakIsU0FBUyxFQUFFLFdBQVcsQ0FBQyxhQUFhLENBQUMsY0FBYyxHQUFHLENBQUM7b0JBQ3ZELE9BQU8sRUFBRSxPQUFPO29CQUNoQixNQUFNO2lCQUNULENBQUMsQ0FBQztnQkFFSCxZQUFZLEdBQUcsSUFBSSxDQUFDO2dCQUNwQixXQUFXLENBQUMsYUFBYSxDQUFDLGNBQWMsR0FBRyxPQUFPLENBQUM7Z0JBQ25ELFdBQVcsQ0FBQyxhQUFhLENBQUMsV0FBVyxJQUFJLE1BQU0sQ0FBQzthQUNuRDtZQUVELE9BQU87Z0JBQ0gsWUFBWTtnQkFDWixRQUFRO2FBQ1gsQ0FBQztRQUNOLENBQUM7S0FBQTs7QUF4REQ7O0dBRUc7QUFDcUIsOEJBQVUsR0FBVyxLQUFLLENBQUM7QUFKdkQsa0RBMERDIn0=

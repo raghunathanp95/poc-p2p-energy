@@ -19,7 +19,10 @@ class BasicConsumerStrategy {
         return __awaiter(this, void 0, void 0, function* () {
             return {
                 initialTime: Date.now(),
-                lastUsageTime: Date.now()
+                lastUsageTime: Date.now(),
+                usageTotal: 0,
+                paidBalance: 0,
+                outstandingBalance: 0
             };
         });
     }
@@ -31,23 +34,34 @@ class BasicConsumerStrategy {
     usage(consumerState) {
         return __awaiter(this, void 0, void 0, function* () {
             // For this basic demonstration strategy we just supply a new random value
-            // with a time based on a fictional time basis every 10s
+            // with a time based on a fictional time basis
             // in a real setup this would come from hardware like a meter
             const commands = [];
-            while ((Date.now() - consumerState.strategyState.lastUsageTime) > 10000) {
-                const endTime = consumerState.strategyState.lastUsageTime + 10000;
+            let updatedState = false;
+            while ((Date.now() - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_BASIS) {
+                const endTime = consumerState.strategyState.lastUsageTime + BasicConsumerStrategy.TIME_BASIS;
+                // tslint:disable-next-line:insecure-random
+                const usage = Math.random();
                 commands.push({
-                    command: "output",
-                    startTime: (consumerState.strategyState.lastUsageTime + 1) - consumerState.strategyState.initialTime,
-                    endTime: endTime - consumerState.strategyState.initialTime,
-                    // tslint:disable-next-line:insecure-random
-                    usage: Math.random() * 10
+                    command: "usage",
+                    startTime: consumerState.strategyState.lastUsageTime + 1,
+                    endTime,
+                    usage
                 });
+                updatedState = true;
                 consumerState.strategyState.lastUsageTime = endTime;
+                consumerState.strategyState.usageTotal += usage;
             }
-            return commands;
+            return {
+                updatedState,
+                commands
+            };
         });
     }
 }
+/**
+ * The base for timing.
+ */
+BasicConsumerStrategy.TIME_BASIS = 30000;
 exports.BasicConsumerStrategy = BasicConsumerStrategy;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNDb25zdW1lclN0cmF0ZWd5LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL3N0cmF0ZWdpZXMvYmFzaWNDb25zdW1lclN0cmF0ZWd5LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFLQTs7R0FFRztBQUNILE1BQWEscUJBQXFCO0lBQzlCOztPQUVHO0lBQ1UsSUFBSTs7WUFDYixPQUFPO2dCQUNILFdBQVcsRUFBRSxJQUFJLENBQUMsR0FBRyxFQUFFO2dCQUN2QixhQUFhLEVBQUUsSUFBSSxDQUFDLEdBQUcsRUFBRTthQUM1QixDQUFDO1FBQ04sQ0FBQztLQUFBO0lBRUQ7Ozs7T0FJRztJQUNVLEtBQUssQ0FBQyxhQUFpRTs7WUFFaEYsMEVBQTBFO1lBQzFFLHdEQUF3RDtZQUN4RCw2REFBNkQ7WUFDN0QsTUFBTSxRQUFRLEdBQTRCLEVBQUUsQ0FBQztZQUM3QyxPQUFPLENBQUMsSUFBSSxDQUFDLEdBQUcsRUFBRSxHQUFHLGFBQWEsQ0FBQyxhQUFhLENBQUMsYUFBYSxDQUFDLEdBQUcsS0FBSyxFQUFFO2dCQUNyRSxNQUFNLE9BQU8sR0FBRyxhQUFhLENBQUMsYUFBYSxDQUFDLGFBQWEsR0FBRyxLQUFLLENBQUM7Z0JBQ2xFLFFBQVEsQ0FBQyxJQUFJLENBQUM7b0JBQ1YsT0FBTyxFQUFFLFFBQVE7b0JBQ2pCLFNBQVMsRUFBRSxDQUFDLGFBQWEsQ0FBQyxhQUFhLENBQUMsYUFBYSxHQUFHLENBQUMsQ0FBQyxHQUFHLGFBQWEsQ0FBQyxhQUFhLENBQUMsV0FBVztvQkFDcEcsT0FBTyxFQUFFLE9BQU8sR0FBRyxhQUFhLENBQUMsYUFBYSxDQUFDLFdBQVc7b0JBQzFELDJDQUEyQztvQkFDM0MsS0FBSyxFQUFFLElBQUksQ0FBQyxNQUFNLEVBQUUsR0FBRyxFQUFFO2lCQUM1QixDQUFDLENBQUM7Z0JBRUgsYUFBYSxDQUFDLGFBQWEsQ0FBQyxhQUFhLEdBQUcsT0FBTyxDQUFDO2FBQ3ZEO1lBRUQsT0FBTyxRQUFRLENBQUM7UUFDcEIsQ0FBQztLQUFBO0NBQ0o7QUFyQ0Qsc0RBcUNDIn0=
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmFzaWNDb25zdW1lclN0cmF0ZWd5LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL3N0cmF0ZWdpZXMvYmFzaWNDb25zdW1lclN0cmF0ZWd5LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFLQTs7R0FFRztBQUNILE1BQWEscUJBQXFCO0lBTTlCOztPQUVHO0lBQ1UsSUFBSTs7WUFDYixPQUFPO2dCQUNILFdBQVcsRUFBRSxJQUFJLENBQUMsR0FBRyxFQUFFO2dCQUN2QixhQUFhLEVBQUUsSUFBSSxDQUFDLEdBQUcsRUFBRTtnQkFDekIsVUFBVSxFQUFFLENBQUM7Z0JBQ2IsV0FBVyxFQUFFLENBQUM7Z0JBQ2Qsa0JBQWtCLEVBQUUsQ0FBQzthQUN4QixDQUFDO1FBQ04sQ0FBQztLQUFBO0lBRUQ7Ozs7T0FJRztJQUNVLEtBQUssQ0FBQyxhQUFpRTs7WUFXaEYsMEVBQTBFO1lBQzFFLDhDQUE4QztZQUM5Qyw2REFBNkQ7WUFDN0QsTUFBTSxRQUFRLEdBQTRCLEVBQUUsQ0FBQztZQUM3QyxJQUFJLFlBQVksR0FBRyxLQUFLLENBQUM7WUFFekIsT0FBTyxDQUFDLElBQUksQ0FBQyxHQUFHLEVBQUUsR0FBRyxhQUFhLENBQUMsYUFBYSxDQUFDLGFBQWEsQ0FBQyxHQUFHLHFCQUFxQixDQUFDLFVBQVUsRUFBRTtnQkFDaEcsTUFBTSxPQUFPLEdBQUcsYUFBYSxDQUFDLGFBQWEsQ0FBQyxhQUFhLEdBQUcscUJBQXFCLENBQUMsVUFBVSxDQUFDO2dCQUM3RiwyQ0FBMkM7Z0JBQzNDLE1BQU0sS0FBSyxHQUFJLElBQUksQ0FBQyxNQUFNLEVBQUUsQ0FBQztnQkFDN0IsUUFBUSxDQUFDLElBQUksQ0FBQztvQkFDVixPQUFPLEVBQUUsT0FBTztvQkFDaEIsU0FBUyxFQUFFLGFBQWEsQ0FBQyxhQUFhLENBQUMsYUFBYSxHQUFHLENBQUM7b0JBQ3hELE9BQU87b0JBQ1AsS0FBSztpQkFDUixDQUFDLENBQUM7Z0JBRUgsWUFBWSxHQUFHLElBQUksQ0FBQztnQkFDcEIsYUFBYSxDQUFDLGFBQWEsQ0FBQyxhQUFhLEdBQUcsT0FBTyxDQUFDO2dCQUNwRCxhQUFhLENBQUMsYUFBYSxDQUFDLFVBQVUsSUFBSSxLQUFLLENBQUM7YUFDbkQ7WUFFRCxPQUFPO2dCQUNILFlBQVk7Z0JBQ1osUUFBUTthQUNYLENBQUM7UUFDTixDQUFDO0tBQUE7O0FBNUREOztHQUVHO0FBQ3FCLGdDQUFVLEdBQVcsS0FBSyxDQUFDO0FBSnZELHNEQThEQyJ9

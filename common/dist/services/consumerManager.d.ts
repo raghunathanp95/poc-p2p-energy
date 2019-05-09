@@ -62,10 +62,6 @@ export declare class ConsumerManager<S> {
      */
     sendCommand<T extends IMamCommand>(command: T): Promise<T>;
     /**
-     * Remove the state for the consumer.
-     */
-    removeState(): Promise<void>;
-    /**
      * Load the state for the consumer.
      */
     private loadState;

@@ -95,8 +95,8 @@ export class GridManager<S> {
             "grid-consumer-usage-store");
 
         let updateStore = false;
-        let producerStore;
-        let consumerStore;
+        let producerStore: IProducerOutput;
+        let consumerStore: IConsumerUsage;
 
         if (registration.itemType === "producer") {
             producerStore = await producerOutputStoreService.get(`${this._config.id}/${registration.id}`);
@@ -137,13 +137,13 @@ export class GridManager<S> {
                 if (!consumerStore) {
                     consumerStore = {
                         id: registration.id,
-                        output: []
+                        usage: []
                     };
                 }
 
                 // Only store usage commands that we havent already seen
-                if (!consumerStore.output.find(o => o.startTime === outputCommand.startTime)) {
-                    consumerStore.output.push({
+                if (!consumerStore.usage.find(o => o.startTime === outputCommand.startTime)) {
+                    consumerStore.usage.push({
                         startTime: outputCommand.startTime,
                         endTime: outputCommand.endTime,
                         usage: outputCommand.usage
@@ -173,19 +173,22 @@ export class GridManager<S> {
      * Update strategy to process payments for registered entites.
      */
     public async updateStrategy(): Promise<void> {
-        await this.updateConsumers();
-        await this.updateProducers();
-        await this.saveState();
+        const updatedState1 = await this.updateConsumers();
+        const updatedState2 = await this.updateProducers();
+
+        if (updatedState1 || updatedState2) {
+            await this.saveState();
+        }
     }
 
     /**
      * Update the consumers using the strategy.
+     * @private
      */
-    public async updateConsumers(): Promise<void> {
+    private async updateConsumers(): Promise<boolean> {
         const consumerUsageStoreService = ServiceFactory.get<IStorageService<IConsumerUsage>>(
             "grid-consumer-usage-store");
 
-        const toRemove = [];
         const consumerUsageById: { [id: string]: IConsumerUsageEntry[] } = {};
 
         let pageSize = 10;
@@ -196,34 +199,31 @@ export class GridManager<S> {
 
             for (let i = 0; i < pageResponse.items.length; i++) {
                 const consumerUsage: IConsumerUsage = pageResponse.items[i];
-                if (consumerUsage.usage && consumerUsage.usage.length > 0) {
-                    if (!consumerUsageById[consumerUsage.id]) {
-                        consumerUsageById[consumerUsage.id] = [];
-                    }
-                    consumerUsageById[consumerUsage.id] =
-                        consumerUsageById[consumerUsage.id].concat(consumerUsage.usage);
-                }
-                toRemove.push(consumerUsage.id);
+                consumerUsageById[consumerUsage.id] = consumerUsage.usage;
             }
             page++;
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        for (let i = 0; i < toRemove.length; i++) {
-            await consumerUsageStoreService.remove(toRemove[i]);
+        const result = await this._strategy.consumers(consumerUsageById, this._state);
+
+        for (const consumerId in consumerUsageById) {
+            if (consumerUsageById[consumerId].length === 0) {
+                await consumerUsageStoreService.remove(`${this._config.id}/${consumerId}`);
+            }
         }
 
-        await this._strategy.consumers(consumerUsageById, this._state);
+        return result.updatedState;
     }
 
     /**
      * Update the producers using the strategy.
+     * @private
      */
-    public async updateProducers(): Promise<void> {
+    private async updateProducers(): Promise<boolean> {
         const producerOutputService = ServiceFactory.get<IStorageService<IProducerOutput>>(
             "grid-producer-output-store");
 
-        const toRemove = [];
         const producerOutputById: { [id: string]: IProducerOutputEntry[] } = {};
 
         let pageSize = 10;
@@ -234,39 +234,26 @@ export class GridManager<S> {
 
             for (let i = 0; i < pageResponse.items.length; i++) {
                 const producer: IProducerOutput = pageResponse.items[i];
-                if (producer.output && producer.output.length > 0) {
-                    if (!producerOutputById[producer.id]) {
-                        producerOutputById[producer.id] = [];
-                    }
-                    producerOutputById[producer.id] = producerOutputById[producer.id].concat(producer.output);
-                }
-                toRemove.push(producer.id);
+                producerOutputById[producer.id] = producer.output;
             }
             page++;
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        for (let i = 0; i < toRemove.length; i++) {
-            await producerOutputService.remove(toRemove[i]);
+        const result = await this._strategy.producers(producerOutputById, this._state);
+
+        for (const producerId in producerOutputById) {
+            if (producerOutputById[producerId].length === 0) {
+                await producerOutputService.remove(`${this._config.id}/${producerId}`);
+            }
         }
 
-        await this._strategy.producers(producerOutputById, this._state);
-    }
-
-    /**
-     * Remove the state for the grid.
-     */
-    public async removeState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState<S>>>(
-            "grid-storage-manager-state");
-
-        this._loggingService.log("grid", `Removing State`);
-        await storageConfigService.remove(this._config.id);
-        this._loggingService.log("grid", `Removing State Complete`);
+        return result.updatedState;
     }
 
     /**
      * Load the state for the grid.
+     * @private
      */
     private async loadState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IGridManagerState<S>>>(

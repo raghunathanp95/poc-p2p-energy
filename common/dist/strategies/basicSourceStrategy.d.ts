@@ -7,6 +7,10 @@ import { ISourceStrategy } from "../models/strategies/ISourceStrategy";
  */
 export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategyState> {
     /**
+     * The base for timing.
+     */
+    private static readonly TIME_BASIS;
+    /**
      * Initialise the state.
      */
     init(): Promise<IBasicSourceStrategyState>;
@@ -15,5 +19,14 @@ export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSource
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    value(sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<ISourceOutputCommand[]>;
+    value(sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * New commands to output.
+         */
+        commands: ISourceOutputCommand[];
+    }>;
 }

@@ -1,27 +1,42 @@
 
 export interface GridLiveOverviewState {
     /**
-     * Running costs balance.
+     * Running costs total.
      */
-    runningCostsBalance: string;
+    runningCostsTotal: string;
 
     /**
-     * Producer paid balance.
+     * Running costs received.
      */
-    producerPaidBalance: string;
+    runningCostsReceived: string;
 
     /**
-     * Producer owed balance.
+     * Producer output.
      */
-    producerOwedBalance: string;
+    producersTotalOutput: string;
 
     /**
-     * Consumer owed balance.
+     * Producer received.
      */
-    consumerOwedBalance: string;
+    producersTotalReceived: string;
 
     /**
-     * Consumer recieved balance.
+     * Producer owed.
      */
-    consumerReceivedBalance: string;
+    producersTotalOwed: string;
+
+    /**
+     * Consumer usage.
+     */
+    consumersTotalUsage: string;
+
+    /**
+     * Consumer paid.
+     */
+    consumersTotalPaid: string;
+
+    /**
+     * Consumer owed.
+     */
+    consumersTotalOutstanding: string;
 }

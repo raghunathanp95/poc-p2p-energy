@@ -13,11 +13,10 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      */
     public async init(): Promise<IBasicGridStrategyState> {
         return {
-            runningCostsBalance: 0,
-            producerPaidBalance: 0,
-            producerOwedBalance: 0,
-            consumerOwedBalance: 0,
-            consumerReceivedBalance: 0
+            runningCostsTotal: 0,
+            runningCostsReceived: 0,
+            producerTotals: {},
+            consumerTotals: {}
         };
     }
 
@@ -29,7 +28,34 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
     public async consumers(
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<IBasicGridStrategyState>):
-        Promise<void> {
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }> {
+
+        let updatedState = false;
+
+        for (const consumerId in consumerUsageById) {
+            if (!gridState.strategyState.consumerTotals[consumerId]) {
+                gridState.strategyState.consumerTotals[consumerId] = {
+                    usage: 0,
+                    outstanding: 0,
+                    paid: 0
+                };
+            }
+
+            updatedState = true;
+            gridState.strategyState.consumerTotals[consumerId].usage +=
+                consumerUsageById[consumerId].reduce((a, b) => a + b.usage, 0);
+
+            consumerUsageById[consumerId] = [];
+        }
+
+        return {
+            updatedState
+        };
     }
 
     /**
@@ -39,6 +65,33 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      */
     public async producers(
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
-        gridState: IGridManagerState<IBasicGridStrategyState>): Promise<void> {
+        gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }> {
+
+        let updatedState = false;
+
+        for (const producerId in producerUsageById) {
+            if (!gridState.strategyState.producerTotals[producerId]) {
+                gridState.strategyState.producerTotals[producerId] = {
+                    output: 0,
+                    owed: 0,
+                    received: 0
+                };
+            }
+
+            updatedState = true;
+            gridState.strategyState.producerTotals[producerId].output +=
+                producerUsageById[producerId].reduce((a, b) => a + b.output, 0);
+
+            producerUsageById[producerId] = [];
+        }
+
+        return {
+            updatedState
+        };
     }
 }

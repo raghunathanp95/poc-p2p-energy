@@ -219,12 +219,10 @@ export class ProducerManager<S> {
      * @returns Any new producer output commands.
      */
     public async updateStrategy(): Promise<IProducerOutputCommand[]> {
-        let newCommands = [];
         if (this._state && this._state.channel) {
             const sourceStoreService = ServiceFactory.get<IStorageService<ISourceStore>>(
                 "producer-source-output-store");
 
-            const idsToRemove = [];
             const sourceOutputById: { [id: string]: ISourceStoreOutput[] } = {};
 
             let pageSize = 10;
@@ -236,32 +234,33 @@ export class ProducerManager<S> {
                 if (pageResponse && pageResponse.items) {
                     for (let i = 0; i < pageResponse.items.length; i++) {
                         const source: ISourceStore = pageResponse.items[i];
-                        if (source.output && source.output.length > 0) {
-                            if (!sourceOutputById[source.id]) {
-                                sourceOutputById[source.id] = [];
-                            }
-                        }
-                        idsToRemove.push(source.id);
+                        sourceOutputById[source.id] = source.output;
                     }
                 }
                 page++;
                 pageSize = pageResponse.pageSize;
             } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
 
-            for (let i = 0; i < idsToRemove.length; i++) {
-                await sourceStoreService.remove(idsToRemove[i]);
+            const result = await this._strategy.sources(sourceOutputById, this._state);
+
+            for (let i = 0; i < result.commands.length; i++) {
+                await this.sendCommand(result.commands[i]);
             }
 
-            newCommands = await this._strategy.sources(sourceOutputById, this._state);
-
-            for (let i = 0; i < newCommands.length; i++) {
-                await this.sendCommand(newCommands[i]);
+            for (const sourceId in sourceOutputById) {
+                if (sourceOutputById[sourceId].length === 0) {
+                    await sourceStoreService.remove(`${this._config.id}/${sourceId}`);
+                }
             }
 
-            await this.saveState();
+            if (result.updatedState) {
+                await this.saveState();
+            }
+
+            return result.commands;
         }
 
-        return newCommands;
+        return [];
     }
 
     /**

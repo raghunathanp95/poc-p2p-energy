@@ -160,15 +160,17 @@ export class ConsumerManager<S> {
      * @returns Any new consumer usage commands.
      */
     public async updateStrategy(): Promise<IConsumerUsageCommand[]> {
-        const newCommands = await this._strategy.usage(this._state);
+        const result = await this._strategy.usage(this._state);
 
-        for (let i = 0; i < newCommands.length; i++) {
-            await this.sendCommand(newCommands[i]);
+        for (let i = 0; i < result.commands.length; i++) {
+            await this.sendCommand(result.commands[i]);
         }
 
-        await this.saveState();
+        if (result.updatedState) {
+            await this.saveState();
+        }
 
-        return newCommands;
+        return result.commands;
     }
 
     /**
@@ -179,18 +181,6 @@ export class ConsumerManager<S> {
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
         return command;
-    }
-
-    /**
-     * Remove the state for the consumer.
-     */
-    public async removeState(): Promise<void> {
-        const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(
-            "consumer-storage-manager-state");
-
-        this._loggingService.log("consumer", `Removing State`);
-        await storageConfigService.remove(this._config.id);
-        this._loggingService.log("consumer", `Removing State Complete`);
     }
 
     /**

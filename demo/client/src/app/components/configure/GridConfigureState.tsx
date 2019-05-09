@@ -72,7 +72,12 @@ export interface GridConfigureState {
     /**
      * The delete modal.
      */
-    showDelete: boolean;
+    showDeleteConfirmation: boolean;
+
+    /**
+     * The reset modal.
+     */
+    showResetConfirmation: boolean;
 
     /**
      * Redirect back to main page.

@@ -19,6 +19,11 @@ import GridLiveSource from "./GridLiveSource";
  */
 class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducerState> {
     /**
+     * The base for timing.
+     */
+    private static TIME_BASIS: number = 30000;
+
+    /**
      * The producer images.
      */
     private readonly _producerImages: any[];
@@ -52,10 +57,13 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         this.state = {
             isExpanded: false,
             selectedSources: {},
+            firstProducerValueTime: 0,
             producerGraphLabels: [],
             producerGraphSeries: [],
+            firstSourceValueTime: 0,
             sourceGraphLabels: [],
             sourceGraphSeries: [],
+            outputTotal: "-----",
             receivedBalance: "-----",
             owedBalance: "-----"
         };
@@ -70,16 +78,33 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             const producerManagerState = producerState && producerState.producerManagerState;
             const producerStrategyState = producerManagerState && producerManagerState.strategyState;
 
+            const firstProducerTime = this.state.firstProducerValueTime ||
+                (producerState && producerState.outputCommands && producerState.outputCommands.length > 0 ? producerState.outputCommands[0].endTime : 0);
+
+            const producerGraphLabels: string[] = [];
+            if (producerState && producerState.outputCommands) {
+                for (let i = 0; i < producerState.outputCommands.length; i++) {
+                    // We take off 3 because we know the producer basic strategy delays 15s
+                    // before combining source values
+                    const labelValue = Math.floor((producerState.outputCommands[i].endTime - firstProducerTime) / GridLiveProducer.TIME_BASIS) - 3;
+                    producerGraphLabels.push(labelValue < 0 ? "n/a" : labelValue.toString());
+                }
+            }
+
             this.setState({
-                    receivedBalance: producerStrategyState && producerStrategyState.receivedBalance !== undefined
-                        ? `${producerStrategyState.receivedBalance}i` : "-----",
-                    owedBalance: producerStrategyState && producerStrategyState.owedBalance !== undefined ?
-                        `${producerStrategyState.owedBalance}i` : "-----",
-                    mamRoot: mamChannel && mamChannel.initialRoot,
-                    sideKey: mamChannel && mamChannel.sideKey,
-                    producerGraphSeries: producerState && producerState.outputCommands && producerState.outputCommands.map(o => o.output) || [],
-                    producerGraphLabels: producerState && producerState.outputCommands && producerState.outputCommands.map(o => o.endTime.toString()) || []
-                });
+                outputTotal: producerStrategyState && producerStrategyState.outputTotal !== undefined
+                    ? `${Math.ceil(producerStrategyState.outputTotal)} kWh` : "-----",
+                receivedBalance: producerStrategyState && producerStrategyState.receivedBalance !== undefined
+                    ? `${producerStrategyState.receivedBalance}i` : "-----",
+                owedBalance: producerStrategyState && producerStrategyState.owedBalance !== undefined ?
+                    `${producerStrategyState.owedBalance}i` : "-----",
+                mamRoot: mamChannel && mamChannel.initialRoot,
+                sideKey: mamChannel && mamChannel.sideKey,
+                firstProducerValueTime: firstProducerTime,
+                producerGraphSeries: producerState && producerState.outputCommands &&
+                    producerState.outputCommands.map(o => o.output) || [],
+                producerGraphLabels
+            });
         });
         this.selectAllSources(true);
     }
@@ -118,9 +143,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     </button>
                     <div className="grid-live-producer-info">
                         <div className="grid-live-producer-info-id">ID: {this.props.producer.id}</div>
-                        <div className="grid-live-producer-sub-title">Balance</div>
-                        <div className="grid-live-producer-info-data">Received: {this.state.receivedBalance}</div>
-                        <div className="grid-live-producer-info-data">Owed: {this.state.owedBalance}</div>
+                        <div className="grid-live-producer-info-data"><span>Output:</span><span>{this.state.outputTotal}</span></div>
+                        <div className="grid-live-producer-info-data"><span>Received:</span><span>{this.state.receivedBalance}</span></div>
+                        <div className="grid-live-producer-info-data"><span>Owed:</span><span>{this.state.owedBalance}</span></div>
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -144,7 +169,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                             )}
                         </div>
                         {this.state.producerGraphSeries.length === 0 && (
-                            <div>There is no combined power data for the producer.</div>
+                            <div>There is no combined power data for the producer.<br />The graph lags behind the sources, as it takes time to gather the data.</div>
                         )}
                         {this.state.producerGraphSeries.length > 0 && (
                             <div className="charts">
@@ -252,17 +277,42 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * Calculate the graph data.
      */
     private calculateGraph(): void {
-        let graphLabels: string[] = [];
+        const graphLabels: string[] = [];
         const graphSeries: number[][] = [];
+        let firstSourceValueTime = this.state.firstSourceValueTime;
+
+        // First find the newest index
+        let newestTime = -1;
         for (const sourceId in this.state.selectedSources) {
             if (this.state.selectedSources[sourceId].outputCommands.length > 0) {
-                graphSeries.push(this.state.selectedSources[sourceId].outputCommands.map(p => p.output));
-                if (graphLabels.length < this.state.selectedSources[sourceId].outputCommands.length) {
-                    graphLabels = this.state.selectedSources[sourceId].outputCommands.map(p => p.endTime.toString());
+                if (firstSourceValueTime === 0) {
+                    firstSourceValueTime = this.state.selectedSources[sourceId].outputCommands[0].endTime;
+                }
+                if (this.state.selectedSources[sourceId].outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime > newestTime) {
+                    newestTime = this.state.selectedSources[sourceId].outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime;
                 }
             }
         }
-        this.setState({ sourceGraphSeries: graphSeries, sourceGraphLabels: graphLabels });
+
+        if (newestTime > 0) {
+            const lastTime = Math.floor((newestTime - firstSourceValueTime) / GridLiveProducer.TIME_BASIS);
+            const sourceKeys = Object.keys(this.state.selectedSources);
+
+            for (let i = 0; i < 10; i++) {
+                const thisTime = lastTime - 10 + i + 1;
+                if (thisTime >= 0) {
+                    graphLabels.push(thisTime.toString());
+
+                    // Now for each source find a corresponding value from the output
+                    for (let s = 0; s < sourceKeys.length; s++) {
+                        const found = this.state.selectedSources[sourceKeys[s]].outputCommands.find(o => Math.floor((o.endTime - firstSourceValueTime) / GridLiveProducer.TIME_BASIS) === thisTime);
+                        graphSeries[s] = graphSeries[s] || [];
+                        graphSeries[s].push(found ? found.output : 0);
+                    }
+                }
+            }
+        }
+        this.setState({ sourceGraphSeries: graphSeries, sourceGraphLabels: graphLabels, firstSourceValueTime });
     }
 }
 

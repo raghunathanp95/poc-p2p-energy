@@ -106,6 +106,10 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
                 {!this.state.status && (
                     <React.Fragment>
+                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately.</div>
+
+                        <br/>
+
                         <div>Global Wallet Balance: {this.state.walletBalance}</div>
 
                         <div className="grid-live-columns">

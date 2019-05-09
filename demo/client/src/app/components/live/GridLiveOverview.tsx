@@ -25,11 +25,14 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
-            runningCostsBalance: "-----",
-            producerPaidBalance: "-----",
-            producerOwedBalance: "-----",
-            consumerOwedBalance: "-----",
-            consumerReceivedBalance: "-----"
+            runningCostsTotal: "-----",
+            runningCostsReceived: "-----",
+            producersTotalOutput: "-----",
+            producersTotalReceived: "-----",
+            producersTotalOwed: "-----",
+            consumersTotalUsage: "-----",
+            consumersTotalPaid: "-----",
+            consumersTotalOutstanding: "-----"
         };
     }
 
@@ -41,17 +44,37 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
             const gridManagerState = gridState && gridState.gridManagerState;
             const gridStrategyState = gridManagerState && gridManagerState.strategyState;
 
+            let producersTotalOutput = 0;
+            let producersTotalReceived = 0;
+            let producersTotalOwed = 0;
+            let consumersTotalUsage = 0;
+            let consumersTotalOutstanding = 0;
+            let consumersTotalPaid = 0;
+
+            if (gridStrategyState) {
+                for (const producerId in gridStrategyState.producerTotals) {
+                    producersTotalOutput += gridStrategyState.producerTotals[producerId].output;
+                    producersTotalReceived += gridStrategyState.producerTotals[producerId].received;
+                    producersTotalOwed += gridStrategyState.producerTotals[producerId].owed;
+                }
+                for (const consumerId in gridStrategyState.consumerTotals) {
+                    consumersTotalUsage += gridStrategyState.consumerTotals[consumerId].usage;
+                    consumersTotalOutstanding += gridStrategyState.consumerTotals[consumerId].outstanding;
+                    consumersTotalPaid += gridStrategyState.consumerTotals[consumerId].paid;
+                }
+            }
+
             this.setState({
-                runningCostsBalance: gridStrategyState && gridStrategyState.runningCostsBalance !== undefined
-                    ? `${gridStrategyState.runningCostsBalance}i` : "-----",
-                producerPaidBalance: gridStrategyState && gridStrategyState.producerPaidBalance !== undefined
-                    ? `${gridStrategyState.producerPaidBalance}i` : "-----",
-                producerOwedBalance: gridStrategyState && gridStrategyState.producerOwedBalance !== undefined
-                    ? `${gridStrategyState.producerOwedBalance}i` : "-----",
-                consumerOwedBalance: gridStrategyState && gridStrategyState.consumerOwedBalance !== undefined
-                    ? `${gridStrategyState.consumerOwedBalance}i` : "-----",
-                consumerReceivedBalance: gridStrategyState && gridStrategyState.consumerReceivedBalance !== undefined
-                    ? `${gridStrategyState.consumerReceivedBalance}i` : "-----"
+                runningCostsTotal: gridStrategyState && gridStrategyState.runningCostsTotal !== undefined
+                    ? `${gridStrategyState.runningCostsTotal}i` : "0i",
+                runningCostsReceived: gridStrategyState && gridStrategyState.runningCostsReceived !== undefined
+                    ? `${gridStrategyState.runningCostsReceived}i` : "0i",
+                producersTotalOutput: `${Math.ceil(producersTotalOutput)} kWh`,
+                producersTotalReceived: `${producersTotalReceived}i`,
+                producersTotalOwed: `${producersTotalOwed}i`,
+                consumersTotalUsage: `${Math.ceil(consumersTotalUsage)} kWh`,
+                consumersTotalOutstanding: `${consumersTotalOutstanding}i`,
+                consumersTotalPaid: `${consumersTotalPaid}i`
             });
         });
     }
@@ -78,14 +101,17 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                 <div className="grid-live-grid-sub-title">Connections</div>
                 <div>Producers: {this.props.grid.producers.length}</div>
                 <div>Consumers: {this.props.grid.consumers.length}</div>
-                <div className="grid-live-grid-sub-title">Balances</div>
-                <div className="positive">Running costs received: {this.state.runningCostsBalance}</div>
+                <div className="grid-live-grid-sub-title">Totals</div>
+                <div className="positive">Running costs total: {this.state.runningCostsTotal}</div>
+                <div className="positive">Running costs received: {this.state.runningCostsReceived}</div>
                 <br />
-                <div className="negative">Producers are owed: {this.state.producerOwedBalance}</div>
-                <div className="positive">Producers have received: {this.state.producerPaidBalance}</div>
+                <div>Producers output: {this.state.producersTotalOutput}</div>
+                <div className="positive">Producers received: {this.state.producersTotalReceived}</div>
+                <div className="negative">Producers owed: {this.state.producersTotalOwed}</div>
                 <br />
-                <div className="negative">Consumers owe: {this.state.consumerOwedBalance}</div>
-                <div className="positive">Consumers have paid: {this.state.consumerReceivedBalance}</div>
+                <div>Consumers usage: {this.state.consumersTotalUsage}</div>
+                <div className="positive">Consumers paid: {this.state.consumersTotalPaid}</div>
+                <div className="negative">Consumers outstanding: {this.state.consumersTotalOutstanding}</div>
             </div>
         );
     }

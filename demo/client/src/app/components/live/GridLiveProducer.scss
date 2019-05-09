@@ -92,12 +92,20 @@
 
       .grid-live-producer-info-id {
         margin-top: 8px;
+        margin-bottom: 10px;
         font-size: 12px;
       }
 
       .grid-live-producer-info-data {
         margin-top: 8px;
         font-size: 14px;
+
+        :first-child {
+          font-weight: bold;
+          min-width: 70px;
+          margin-right: 20px;
+          display: inline-block;
+        }
       }
     }
   }

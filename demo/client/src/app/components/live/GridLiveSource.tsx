@@ -49,7 +49,8 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
-            isSelected: this.props.isSelected
+            isSelected: this.props.isSelected,
+            outputTotal: "-----"
         };
     }
 
@@ -58,11 +59,15 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
      */
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeSource("liveSource", this.props.source.id, (sourceState) => {
-            const mamChannel = sourceState && sourceState.sourceManagerState && sourceState.sourceManagerState.channel;
+            const sourceManagerState = sourceState && sourceState.sourceManagerState;
+            const sourceStrategyState = sourceManagerState && sourceManagerState.strategyState;
+            const mamChannel = sourceManagerState && sourceManagerState.channel;
 
             this.setState({
                 mamRoot: mamChannel && mamChannel.initialRoot,
-                sideKey: mamChannel && mamChannel.sideKey
+                sideKey: mamChannel && mamChannel.sideKey,
+                outputTotal: sourceStrategyState && sourceStrategyState.outputTotal !== undefined ?
+                    `${Math.ceil(sourceStrategyState.outputTotal)} kWh` : "-----"
             });
         });
     }
@@ -109,6 +114,8 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
                         {this.props.source.name}
                     </div>
                 </button>
+
+                <div className="grid-live-source-output">{this.state.outputTotal}</div>
 
                 {this.state.mamRoot && (
                     <Button

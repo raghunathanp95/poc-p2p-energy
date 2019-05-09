@@ -13,6 +13,11 @@ export interface IBasicProducerStrategyState {
     lastOutputTime?: number;
 
     /**
+     * Total output.
+     */
+    outputTotal?: number;
+
+    /**
      * Received balance.
      */
     receivedBalance?: number;

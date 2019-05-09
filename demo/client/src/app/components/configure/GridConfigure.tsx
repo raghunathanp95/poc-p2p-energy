@@ -1,10 +1,12 @@
 import { Button, Fieldset, Form, FormActions, FormStatus, Heading, Modal } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
+import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
 import React, { Component, ReactNode } from "react";
 import { Redirect } from "react-router-dom";
 import { IConfiguration } from "../../../models/config/IConfiguration";
 import { IAppState } from "../../../models/IAppState";
+import { IDemoGridState } from "../../../models/services/IDemoGridState";
 import { ConfigurationService } from "../../../services/configurationService";
 import { DemoApiClient } from "../../../services/demoApiClient";
 import ConsumerConfigure from "./ConsumerConfigure";
@@ -54,7 +56,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
             producers: props.grid.producers.slice(0),
             consumers: props.grid.consumers.slice(0),
             passwordSupplied: props.grid.password ? false : true,
-            showDelete: false,
+            showDeleteConfirmation: false,
+            showResetConfirmation: false,
             redirect: false
         };
     }
@@ -178,6 +181,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
                                     <Button disabled={this.state.isBusy} color="secondary" onClick={() => this.setState({redirect: true})}>Cancel</Button>
                                     <Button disabled={this.state.isBusy} color="secondary" onClick={async () => this.gridDelete()}>Delete</Button>
+                                    <Button disabled={this.state.isBusy} color="secondary" onClick={async () => this.gridReset()}>Reset</Button>
                                 </FormActions>
                                 <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
                             </React.Fragment>
@@ -206,7 +210,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         }}
                     />
                 )}
-                {this.state.showDelete && (
+                {this.state.showDeleteConfirmation && (
                     <Modal
                         title="Confirmation"
                         onClose={(id) => this.gridDeleteConfirmation(id)}
@@ -222,6 +226,24 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                         ]}
                     >
                         Are you sure you want to delete the grid '{this.state.gridName}' ?
+                    </Modal>
+                )}
+                {this.state.showResetConfirmation && (
+                    <Modal
+                        title="Confirmation"
+                        onClose={(id) => this.gridResetConfirmation(id)}
+                        buttons={[
+                            {
+                                id: "yes",
+                                label: "Yes"
+                            },
+                            {
+                                id: "no",
+                                label: "No"
+                            }
+                        ]}
+                    >
+                        Are you sure you want to reset the data for the grid '{this.state.gridName}' ?
                     </Modal>
                 )}
             </Form>
@@ -325,11 +347,11 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     }
 
     /**
-     * Delete a grid using the api.
+     * Delete a grid with confirmation.
      */
     private async gridDelete(): Promise<void> {
         this.setState({
-            showDelete: true
+            showDeleteConfirmation: true
         });
     }
 
@@ -340,7 +362,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
     private async gridDeleteConfirmation(id?: string): Promise<void> {
         this.setState(
             {
-                showDelete: false
+                showDeleteConfirmation: false
             },
             () => {
                 if (id === "yes") {
@@ -375,6 +397,55 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                     isSuccess: false
                                 });
                             }
+                        });
+                }
+            });
+    }
+
+    /**
+     * Reset the grid data.
+     */
+    private async gridReset(): Promise<void> {
+        this.setState({
+            showResetConfirmation: true
+        });
+    }
+
+    /**
+     * Reset a grid after confirmation.
+     * @param id The modal result.
+     */
+    private async gridResetConfirmation(id?: string): Promise<void> {
+        this.setState(
+            {
+                showResetConfirmation: false
+            },
+            () => {
+                if (id === "yes") {
+                    this.setState(
+                        {
+                            isBusy: true,
+                            status: "Resetting Grid, please wait...",
+                            isErrored: false,
+                            isSuccess: false
+                        },
+                        async () => {
+                            const demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
+                            await demoGridStateStorageService.remove(this.props.grid.id);
+
+                            const bs = new BrowserStorageService<any>(this.props.grid.id);
+
+                            const allItemsForGrid = await bs.page("", 0);
+                            for (let i = 0; i < allItemsForGrid.ids.length; i++) {
+                                await bs.remove(allItemsForGrid.ids[i]);
+                            }
+
+                            this.setState({
+                                isBusy: false,
+                                status: "Grid data successfully reset",
+                                isErrored: false,
+                                isSuccess: true
+                            });
                         });
                 }
             });

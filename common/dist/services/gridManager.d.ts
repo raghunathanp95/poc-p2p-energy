@@ -59,18 +59,17 @@ export declare class GridManager<S> {
     updateStrategy(): Promise<void>;
     /**
      * Update the consumers using the strategy.
+     * @private
      */
-    updateConsumers(): Promise<void>;
+    private updateConsumers;
     /**
      * Update the producers using the strategy.
+     * @private
      */
-    updateProducers(): Promise<void>;
-    /**
-     * Remove the state for the grid.
-     */
-    removeState(): Promise<void>;
+    private updateProducers;
     /**
      * Load the state for the grid.
+     * @private
      */
     private loadState;
     /**

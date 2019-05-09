@@ -20,6 +20,11 @@ export interface GridLiveConsumerState {
     sideKeyReturn?: string;
 
     /**
+     * The total usage.
+     */
+    usageTotal: string;
+
+    /**
      * The paid balance.
      */
     paidBalance: string;
@@ -27,12 +32,17 @@ export interface GridLiveConsumerState {
     /**
      * Owed balance.
      */
-    owedBalance: string;
+    outstandingBalance: string;
 
     /**
      * Are the details expanded.
      */
     isExpanded: boolean;
+
+    /**
+     * The first time we saw a consumer value.
+     */
+    firstConsumerValueTime: number;
 
     /**
      * The data labels for the graph.

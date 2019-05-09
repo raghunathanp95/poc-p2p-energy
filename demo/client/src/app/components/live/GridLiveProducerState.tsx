@@ -12,6 +12,11 @@ export interface GridLiveProducerState {
     sideKey?: string;
 
     /**
+     * The output total.
+     */
+    outputTotal: string;
+
+    /**
      * The received balance.
      */
     receivedBalance: string;
@@ -32,6 +37,11 @@ export interface GridLiveProducerState {
     selectedSources: { [id: string]: IDemoSourceState };
 
     /**
+     * The first time we saw a producer value.
+     */
+    firstProducerValueTime: number;
+
+    /**
      * The data labels for the producer graph.
      */
     producerGraphLabels: string[];
@@ -40,6 +50,11 @@ export interface GridLiveProducerState {
      * The data series for the producer graph.
      */
     producerGraphSeries: number[];
+
+    /**
+     * The first time we saw a source value.
+     */
+    firstSourceValueTime: number;
 
     /**
      * The data labels for the source graph.

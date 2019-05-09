@@ -142,23 +142,28 @@ export class MamCommandChannel {
                 do {
                     channelConfiguration.mostRecentRoot = nextRoot;
 
-                    fetchResponse = await Mam.fetchSingle(nextRoot, "restricted", channelConfiguration.sideKey);
+                    try {
+                        fetchResponse = await Mam.fetchSingle(nextRoot, "restricted", channelConfiguration.sideKey);
 
-                    if (fetchResponse) {
-                        nextRoot = fetchResponse.nextRoot;
+                        if (fetchResponse) {
+                            nextRoot = fetchResponse.nextRoot;
 
-                        if (fetchResponse.payload) {
-                            const command = TrytesHelper.fromTrytes<IMamCommand>(fetchResponse.payload);
+                            if (fetchResponse.payload) {
+                                const command = TrytesHelper.fromTrytes<IMamCommand>(fetchResponse.payload);
 
-                            this._loggingService.log("mam", "Received Command", command);
+                                this._loggingService.log("mam", "Received Command", command);
 
-                            this.defaultHandleCommand(channelConfiguration, command);
-                            commands.push(command);
+                                this.defaultHandleCommand(channelConfiguration, command);
+                                commands.push(command);
 
-                            if (terminateCommand && command.command === terminateCommand) {
-                                fetchResponse = undefined;
+                                if (terminateCommand && command.command === terminateCommand) {
+                                    fetchResponse = undefined;
+                                }
                             }
                         }
+                    } catch (err) {
+                        this._loggingService.error("mam", "Failed to fetch", err);
+                        fetchResponse = undefined;
                     }
                 } while (fetchResponse && fetchResponse.payload && channelConfiguration.sideKey);
 

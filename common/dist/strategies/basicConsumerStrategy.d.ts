@@ -7,6 +7,10 @@ import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
  */
 export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerStrategyState> {
     /**
+     * The base for timing.
+     */
+    private static readonly TIME_BASIS;
+    /**
      * Initialise the state.
      */
     init(): Promise<IBasicConsumerStrategyState>;
@@ -15,5 +19,14 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    usage(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<IConsumerUsageCommand[]>;
+    usage(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * New commands to output.
+         */
+        commands: IConsumerUsageCommand[];
+    }>;
 }

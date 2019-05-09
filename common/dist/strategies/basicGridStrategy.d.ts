@@ -18,7 +18,12 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
      */
     consumers(consumerUsageById: {
         [id: string]: IConsumerUsageEntry[];
-    }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<void>;
+    }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+    }>;
     /**
      * Collated producer output.
      * @param producerUsageById The unread output from the producers.
@@ -26,5 +31,10 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
      */
     producers(producerUsageById: {
         [id: string]: IProducerOutputEntry[];
-    }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<void>;
+    }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+    }>;
 }

@@ -19,7 +19,12 @@ export interface IGridStrategy<S> {
     consumers(
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<S>):
-        Promise<void>;
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }>;
 
     /**
      * Collated producer output.
@@ -28,5 +33,11 @@ export interface IGridStrategy<S> {
      */
     producers(
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
-        gridState: IGridManagerState<S>): Promise<void>;
+        gridState: IGridManagerState<S>):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }>;
 }

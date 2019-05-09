@@ -15,5 +15,15 @@ export interface IConsumerStrategy<S> {
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    usage(consumerState: IConsumerManagerState<S>): Promise<IConsumerUsageCommand[]>;
+    usage(consumerState: IConsumerManagerState<S>):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+            /**
+             * New commands to output.
+             */
+            commands: IConsumerUsageCommand[];
+        }>;
 }

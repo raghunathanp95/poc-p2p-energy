@@ -16,6 +16,11 @@ import { GridLiveConsumerState } from "./GridLiveConsumerState";
  */
 class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumerState> {
     /**
+     * The base for timing.
+     */
+    private static TIME_BASIS: number = 30000;
+
+    /**
      * The consumer images.
      */
     private readonly _consumerImages: any[];
@@ -47,8 +52,10 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
 
         this.state = {
             isExpanded: false,
+            usageTotal: "-----",
             paidBalance: "-----",
-            owedBalance: "-----",
+            outstandingBalance: "-----",
+            firstConsumerValueTime: 0,
             graphLabels: [],
             graphSeries: []
         };
@@ -64,18 +71,25 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             const mamChannel = consumerManagerState && consumerManagerState.channel;
             const mamChannelReturn = consumerManagerState && consumerManagerState.returnChannel;
 
+            const firstConsumerValueTime = this.state.firstConsumerValueTime ||
+                (consumerState && consumerState.usageCommands && consumerState.usageCommands.length > 0 ? consumerState.usageCommands[0].endTime : 0);
+
             this.setState(
                 {
+                    usageTotal: consumerStrategyState && consumerStrategyState.usageTotal !== undefined ?
+                        `${Math.ceil(consumerStrategyState.usageTotal)} kWh` : "-----",
                     paidBalance: consumerStrategyState && consumerStrategyState.paidBalance !== undefined ?
                         `${consumerStrategyState.paidBalance}i` : "-----",
-                    owedBalance: consumerStrategyState && consumerStrategyState.owedBalance !== undefined ?
-                        `${consumerStrategyState.owedBalance}i` : "-----",
+                    outstandingBalance: consumerStrategyState && consumerStrategyState.outstandingBalance !== undefined ?
+                        `${consumerStrategyState.outstandingBalance}i` : "-----",
                     mamRoot: mamChannel && mamChannel.initialRoot,
                     sideKey: mamChannel && mamChannel.sideKey,
                     mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
                     sideKeyReturn: mamChannelReturn && mamChannelReturn.sideKey,
+                    firstConsumerValueTime,
                     graphSeries: consumerState && consumerState.usageCommands && consumerState.usageCommands.map(u => u.usage) || [],
-                    graphLabels: consumerState && consumerState.usageCommands && consumerState.usageCommands.map(u => u.endTime.toString()) || []
+                    graphLabels: consumerState && consumerState.usageCommands &&
+                        consumerState.usageCommands.map(u => Math.floor((u.endTime - firstConsumerValueTime) / GridLiveConsumer.TIME_BASIS).toString()) || []
                 }
             );
         });
@@ -115,9 +129,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                     </button>
                     <div className="grid-live-consumer-info">
                         <div className="grid-live-consumer-info-id">ID: {this.props.consumer.id}</div>
-                        <div className="grid-live-consumer-sub-title">Balance</div>
-                        <div className="grid-live-producer-info-data">Paid: {this.state.paidBalance}</div>
-                        <div className="grid-live-producer-info-data">Owed: {this.state.owedBalance}</div>
+                        <div className="grid-live-consumer-info-data"><span>Usage:</span><span>{this.state.usageTotal}</span></div>
+                        <div className="grid-live-consumer-info-data"><span>Paid:</span><span>{this.state.paidBalance}</span></div>
+                        <div className="grid-live-consumer-info-data"><span>Outstanding:</span><span>{this.state.outstandingBalance}</span></div>
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -155,7 +169,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                                 <ChartistGraph
                                     data={{
                                         labels: this.state.graphLabels,
-                                        series: [ this.state.graphSeries ]
+                                        series: [this.state.graphSeries]
                                     }}
                                     type="Line"
                                 />

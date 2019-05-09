@@ -3,27 +3,56 @@
  */
 export interface IBasicGridStrategyState {
     /**
-     * Running costs balance.
+     * Running costs total.
      */
-    runningCostsBalance?: number;
+    runningCostsTotal?: number;
 
     /**
-     * Producer paid balance.
+     * Running costs received.
      */
-    producerPaidBalance?: number;
+    runningCostsReceived?: number;
 
     /**
-     * Producer owed balance.
+     * Producer totals.
      */
-    producerOwedBalance?: number;
+    producerTotals: {
+        [id: string]: {
+            /**
+             * Total output for the producer.
+             */
+            output: number;
+
+            /**
+             * Total received by the producer.
+             */
+            received: number;
+
+            /**
+             * Total owed to the producer.
+             */
+            owed: number;
+        }
+    };
 
     /**
-     * Consumer owed balance.
+     * Consumer totals.
      */
-    consumerOwedBalance?: number;
+    consumerTotals: {
+        [id: string]: {
+            /**
+             * Total usage for the consumer.
+             */
+            usage: number;
 
-    /**
-     * Consumer recieved balance.
-     */
-    consumerReceivedBalance?: number;
+            /**
+             * Total paid by the consumer.
+             */
+            paid: number;
+
+            /**
+             * Total outstanding by the consumer.
+             */
+            outstanding: number;
+        }
+    };
 }

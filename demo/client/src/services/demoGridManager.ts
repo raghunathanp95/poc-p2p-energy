@@ -154,8 +154,7 @@ export class DemoGridManager {
         this._gridState = {
             producerStates: {},
             consumerStates: {},
-            sourceStates: {},
-            secondsCounter: 0
+            sourceStates: {}
         };
     }
 
@@ -173,8 +172,7 @@ export class DemoGridManager {
         this._gridState = loadedState || {
             producerStates: {},
             consumerStates: {},
-            sourceStates: {},
-            secondsCounter: 0
+            sourceStates: {}
         };
 
         await this.constructManagers(grid, progressCallback);
@@ -189,7 +187,7 @@ export class DemoGridManager {
             await this._demoGridStateStorageService.set(grid.id, this._gridState);
         }
 
-        this.startUpdates();
+        await this.startUpdates();
     }
 
     /**
@@ -382,9 +380,9 @@ export class DemoGridManager {
     /**
      * Start the update timer.
      */
-    private startUpdates(): void {
+    private async startUpdates(): Promise<void> {
         if (!this._updateTimer) {
-            this._updateTimer = setInterval(() => this.updateManagers(), 10000);
+            setTimeout(() => this.updateManagers(), 1000);
         }
     }
 
@@ -395,15 +393,15 @@ export class DemoGridManager {
     private async initialiseServices(grid: IGrid): Promise<void> {
         ServiceFactory.register(
             "grid-storage-manager-state",
-            () => new BrowserStorageService<IGridManagerState<IBasicGridStrategyState>>(`grid-manager-state`));
+            () => new BrowserStorageService<IGridManagerState<IBasicGridStrategyState>>(`${grid.id}/grid-state`));
 
         ServiceFactory.register(
             "producer-storage-manager-state",
-            () => new BrowserStorageService<IProducerManagerState<IBasicProducerStrategyState>>(`producer-manager-state`));
+            () => new BrowserStorageService<IProducerManagerState<IBasicProducerStrategyState>>(`${grid.id}/producer-state`));
 
         ServiceFactory.register(
             "registration-storage",
-            () => new BrowserStorageService<IRegistration>(`registrations/${grid.id}`));
+            () => new BrowserStorageService<IRegistration>(`${grid.id}/registrations`));
 
         ServiceFactory.register(
             "registration-management",
@@ -415,11 +413,11 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "producer-source-output-store",
-            () => new BrowserStorageService<ISourceStore>(`producer-source-output`));
+            () => new BrowserStorageService<ISourceStore>(`${grid.id}/producer-source-output`));
 
         ServiceFactory.register(
             "consumer-storage-manager-state",
-            () => new BrowserStorageService<IConsumerManagerState<IBasicConsumerStrategyState>>(`consumer-manager-state`));
+            () => new BrowserStorageService<IConsumerManagerState<IBasicConsumerStrategyState>>(`${grid.id}/consumer-state`));
 
         ServiceFactory.register(
             "consumer-registration",
@@ -427,7 +425,7 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "source-storage-manager-state",
-            () => new BrowserStorageService<ISourceManagerState<IBasicSourceStrategyState>>(`source-manager-state`));
+            () => new BrowserStorageService<ISourceManagerState<IBasicSourceStrategyState>>(`${grid.id}/source-state`));
 
         ServiceFactory.register(
             "source-registration",
@@ -435,11 +433,11 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "grid-producer-output-store",
-            () => new BrowserStorageService<ISourceStore>(`grid-producer-output`));
+            () => new BrowserStorageService<ISourceStore>(`${grid.id}/grid-producer-output`));
 
         ServiceFactory.register(
             "grid-consumer-usage-store",
-            () => new BrowserStorageService<ISourceStore>(`grid-consumer-usage`));
+            () => new BrowserStorageService<ISourceStore>(`${grid.id}/grid-consumer-usage`));
     }
 
     /**
@@ -533,11 +531,9 @@ export class DemoGridManager {
      * Update all the managers.
      */
     private async updateManagers(): Promise<void> {
-        if (this._gridId) {
+        if (this._gridId && this._gridManager) {
             // In a real system the individual manager updates would be performed
             // by the standalone entities.
-            this._gridState.secondsCounter += 10;
-
             await this.updateRegistrations();
 
             await this.updateSourceManagers();
@@ -546,8 +542,12 @@ export class DemoGridManager {
 
             await this.updateConsumerManagers();
 
+            await this._gridManager.updateStrategy();
+            this.updateGridSubscribers();
+
             await this._demoGridStateStorageService.set(this._gridId, this._gridState);
         }
+        setTimeout(() => this.updateManagers(), 1000);
     }
 
     /**
@@ -579,10 +579,6 @@ export class DemoGridManager {
      * Update the managers for the sources.
      */
     private async updateSourceManagers(): Promise<void> {
-        // tslint:disable:insecure-random
-        // Create some dummy output data for the sources using the loop counter as the time
-        // In a real life scenario this would come from the actual device
-        // and at an interval of the implementers choice
         if (this._sourceManagers) {
             for (const sourceId in this._sourceManagers) {
                 const outputCommands = await this._sourceManagers[sourceId].sourceManager.updateStrategy();
@@ -602,9 +598,6 @@ export class DemoGridManager {
      * Update the managers for the producers.
      */
     private async updateProducerManagers(): Promise<void> {
-        // Update the producers so they can collate the output from all their sources
-        // They need to use an end time in the past otherwise the may not have seen the updated
-        // commands from all the sources
         if (this._producerManagers) {
             for (const producerId in this._producerManagers) {
                 const commands = await this._producerManagers[producerId].updateStrategy();
@@ -613,11 +606,10 @@ export class DemoGridManager {
                     // Add the output to the local state and keep just the most recent 10
                     this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.concat(commands);
                     this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.slice(-10);
-
-                    // Notify any local subscribers of the producer updates
-                    this.updateProducerSubscribers();
                 }
             }
+            // Notify any local subscribers of the producer updates
+            this.updateProducerSubscribers();
         }
     }
 
@@ -625,9 +617,6 @@ export class DemoGridManager {
      * Update the managers for the consumers.
      */
     private async updateConsumerManagers(): Promise<void> {
-        // Create some dummy usage data for the consumers every 10s
-        // In a real life scenario this would come from the consumers meter
-        // and at an interval of the implementers choice
         if (this._consumerManagers) {
             for (const consumerId in this._consumerManagers) {
                 const usageCommands = await this._consumerManagers[consumerId].updateStrategy();

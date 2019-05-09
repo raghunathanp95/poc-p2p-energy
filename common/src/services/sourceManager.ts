@@ -141,15 +141,17 @@ export class SourceManager<S> {
      * @returns Any new source output commands.
      */
     public async updateStrategy(): Promise<ISourceOutputCommand[]> {
-        const newCommands = await this._strategy.value(this._state);
+        const result = await this._strategy.value(this._state);
 
-        for (let i = 0; i < newCommands.length; i++) {
-            await this.sendCommand(newCommands[i]);
+        for (let i = 0; i < result.commands.length; i++) {
+            await this.sendCommand(result.commands[i]);
         }
 
-        await this.saveState();
+        if (result.updatedState) {
+            await this.saveState();
+        }
 
-        return newCommands;
+        return result.commands;
     }
 
     /**

@@ -8,6 +8,10 @@ import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
  */
 export declare class BasicProducerStrategy implements IProducerStrategy<IBasicProducerStrategyState> {
     /**
+     * The base for timing.
+     */
+    private static readonly TIME_BASIS;
+    /**
      * Initialise the state.
      */
     init(): Promise<IBasicProducerStrategyState>;
@@ -19,5 +23,14 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
      */
     sources(sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
-    }, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<IProducerOutputCommand[]>;
+    }, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * New commands to output.
+         */
+        commands: IProducerOutputCommand[];
+    }>;
 }

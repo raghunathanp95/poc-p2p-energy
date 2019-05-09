@@ -17,5 +17,14 @@ export interface IProducerStrategy<S> {
      */
     sources(sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
-    }, producerState: IProducerManagerState<S>): Promise<IProducerOutputCommand[]>;
+    }, producerState: IProducerManagerState<S>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * New commands to output.
+         */
+        commands: IProducerOutputCommand[];
+    }>;
 }

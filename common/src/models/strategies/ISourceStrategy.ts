@@ -15,5 +15,14 @@ export interface ISourceStrategy<S> {
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    value(sourceState: ISourceManagerState<S>): Promise<ISourceOutputCommand[]>;
+    value(sourceState: ISourceManagerState<S>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * New commands to output.
+         */
+        commands: ISourceOutputCommand[];
+    }>;
 }

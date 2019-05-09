@@ -8,12 +8,20 @@ import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
  */
 export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerStrategyState> {
     /**
+     * The base for timing.
+     */
+    private static readonly TIME_BASIS: number = 30000;
+
+    /**
      * Initialise the state.
      */
     public async init(): Promise<IBasicConsumerStrategyState> {
         return {
             initialTime: Date.now(),
-            lastUsageTime: Date.now()
+            lastUsageTime: Date.now(),
+            usageTotal: 0,
+            paidBalance: 0,
+            outstandingBalance: 0
         };
     }
 
@@ -23,24 +31,41 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
      * @returns List of usage commands.
      */
     public async usage(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>):
-        Promise<IConsumerUsageCommand[]> {
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+            /**
+             * New commands to output.
+             */
+            commands: IConsumerUsageCommand[];
+        }> {
         // For this basic demonstration strategy we just supply a new random value
-        // with a time based on a fictional time basis every 10s
+        // with a time based on a fictional time basis
         // in a real setup this would come from hardware like a meter
         const commands: IConsumerUsageCommand[] = [];
-        while ((Date.now() - consumerState.strategyState.lastUsageTime) > 10000) {
-            const endTime = consumerState.strategyState.lastUsageTime + 10000;
+        let updatedState = false;
+
+        while ((Date.now() - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_BASIS) {
+            const endTime = consumerState.strategyState.lastUsageTime + BasicConsumerStrategy.TIME_BASIS;
+            // tslint:disable-next-line:insecure-random
+            const usage =  Math.random();
             commands.push({
-                command: "output",
-                startTime: (consumerState.strategyState.lastUsageTime + 1) - consumerState.strategyState.initialTime,
-                endTime: endTime - consumerState.strategyState.initialTime,
-                // tslint:disable-next-line:insecure-random
-                usage: Math.random() * 10
+                command: "usage",
+                startTime: consumerState.strategyState.lastUsageTime + 1,
+                endTime,
+                usage
             });
 
+            updatedState = true;
             consumerState.strategyState.lastUsageTime = endTime;
+            consumerState.strategyState.usageTotal += usage;
         }
 
-        return commands;
+        return {
+            updatedState,
+            commands
+        };
     }
 }

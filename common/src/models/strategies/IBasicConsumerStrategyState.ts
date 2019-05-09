@@ -13,12 +13,17 @@ export interface IBasicConsumerStrategyState {
     lastUsageTime?: number;
 
     /**
+     * Total usage.
+     */
+    usageTotal?: number;
+
+    /**
      * Paid balance.
      */
     paidBalance?: number;
 
     /**
-     * Owed balance.
+     * Outstanding balance.
      */
-    owedBalance?: number;
+    outstandingBalance?: number;
 }
