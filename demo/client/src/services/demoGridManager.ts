@@ -372,7 +372,7 @@ export class DemoGridManager {
      */
     private stopUpdates(): void {
         if (this._updateTimer) {
-            clearInterval(this._updateTimer);
+            clearTimeout(this._updateTimer);
             this._updateTimer = undefined;
         }
     }
