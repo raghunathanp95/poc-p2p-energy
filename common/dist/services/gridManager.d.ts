@@ -56,7 +56,9 @@ export declare class GridManager<S> {
     /**
      * Update strategy to process payments for registered entites.
      */
-    updateStrategy(): Promise<void>;
+    updateStrategy(): Promise<{
+        [id: string]: IMamCommand[];
+    }>;
     /**
      * Update the consumers using the strategy.
      * @private

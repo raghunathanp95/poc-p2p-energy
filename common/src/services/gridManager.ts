@@ -14,7 +14,6 @@ import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IGridStrategy } from "../models/strategies/IGridStrategy";
 import { TrytesHelper } from "../utils/trytesHelper";
-import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
  * Service to handle the grid.
@@ -173,20 +172,32 @@ export class GridManager<S> {
     /**
      * Update strategy to process payments for registered entites.
      */
-    public async updateStrategy(): Promise<void> {
+    public async updateStrategy(): Promise<{ [id: string]: IMamCommand[] }> {
         const updatedState1 = await this.updateConsumers();
         const updatedState2 = await this.updateProducers();
 
-        if (updatedState1 || updatedState2) {
+        if (updatedState1.updatedState || updatedState2) {
             await this.saveState();
         }
+
+        return updatedState1.returnCommands;
     }
 
     /**
      * Update the consumers using the strategy.
      * @private
      */
-    private async updateConsumers(): Promise<boolean> {
+    private async updateConsumers(): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+        /**
+         * Any Mam commands to return.
+         */
+        returnCommands: { [id: string]: IMamCommand[] };
+    }
+    > {
         const consumerUsageStoreService = ServiceFactory.get<IStorageService<IConsumerUsage>>(
             "grid-consumer-usage-store");
 
@@ -215,22 +226,17 @@ export class GridManager<S> {
             }
         }
 
+        const returnCommands: { [id: string]: IMamCommand[] } = {};
+
         // Now send any payment requests to the consumers
-        const registrationStorageService =
-            ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
-
         for (const consumerId in result.paymentRequests) {
-            const registration = await registrationStorageService.get(consumerId);
-
-            if (registration && registration.returnMamChannel) {
-                const mamReturnChannel = new MamCommandChannel(this._loadBalancerSettings);
-                await mamReturnChannel.sendCommand(registration.returnMamChannel, result.paymentRequests[consumerId]);
-
-                await registrationStorageService.set(consumerId, registration);
-            }
+            returnCommands[consumerId] = [result.paymentRequests[consumerId]];
         }
 
-        return result.updatedState;
+        return {
+            updatedState: result.updatedState,
+            returnCommands
+        };
     }
 
     /**

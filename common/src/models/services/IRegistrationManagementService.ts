@@ -31,5 +31,11 @@ export interface IRegistrationManagementService {
     pollCommands(
         handleCommands: (
             registration: IRegistration,
-            commands: IMamCommand[], returnCommands: IMamCommand[]) => Promise<void>): Promise<void>;
+            commands: IMamCommand[]) => Promise<void>): Promise<void>;
+
+    /**
+     * Send commands to the return channel.
+     * @param returnCommands The commands to return to the registrations.
+     */
+    returnCommands(commands: { [registrationId: string]: IMamCommand[] }): Promise<void>;
 }

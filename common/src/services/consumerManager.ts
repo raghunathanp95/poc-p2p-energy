@@ -10,7 +10,6 @@ import { IStorageService } from "../models/services/IStorageService";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
 import { MamCommandChannel } from "./mamCommandChannel";
-import { IRegistration } from "src/models/services/registration/IRegistration";
 
 /**
  * Class to handle a consumer.
@@ -158,41 +157,37 @@ export class ConsumerManager<S> {
     }
 
     /**
-     * Process return commands for the registration.
-     * @param registration The registration.
-     * @param returnCommands The commands to process.
-     */
-    public async handleReturnCommands(registration: IRegistration, returnCommands: IMamCommand[]): Promise<void> {
-        const paymentRequests: IConsumerPaymentRequestCommand[] = [];
-        let updatedState = false;
-
-        for (let i = 0; i < returnCommands.length; i++) {
-            if (returnCommands[i].command === "payment-request") {
-                paymentRequests.push(<IConsumerPaymentRequestCommand>returnCommands[i]);
-            }
-        }
-        if (paymentRequests.length > 0) {
-            await this._strategy.paymentRequests(this._state, paymentRequests);
-            updatedState = true;
-        }
-
-        if (updatedState) {
-            await this.saveState();
-        }
-    }
-
-    /**
      * Call the strategy to produce usage values for the consumer and check payment requests
      * @returns Any new consumer usage commands.
      */
     public async updateStrategy(): Promise<IConsumerUsageCommand[]> {
         const result = await this._strategy.usage(this._state);
+        let updatedState = result.updatedState;
 
         for (let i = 0; i < result.commands.length; i++) {
             await this.sendCommand(result.commands[i]);
         }
 
-        if (result.updatedState) {
+        if (this._state.returnChannel) {
+            const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+            const returnCommands = await mamChannel.receiveCommands(this._state.returnChannel);
+
+            if (returnCommands && returnCommands.length > 0) {
+                const paymentRequests: IConsumerPaymentRequestCommand[] = [];
+                for (let i = 0; i < returnCommands.length; i++) {
+                    if (returnCommands[i].command === "payment-request") {
+                        paymentRequests.push(<IConsumerPaymentRequestCommand>returnCommands[i]);
+                    }
+                }
+                if (paymentRequests.length > 0) {
+                    await this._strategy.paymentRequests(this._state, paymentRequests);
+                    updatedState = true;
+                }
+            }
+        }
+
+        if (updatedState) {
             await this.saveState();
         }
 
@@ -201,8 +196,9 @@ export class ConsumerManager<S> {
 
     /**
      * Send a command to the channel.
+     * @private
      */
-    public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
+    private async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
         const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
         await mamCommandChannel.sendCommand(this._state.channel, command);
         await this.saveState();
@@ -211,6 +207,7 @@ export class ConsumerManager<S> {
 
     /**
      * Load the state for the consumer.
+     * @private
      */
     private async loadState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(
@@ -227,6 +224,7 @@ export class ConsumerManager<S> {
 
     /**
      * Store the state for the consumer.
+     * @private
      */
     private async saveState(): Promise<void> {
         const storageConfigService = ServiceFactory.get<IStorageService<IConsumerManagerState<S>>>(

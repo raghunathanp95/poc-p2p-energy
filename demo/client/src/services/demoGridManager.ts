@@ -534,7 +534,7 @@ export class DemoGridManager {
         if (this._gridId && this._gridManager) {
             // In a real system the individual manager updates would be performed
             // by the standalone entities.
-            await this.updateRegistrations();
+            await this.updateNewCommands();
 
             await this.updateSourceManagers();
 
@@ -542,8 +542,7 @@ export class DemoGridManager {
 
             await this.updateConsumerManagers();
 
-            await this._gridManager.updateStrategy();
-            this.updateGridSubscribers();
+            await this.updateReturnCommands();
 
             await this._demoGridStateStorageService.set(this._gridId, this._gridState);
         }
@@ -553,12 +552,12 @@ export class DemoGridManager {
     /**
      * Update all the registrations.
      */
-    private async updateRegistrations(): Promise<void> {
+    private async updateNewCommands(): Promise<void> {
         // First step on an update is to check all the mam registrations for new
         // commands in their channels
         const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
         await registrationManagementService.pollCommands(
-            async (registration: IRegistration, commands: IMamCommand[], returnCommands: IMamCommand[]) => {
+            async (registration: IRegistration, commands: IMamCommand[]) => {
                 // Producers and consumers are registered with the grid, so hand the commands to the grid manager
                 if (registration.itemType === "producer" || registration.itemType === "consumer") {
                     if (this._gridManager) {
@@ -573,15 +572,23 @@ export class DemoGridManager {
                         }
                     }
                 }
-
-                // Return commands go back to the original item, currently only consumers have return channels
-                if (registration.itemType === "consumer") {
-                    if (this._consumerManagers && this._consumerManagers[registration.id]) {
-                        await this._consumerManagers[registration.id].handleReturnCommands(registration, returnCommands);
-                    }
-
-                }
             });
+    }
+
+    /**
+     * Send any commands to the retuen channels for the registrations.
+     */
+    private async updateReturnCommands(): Promise<void> {
+        if (this._gridManager) {
+            const registrationManagementService =
+                ServiceFactory.get<IRegistrationManagementService>("registration-management");
+
+            const result = await this._gridManager.updateStrategy();
+
+            await registrationManagementService.returnCommands(result);
+
+            this.updateGridSubscribers();
+        }
     }
 
     /**

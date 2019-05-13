@@ -115,7 +115,10 @@ app.build(routes, async (_1, config, _2) => {
         {
             name: "Update Strategy",
             schedule: "*/15 * * * * *",
-            func: async () => gridManager.updateStrategy()
+            func: async () => {
+                const commands = await gridManager.updateStrategy();
+                await registrationManagementService.returnCommands(commands);
+            }
         }
     ];
 

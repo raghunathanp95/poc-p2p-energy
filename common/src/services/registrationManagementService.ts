@@ -135,11 +135,31 @@ export class RegistrationManagementService implements IRegistrationManagementSer
     public async pollCommands(
         handleCommands: (
             registration: IRegistration,
-            commands: IMamCommand[],
-            returnCommands: IMamCommand[]) => Promise<void>): Promise<void> {
+            commands: IMamCommand[]) => Promise<void>): Promise<void> {
 
         for (let i = 0; i < this._registrations.length; i++) {
             await this.getNewCommands(this._registrations[i], handleCommands);
+        }
+    }
+
+    /**
+     * Send commands to the return channel.
+     * @param commands The commands to return to the registrations.
+     */
+    public async returnCommands(commands: { [registrationId: string]: IMamCommand[] }): Promise<void> {
+        for (const registrationId in commands) {
+            const registration = this._registrations.find(r => r.id === registrationId);
+            if (registration) {
+                if (registration && registration.returnMamChannel) {
+                    const mamReturnChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+                    for (let i = 0; i < commands[registrationId].length; i++) {
+                        await mamReturnChannel.sendCommand(registration.returnMamChannel, commands[registrationId][i]);
+                    }
+
+                    await this._registrationStorageService.set(registrationId, registration);
+                }
+            }
         }
     }
 
@@ -211,18 +231,13 @@ export class RegistrationManagementService implements IRegistrationManagementSer
         registration: IRegistration,
         handleCommands: (
             registration: IRegistration,
-            commands: IMamCommand[],
-            returnCommands: IMamCommand[]) => Promise<void>):
+            commands: IMamCommand[]) => Promise<void>):
         Promise<void> {
-
-        let updated = false;
-        let commands = [];
-        let returnCommands = [];
 
         if (registration.itemMamChannel) {
             const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
-            commands = await mamChannel.receiveCommands(registration.itemMamChannel);
+            const commands = await mamChannel.receiveCommands(registration.itemMamChannel);
 
             if (commands && commands.length > 0) {
                 // Has the channel been reset by one of the commands
@@ -230,34 +245,12 @@ export class RegistrationManagementService implements IRegistrationManagementSer
                     registration.itemMamChannel = undefined;
                 }
 
-                updated = true;
+                // If we retrieved new commands make sure we save the state
+                // for the updated mam channel, this will also save the reset details
+                await this._registrationStorageService.set(registration.id, registration);
+
+                await handleCommands(registration, commands);
             }
-        }
-
-        if (registration.returnMamChannel) {
-            const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
-
-            returnCommands = await mamChannel.receiveCommands(registration.returnMamChannel);
-
-            if (returnCommands && returnCommands.length > 0) {
-                // Has the channel been reset by one of the commands
-                if (registration.returnMamChannel.initialRoot && registration.returnMamChannel.sideKey === undefined) {
-                    registration.returnMamChannel = undefined;
-                }
-
-                updated = true;
-            }
-        }
-
-        if (updated) {
-            // If we retrieved new commands make sure we save the state
-            // for the updated mam channel, this will also save the reset details
-            // If we are going to update the state
-            await this._registrationStorageService.set(registration.id, registration);
-        }
-
-        if (commands.length > 0 || returnCommands.length > 0) {
-            await handleCommands(registration, commands, returnCommands);
         }
     }
 }
