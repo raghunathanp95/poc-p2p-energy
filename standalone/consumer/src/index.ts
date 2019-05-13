@@ -5,6 +5,7 @@ import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/ICons
 import { IBasicConsumerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicConsumerStrategyState";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
+import { SimplePaymentService } from "p2p-energy-common/dist/services/payment/simplePaymentService";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
@@ -39,6 +40,8 @@ if (config.localStorageFolder) {
             config.consumer.id,
             "config"));
 }
+
+ServiceFactory.register("payment", () => new SimplePaymentService(loadBalancerSettings, config.seed));
 
 loggingService.log("app", `Consumer v${packageJson.version}`);
 loggingService.log("app", `Config '${configId}'`);

@@ -13,7 +13,8 @@ import { IAppState } from "../models/IAppState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
 import { ConfigurationService } from "../services/configurationService";
 import { DemoGridManager } from "../services/demoGridManager";
-import { MamExplorer } from "../services/mamExplorer";
+import { MamExplorer } from "../services/mamExplorerService";
+import { TangleExplorerService } from "../services/tangleExplorerService";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
 import { GridParams } from "./routes/GridParams";
@@ -59,10 +60,11 @@ class App extends Component<RouteComponentProps, AppState> {
 
             ServiceFactory.register("configuration", () => configService);
             ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
+            ServiceFactory.register("tangleExplorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
-            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings));
+            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings, config.apiEndpoint));
 
             this._configuration = config;
 

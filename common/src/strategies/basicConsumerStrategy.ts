@@ -1,5 +1,8 @@
+import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
+import { ILoggingService } from "../models/services/ILoggingService";
+import { IPaymentService } from "../models/services/IPaymentService";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IBasicConsumerStrategyState } from "../models/strategies/IBasicConsumerStrategyState";
 import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
@@ -19,9 +22,26 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
     private static readonly TIME_IDLE: number = 5 * 30000;
 
     /**
-     * Initialise the state.
+     * Logging service.
      */
-    public async init(): Promise<IBasicConsumerStrategyState> {
+    private readonly _loggingService: ILoggingService;
+
+    /**
+     * Create a new instance of BasicConsumerStrategy.
+     */
+    constructor() {
+        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+    }
+
+    /**
+     * Initialise the state.
+     * @param consumerId The id of the consumer
+     */
+    public async init(consumerId: string): Promise<IBasicConsumerStrategyState> {
+        const paymentService = ServiceFactory.get<IPaymentService>("payment");
+
+        await paymentService.register(consumerId);
+
         return {
             initialTime: Date.now(),
             lastUsageTime: Date.now(),
@@ -33,10 +53,13 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
 
     /**
      * Gets the usage values.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    public async usage(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>):
+    public async usage(
+        consumerId: string,
+        consumerState: IConsumerManagerState<IBasicConsumerStrategyState>):
         Promise<{
             /**
              * Has the state been updated.
@@ -92,10 +115,12 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
 
     /**
      * Processes payment requests.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
      */
     public async paymentRequests(
+        consumerId: string,
         consumerState: IConsumerManagerState<IBasicConsumerStrategyState>,
         paymentRequests: IConsumerPaymentRequestCommand[]):
         Promise<{
@@ -105,10 +130,34 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             updatedState: boolean;
         }> {
 
-        consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
+        if (paymentRequests.length > 0) {
+            consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
+
+            // Consumer pays the grid every multiple of 10i and using the most recent payment address
+            // a real world system would keep track of which payments go to each address
+            const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 10) * 10;
+            if (payableBalance > 0) {
+                const paymentService = ServiceFactory.get<IPaymentService>("payment");
+                const bundle = await paymentService.transfer(
+                    consumerId,
+                    paymentRequests[paymentRequests.length - 1].paymentRegistrationId,
+                    paymentRequests[paymentRequests.length - 1].paymentAddress,
+                    payableBalance);
+
+                consumerState.strategyState.outstandingBalance -= payableBalance;
+                consumerState.strategyState.paidBalance += payableBalance;
+                consumerState.strategyState.lastPaymentBundle = bundle;
+
+                this._loggingService.log("basic-consumer", "payment", {
+                    address: paymentRequests[paymentRequests.length - 1].paymentAddress,
+                    amount: payableBalance,
+                    bundle
+                });
+            }
+        }
 
         return {
-            updatedState: true
+            updatedState: paymentRequests.length > 0
         };
     }
 }

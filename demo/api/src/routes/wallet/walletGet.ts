@@ -1,5 +1,5 @@
 import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
-import { generateAddress } from "@iota/core";
+import { Inputs } from "@iota/core/typings/types";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IWalletGetResponse } from "../../models/api/IWalletGetResponse";
 import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
@@ -22,13 +22,15 @@ export async function walletGet(
                 ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
             );
 
-            const addresses = [generateAddress(config.walletSeed, 0, 2)];
-            const balancesResponse = await iota.getBalances(addresses, 100);
-            if (balancesResponse && balancesResponse.balances.length > 0) {
+            const inputsResponse: Inputs = await iota.getInputs(config.walletSeed);
+
+            if (inputsResponse && inputsResponse.totalBalance > 0) {
                 walletState = {
                     seed: config.walletSeed,
-                    nextIndex: 1,
-                    balance: balancesResponse.balances[0]
+                    balance: inputsResponse.totalBalance,
+                    lastIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
+                    pendingTransaction: undefined,
+                    pendingTransfers: []
                 };
                 await walletStateService.set(config.walletSeed, walletState);
             }

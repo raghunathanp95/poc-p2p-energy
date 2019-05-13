@@ -17,7 +17,8 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
     "producer": {
         "id": "PRODUCER-UNIQUE-ID",                  /* Unique ID, has no format */
         "name": "PRODUCER-NAME"                      /* The name of this producer */
-    }
+    },
+    "seed": "SEED"                                   /* The seed to use for the producers wallet */
 }
 ```
 

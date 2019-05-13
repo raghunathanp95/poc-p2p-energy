@@ -1,4 +1,5 @@
 import { INodeConfiguration } from "p2p-energy-common/dist/models/config/INodeConfiguration";
+import { ITangleExplorerConfiguration } from "./ITangleExplorerConfiguration";
 
 export interface IConfiguration {
     /**
@@ -20,4 +21,9 @@ export interface IConfiguration {
      * Url to use for mam exploration.
      */
     mamExplorer: string;
+
+    /**
+     * Configuration for tangle explorer.
+     */
+    tangleExplorer: ITangleExplorerConfiguration;
 }

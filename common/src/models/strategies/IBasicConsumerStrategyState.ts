@@ -26,4 +26,9 @@ export interface IBasicConsumerStrategyState {
      * Outstanding balance.
      */
     outstandingBalance?: number;
+
+    /**
+     * Last payment bundle.
+     */
+    lastPaymentBundle?: string;
 }

@@ -23,6 +23,11 @@ export interface IProducerOutputEntry {
     producerPrice: number;
 
     /**
+     * The id of the item we are making the payment to.
+     */
+    paymentRegistrationId: string;
+
+    /**
      * The payment address for this output.
      */
     paymentAddress: string;

@@ -35,6 +35,11 @@ export interface GridLiveConsumerState {
     outstandingBalance: string;
 
     /**
+     * The hash of the last payment bundle.
+     */
+    lastPaymentBundle: string;
+
+    /**
      * Are the details expanded.
      */
     isExpanded: boolean;

@@ -6,7 +6,8 @@ import ChartistGraph from "react-chartist";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer } from "../../../services/mamExplorer";
+import { MamExplorer as MamExplorerService } from "../../../services/mamExplorerService";
+import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveConsumer.scss";
 import { GridLiveConsumerProps } from "./GridLiveConsumerProps";
 import { GridLiveConsumerState } from "./GridLiveConsumerState";
@@ -33,7 +34,12 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     /**
      * Mam explorer service.
      */
-    private readonly _mamExplorer: MamExplorer;
+    private readonly _mamExplorerService: MamExplorerService;
+
+    /**
+     * Tangle explorer service.
+     */
+    private readonly _tangleExplorerService: TangleExplorerService;
 
     /**
      * Create a new instance of GridLiveConsumer.
@@ -47,7 +53,8 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
-        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
+        this._mamExplorerService = ServiceFactory.get<MamExplorerService>("mam-explorer");
+        this._tangleExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
@@ -55,6 +62,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             usageTotal: "-----",
             paidBalance: "-----",
             outstandingBalance: "-----",
+            lastPaymentBundle: "",
             firstConsumerValueTime: 0,
             graphLabels: [],
             graphSeries: []
@@ -132,6 +140,13 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         <div className="grid-live-consumer-info-data"><span>Usage:</span><span>{this.state.usageTotal}</span></div>
                         <div className="grid-live-consumer-info-data"><span>Paid:</span><span>{this.state.paidBalance}</span></div>
                         <div className="grid-live-consumer-info-data"><span>Outstanding:</span><span>{this.state.outstandingBalance}</span></div>
+                        {this.state.lastPaymentBundle && (
+                            <div className="grid-live-consumer-info-data"><span>Last Payment:</span><span>
+                                <Button color="secondary" long={true} onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
+                                    {this.state.lastPaymentBundle.substr(0, 10)}...
+                            </Button>
+                            </span></div>
+                        )}
                     </div>
                 </div>
                 {this.state.isExpanded && (
@@ -147,7 +162,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             <Button
                                 size="extra-small"
                                 color="secondary"
-                                onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                                onClick={() => this._mamExplorerService.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
                             >
                                 MAM Usage
                             </Button>
@@ -156,7 +171,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             <Button
                                 size="extra-small"
                                 color="secondary"
-                                onClick={() => this._mamExplorer.explore(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
+                                onClick={() => this._mamExplorerService.explore(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
                             >
                                 MAM Billing
                             </Button>

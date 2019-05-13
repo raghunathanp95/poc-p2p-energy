@@ -16,5 +16,6 @@
     "producer": {
         "name": "PRODUCER-NAME",
         "id": "PRODUCER-UNIQUE-ID"
-    }
+    },
+    "seed": "SEED"
 }

@@ -31,4 +31,9 @@ export interface IGridServiceConfiguration {
      * Config for the grid.
      */
     grid: IGridConfiguration;
+
+    /**
+     * Seed for the grid.
+     */
+    seed: string;
 }

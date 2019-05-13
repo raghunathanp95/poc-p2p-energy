@@ -12,7 +12,6 @@ import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
 import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
-import { TrytesHelper } from "../utils/trytesHelper";
 import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
@@ -241,7 +240,7 @@ export class ProducerManager<S> {
                 pageSize = pageResponse.pageSize;
             } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
 
-            const result = await this._strategy.sources(sourceOutputById, this._state);
+            const result = await this._strategy.sources(this._config.id, sourceOutputById, this._state);
 
             for (let i = 0; i < result.commands.length; i++) {
                 await this.sendCommand(result.commands[i]);
@@ -284,8 +283,7 @@ export class ProducerManager<S> {
         this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
-            paymentSeed: TrytesHelper.generateHash(),
-            strategyState: await this._strategy.init()
+            strategyState: await this._strategy.init(this._config.id)
         };
     }
 

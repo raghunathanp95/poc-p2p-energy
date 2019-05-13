@@ -4,6 +4,10 @@ import { IBasicGridStrategyConsumerTotals } from "./IBasicGridStrategyConsumerTo
  */
 export interface IBasicGridStrategyState {
     /**
+     * The seed used to generate payment addressses.
+     */
+    paymentSeed?: string;
+    /**
      * The initial time for the state.
      */
     initialTime?: number;

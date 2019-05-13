@@ -26,5 +26,6 @@
     "grid": {
         "name": "GRID-NAME",
         "id": "GRID-UNIQUE-ID"
-    }
+    },
+    "seed": "SEED"
 }

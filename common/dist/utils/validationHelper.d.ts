@@ -10,6 +10,12 @@ export declare class ValidationHelper {
      */
     static string(str: string, name: string, minLength?: number): void;
     /**
+     * Does the number have a value.
+     * @param num The number to validate.
+     * @param name The parameter name.
+     */
+    static number(num: number, name: string): void;
+    /**
      * Is the value of one the specified items.
      * @param val The value to validate.
      * @param options The possible options.

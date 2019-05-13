@@ -17,15 +17,17 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
     private static readonly TIME_IDLE;
     /**
      * Initialise the state.
+     * @param producerId The id of the producer.
      */
-    init(): Promise<IBasicProducerStrategyState>;
+    init(producerId: string): Promise<IBasicProducerStrategyState>;
     /**
      * Collated sources output.
+     * @param producerId The id of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
-    sources(sourceOutputById: {
+    sources(producerId: string, sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
     }, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
         /**

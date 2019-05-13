@@ -2,6 +2,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
+import { PaymentRegistrationService } from "../services/paymentRegistrationService";
 import { WalletStateService } from "../services/walletStateService";
 
 /**
@@ -18,6 +19,8 @@ export async function init(config: IGridServiceConfiguration): Promise<string[]>
             await new AmazonS3Service(config.s3Connection, "grids")
                 .createBucket(loggingService);
             await new WalletStateService(config.dynamoDbConnection)
+                .createTable(loggingService);
+            await new PaymentRegistrationService(config.dynamoDbConnection)
                 .createTable(loggingService);
         }
 

@@ -24,7 +24,8 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
         "accessKeyId": "AWS-ACCESS-KEY-ID",          /* AWS Access Key e.g. AKIAI57SG4YC2ZUCSABC */
         "secretAccessKey": "AWS-SECRET-ACCESS-KEY",  /* AWS Secret e.g. MUo72/UQWgL97QArGt9HVUA */
         "bucketPrefix": "BUCKET-PREFIX"              /* AWS S3 bucket name prefix e.g. poc-p2p-dev- */
-    }
+    },
+    "seed": "SEED"                                   /* The seed to use for the grids wallet */
 }
 ```
 

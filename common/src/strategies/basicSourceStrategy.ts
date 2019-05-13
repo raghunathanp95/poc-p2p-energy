@@ -19,8 +19,9 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
 
     /**
      * Initialise the state.
+     * @param sourceId The id of the source.
      */
-    public async init(): Promise<IBasicSourceStrategyState> {
+    public async init(sourceId: string): Promise<IBasicSourceStrategyState> {
         return {
             lastOutputTime: Date.now() - BasicSourceStrategy.TIME_BASIS,
             outputTotal: 0
@@ -29,10 +30,11 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
 
     /**
      * Gets the output values.
+     * @param sourceId The id of the source.
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    public async value(sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
+    public async value(sourceId: string, sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */

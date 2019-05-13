@@ -19,6 +19,7 @@ import { IProducerStrategy } from "p2p-energy-common/dist/models/strategies/IPro
 import { ISourceStrategy } from "p2p-energy-common/dist/models/strategies/ISourceStrategy";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
+import { ApiPaymentService } from "p2p-energy-common/dist/services/payment/apiPaymentService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { DirectRegistrationService } from "p2p-energy-common/dist/services/registration/directRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
@@ -42,6 +43,11 @@ export class DemoGridManager {
      * Load balancer settings for communications.
      */
     private readonly _loadBalancerSettings: LoadBalancerSettings;
+
+    /**
+     * The api endpoint.
+     */
+    private readonly _apiEndpoint: string;
 
     /**
      * The demo grid storage service.
@@ -137,9 +143,11 @@ export class DemoGridManager {
     /**
      * Create a new instance of DemoGridManager.
      * @param loadBalancerSettings Load balancer settings for communications.
+     * @param apiEndpoint The api endpoint.
      */
-    constructor(loadBalancerSettings: LoadBalancerSettings) {
+    constructor(loadBalancerSettings: LoadBalancerSettings, apiEndpoint: string) {
         this._loadBalancerSettings = loadBalancerSettings;
+        this._apiEndpoint = apiEndpoint;
 
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
         this._producerStrategy = new BasicProducerStrategy();
@@ -438,6 +446,10 @@ export class DemoGridManager {
         ServiceFactory.register(
             "grid-consumer-usage-store",
             () => new BrowserStorageService<ISourceStore>(`${grid.id}/grid-consumer-usage`));
+
+        ServiceFactory.register(
+            "payment",
+            () => new ApiPaymentService(this._apiEndpoint));
     }
 
     /**

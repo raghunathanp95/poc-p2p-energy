@@ -14,6 +14,7 @@ import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/co
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
+import { SimplePaymentService } from "p2p-energy-common/dist/services/payment/simplePaymentService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { BasicGridStrategy } from "p2p-energy-common/dist/strategies/basicGridStrategy";
@@ -63,6 +64,8 @@ app.build(routes, async (_1, config, _2) => {
     };
 
     ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
+
+    ServiceFactory.register("payment", () => new SimplePaymentService(loadBalancerSettings, config.seed));
 
     const gridManager = new GridManager(config.grid, loadBalancerSettings, new BasicGridStrategy());
     const registrationManagementService =

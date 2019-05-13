@@ -16,15 +16,25 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
      */
     private static readonly TIME_IDLE;
     /**
-     * Initialise the state.
+     * Logging service.
      */
-    init(): Promise<IBasicConsumerStrategyState>;
+    private readonly _loggingService;
+    /**
+     * Create a new instance of BasicConsumerStrategy.
+     */
+    constructor();
+    /**
+     * Initialise the state.
+     * @param consumerId The id of the consumer
+     */
+    init(consumerId: string): Promise<IBasicConsumerStrategyState>;
     /**
      * Gets the usage values.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    usage(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<{
+    usage(consumerId: string, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */
@@ -36,10 +46,11 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
     }>;
     /**
      * Processes payment requests.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
      */
-    paymentRequests(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
+    paymentRequests(consumerId: string, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
         /**
          * Has the state been updated.
          */

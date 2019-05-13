@@ -7,15 +7,17 @@ import { IProducerManagerState } from "../state/IProducerManagerState";
 export interface IProducerStrategy<S> {
     /**
      * Initialise the state.
+     * @param producerId The id of the producer.
      */
-    init(): Promise<S>;
+    init(producerId: string): Promise<S>;
     /**
      * Collated sources output.
+     * @param producerId The id of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
-    sources(sourceOutputById: {
+    sources(producerId: string, sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
     }, producerState: IProducerManagerState<S>): Promise<{
         /**

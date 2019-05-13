@@ -7,14 +7,16 @@ import { IConsumerPaymentRequestCommand } from "../mam/IConsumerPaymentRequestCo
 export interface IConsumerStrategy<S> {
     /**
      * Initialise the state.
+     * @param consumerId The id of the consumer
      */
-    init(): Promise<S>;
+    init(consumerId: string): Promise<S>;
     /**
      * Gets the usage values.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    usage(consumerState: IConsumerManagerState<S>): Promise<{
+    usage(consumerId: string, consumerState: IConsumerManagerState<S>): Promise<{
         /**
          * Has the state been updated.
          */
@@ -26,10 +28,11 @@ export interface IConsumerStrategy<S> {
     }>;
     /**
      * Processes payment requests.
+     * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
      */
-    paymentRequests(consumerState: IConsumerManagerState<S>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
+    paymentRequests(consumerId: string, consumerState: IConsumerManagerState<S>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
         /**
          * Has the state been updated.
          */

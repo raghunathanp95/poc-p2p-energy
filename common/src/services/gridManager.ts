@@ -13,7 +13,6 @@ import { IStorageService } from "../models/services/IStorageService";
 import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IGridStrategy } from "../models/strategies/IGridStrategy";
-import { TrytesHelper } from "../utils/trytesHelper";
 
 /**
  * Service to handle the grid.
@@ -126,6 +125,7 @@ export class GridManager<S> {
                         endTime: outputCommand.endTime,
                         output: outputCommand.output,
                         producerPrice: outputCommand.price,
+                        paymentRegistrationId: registration.id,
                         paymentAddress: outputCommand.paymentAddress
                     });
 
@@ -217,7 +217,7 @@ export class GridManager<S> {
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        const result = await this._strategy.consumers(consumerUsageById, this._state);
+        const result = await this._strategy.consumers(this._config.id, consumerUsageById, this._state);
 
         // Remove all the consumed usage data from the storage
         for (const consumerId in consumerUsageById) {
@@ -263,7 +263,7 @@ export class GridManager<S> {
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        const result = await this._strategy.producers(producerOutputById, this._state);
+        const result = await this._strategy.producers(this._config.id, producerOutputById, this._state);
 
         for (const producerId in producerOutputById) {
             if (producerOutputById[producerId].length === 0) {
@@ -287,8 +287,7 @@ export class GridManager<S> {
         this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {
-            paymentSeed: TrytesHelper.generateHash(),
-            strategyState: await this._strategy.init()
+            strategyState: await this._strategy.init(this._config.id)
         };
     }
 

@@ -20,4 +20,8 @@ export interface IProducerServiceConfiguration {
      * Config for the producer.
      */
     producer: IProducerConfiguration;
+    /**
+     * Seed for the producer.
+     */
+    seed: string;
 }

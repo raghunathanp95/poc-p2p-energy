@@ -161,7 +161,7 @@ export class ConsumerManager<S> {
      * @returns Any new consumer usage commands.
      */
     public async updateStrategy(): Promise<IConsumerUsageCommand[]> {
-        const result = await this._strategy.usage(this._state);
+        const result = await this._strategy.usage(this._config.id, this._state);
         let updatedState = result.updatedState;
 
         for (let i = 0; i < result.commands.length; i++) {
@@ -181,7 +181,7 @@ export class ConsumerManager<S> {
                     }
                 }
                 if (paymentRequests.length > 0) {
-                    await this._strategy.paymentRequests(this._state, paymentRequests);
+                    await this._strategy.paymentRequests(this._config.id, this._state, paymentRequests);
                     updatedState = true;
                 }
             }
@@ -218,7 +218,7 @@ export class ConsumerManager<S> {
         this._loggingService.log("consumer", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init()
+            strategyState: await this._strategy.init(this._config.id)
         };
     }
 

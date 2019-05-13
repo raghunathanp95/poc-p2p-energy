@@ -1,6 +1,7 @@
-import { generateAddress } from "@iota/core";
+import { ServiceFactory } from "../factories/serviceFactory";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
+import { IPaymentService } from "../models/services/IPaymentService";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
 import { IBasicProducerStrategyState } from "../models/strategies/IBasicProducerStrategyState";
 import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
@@ -12,7 +13,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
     /**
      * The base for timing.
      */
-    private static readonly TIME_INTERVAL: number = 30000;
+    private static readonly TIME_INTERVAL: number = 3000;
 
     /**
      * How long do we consider a time before item was idle.
@@ -21,8 +22,13 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
 
     /**
      * Initialise the state.
+     * @param producerId The id of the producer.
      */
-    public async init(): Promise<IBasicProducerStrategyState> {
+    public async init(producerId: string): Promise<IBasicProducerStrategyState> {
+        const paymentService = ServiceFactory.get<IPaymentService>("payment");
+
+        await paymentService.register(producerId);
+
         return {
             initialTime: Date.now(),
             lastOutputTime: Date.now(),
@@ -34,11 +40,13 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
 
     /**
      * Collated sources output.
+     * @param producerId The id of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
     public async sources(
+        producerId: string,
         sourceOutputById: { [id: string]: ISourceStoreOutput[] },
         producerState: IProducerManagerState<IBasicProducerStrategyState>):
         Promise<{
@@ -101,7 +109,9 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                 const addressIndex = Math.floor(
                     (producerState.strategyState.lastOutputTime - producerState.strategyState.initialTime) / 3600000
                 );
-                const paymentAddress = generateAddress(producerState.paymentSeed, addressIndex, 2);
+                const paymentService = ServiceFactory.get<IPaymentService>("payment");
+
+                const paymentAddress = await paymentService.getAddress(producerId, addressIndex);
 
                 commands.push({
                     command: "output",

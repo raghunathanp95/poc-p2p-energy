@@ -16,5 +16,6 @@
     "consumer": {
         "id": "CONSUMER-UNIQUE-ID",
         "name": "CONSUMER-NAME"
-    }
+    },
+    "seed": "SEED"
 }

@@ -141,7 +141,7 @@ export class SourceManager<S> {
      * @returns Any new source output commands.
      */
     public async updateStrategy(): Promise<ISourceOutputCommand[]> {
-        const result = await this._strategy.value(this._state);
+        const result = await this._strategy.value(this._config.id, this._state);
 
         for (let i = 0; i < result.commands.length; i++) {
             await this.sendCommand(result.commands[i]);
@@ -176,7 +176,7 @@ export class SourceManager<S> {
         this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init()
+            strategyState: await this._strategy.init(this._config.id)
         };
     }
 

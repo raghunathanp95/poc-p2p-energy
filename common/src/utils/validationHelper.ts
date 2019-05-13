@@ -15,6 +15,17 @@ export class ValidationHelper {
     }
 
     /**
+     * Does the number have a value.
+     * @param num The number to validate.
+     * @param name The parameter name.
+     */
+    public static number(num: number, name: string): void {
+        if (num === undefined || num === null || typeof num !== "number") {
+            throw new Error(`The parameter '${name}' has an invalid value.`);
+        }
+    }
+
+    /**
      * Is the value of one the specified items.
      * @param val The value to validate.
      * @param options The possible options.

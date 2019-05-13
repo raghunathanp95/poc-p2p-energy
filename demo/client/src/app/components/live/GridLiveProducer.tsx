@@ -8,7 +8,7 @@ import producer2 from "../../../assets/producers/producer2.svg";
 import producer3 from "../../../assets/producers/producer3.svg";
 import { ISource } from "../../../models/api/ISource";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer } from "../../../services/mamExplorer";
+import { MamExplorer } from "../../../services/mamExplorerService";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
 import { GridLiveProducerState } from "./GridLiveProducerState";

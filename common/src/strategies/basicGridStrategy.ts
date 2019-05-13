@@ -1,7 +1,8 @@
-import { generateAddress } from "@iota/core";
+import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
+import { IPaymentService } from "../models/services/IPaymentService";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IBasicGridStrategyConsumerTotals } from "../models/strategies/IBasicGridStrategyConsumerTotals";
 import { IBasicGridStrategyState } from "../models/strategies/IBasicGridStrategyState";
@@ -13,8 +14,13 @@ import { IGridStrategy } from "../models/strategies/IGridStrategy";
 export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState> {
     /**
      * Initialise the state.
+     * @param gridId The id of the grid.
      */
-    public async init(): Promise<IBasicGridStrategyState> {
+    public async init(gridId: string): Promise<IBasicGridStrategyState> {
+        const paymentService = ServiceFactory.get<IPaymentService>("payment");
+
+        await paymentService.register(gridId);
+
         return {
             initialTime: Date.now(),
             runningCostsTotal: 0,
@@ -26,10 +32,12 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Collated consumers usage.
+     * @param gridId The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
      */
     public async consumers(
+        gridId: string,
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<IBasicGridStrategyState>):
         Promise<{
@@ -69,10 +77,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 const addressIndex = Math.floor(
                     (Date.now() - gridState.strategyState.initialTime) / 3600000
                 );
-                paymentAddress = generateAddress(gridState.paymentSeed, addressIndex, 2);
+
+                const paymentService = ServiceFactory.get<IPaymentService>("payment");
+                paymentAddress = await paymentService.getAddress(gridId, addressIndex);
             }
 
             const paymentRequest = this.updateConsumerUsage(
+                gridId,
                 paymentAddress,
                 gridState.strategyState.consumerTotals[consumerId],
                 newUsage);
@@ -94,10 +105,12 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Collated producer output.
+     * @param gridId The id of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
      */
     public async producers(
+        gridId: string,
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
         gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
             /**
@@ -131,12 +144,14 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Update the usage for the consumer.
+     * @param gridId The id of the grid.
      * @param paymentAddress The payment address for the grid.
      * @param consumerTotals The total for the consumer.
      * @param newUsage Additional usage for the consumer.
      * @returns A new payment request command or nothing.
      */
     private updateConsumerUsage(
+        gridId: string,
         paymentAddress: string,
         consumerTotals: IBasicGridStrategyConsumerTotals,
         newUsage: number): IConsumerPaymentRequestCommand | undefined {
@@ -154,6 +169,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 command: "payment-request",
                 owed: unrequestedUsage * 5,
                 usage: unrequestedUsage,
+                paymentRegistrationId: gridId,
                 paymentAddress
             };
         }

@@ -10,6 +10,7 @@ import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strat
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { SimplePaymentService } from "p2p-energy-common/dist/services/payment/simplePaymentService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
@@ -74,6 +75,8 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
+
+    ServiceFactory.register("payment", () => new SimplePaymentService(loadBalancerSettings, config.seed));
 
     const producerManager = new ProducerManager(config.producer, loadBalancerSettings, new BasicProducerStrategy());
     const registrationManagementService =

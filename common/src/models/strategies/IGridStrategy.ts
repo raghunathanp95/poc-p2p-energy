@@ -9,15 +9,18 @@ import { IGridManagerState } from "../state/IGridManagerState";
 export interface IGridStrategy<S> {
     /**
      * Initialise the state.
+     * @param gridId The id of the grid.
      */
-    init(): Promise<S>;
+    init(gridId: string): Promise<S>;
 
     /**
      * Collated consumers usage.
+     * @param gridId The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
      */
     consumers(
+        gridId: string,
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<S>):
         Promise<{
@@ -34,10 +37,12 @@ export interface IGridStrategy<S> {
 
     /**
      * Collated producer output.
+     * @param gridId The id of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
      */
     producers(
+        gridId: string,
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
         gridState: IGridManagerState<S>):
         Promise<{

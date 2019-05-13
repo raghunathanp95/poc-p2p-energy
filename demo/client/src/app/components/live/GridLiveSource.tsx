@@ -7,7 +7,7 @@ import geothermal from "../../../assets/sources/geothermal.svg";
 import solar from "../../../assets/sources/solar.svg";
 import wind from "../../../assets/sources/wind.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer } from "../../../services/mamExplorer";
+import { MamExplorer } from "../../../services/mamExplorerService";
 import "./GridLiveSource.scss";
 import { GridLiveSourceProps } from "./GridLiveSourceProps";
 import { GridLiveSourceState } from "./GridLiveSourceState";

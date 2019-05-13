@@ -13,5 +13,9 @@
     ],
     "apiEndpoint": "API-ENDPOINT",
     "mamExplorer": "https://mam-explorer.firebaseapp.com/?root=:root&provider=:provider&mode=:mode&key=:sideKey",
+    "tangleExplorer": {
+        "transactions": "https://thetangle.org/transaction/:transactionHash",
+        "bundles": "https://thetangle.org/bundle/:bundleHash"
+    },
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"
 }

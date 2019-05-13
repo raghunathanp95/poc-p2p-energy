@@ -4,10 +4,6 @@ import { IMamChannelConfiguration } from "../mam/IMamChannelConfiguration";
  */
 export interface IProducerManagerState<S> {
     /**
-     * The seed used to generate payment addressses.
-     */
-    paymentSeed: string;
-    /**
      * The channel configuration for the producer.
      */
     channel?: IMamChannelConfiguration;

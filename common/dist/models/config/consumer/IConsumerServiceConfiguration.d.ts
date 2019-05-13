@@ -20,4 +20,8 @@ export interface IConsumerServiceConfiguration {
      * Config for the consumer.
      */
     consumer: IConsumerConfiguration;
+    /**
+     * Config for the consumer.
+     */
+    seed: string;
 }

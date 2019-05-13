@@ -106,16 +106,6 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
                 {!this.state.status && (
                     <React.Fragment>
-                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately.
-                            <br />
-                            In a real system the update speed would be much slower.
-                            <br />
-                            Payment is only requested from Consumers on whole kWh so they will have no outstanding balance immediately.
-                        </div>
-
-                        <hr />
-                        <br />
-
                         <div>Global Wallet Balance: {this.state.walletBalance}</div>
 
                         <div className="grid-live-columns">
@@ -147,6 +137,15 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                                 ))}
                             </div>
                         </div>
+
+                        <br />
+                        <hr />
+                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately. In a real system the update speed would be much slower.
+                            <br /><br />
+                            Payment is only requested from Consumers on whole kWh, so they will have no outstanding balance immediately.
+                            Additionally consumers only pay the grid when they have reached multiple of 10i.
+                        </div>
+
                     </React.Fragment>
                 )}
             </div >

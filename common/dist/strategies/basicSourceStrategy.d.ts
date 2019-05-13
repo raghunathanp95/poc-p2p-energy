@@ -16,14 +16,16 @@ export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSource
     private static readonly TIME_IDLE;
     /**
      * Initialise the state.
+     * @param sourceId The id of the source.
      */
-    init(): Promise<IBasicSourceStrategyState>;
+    init(sourceId: string): Promise<IBasicSourceStrategyState>;
     /**
      * Gets the output values.
+     * @param sourceId The id of the source.
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    value(sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
+    value(sourceId: string, sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */
