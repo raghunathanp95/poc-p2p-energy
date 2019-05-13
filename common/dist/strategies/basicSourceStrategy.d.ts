@@ -11,6 +11,10 @@ export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSource
      */
     private static readonly TIME_BASIS;
     /**
+     * How long do we consider a time before item was idle.
+     */
+    private static readonly TIME_IDLE;
+    /**
      * Initialise the state.
      */
     init(): Promise<IBasicSourceStrategyState>;

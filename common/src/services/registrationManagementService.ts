@@ -133,9 +133,12 @@ export class RegistrationManagementService implements IRegistrationManagementSer
      * @param handleCommands Handle any new commands found from the registration.
      */
     public async pollCommands(
-        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
+        handleCommands: (
+            registration: IRegistration,
+            commands: IMamCommand[],
+            returnCommands: IMamCommand[]) => Promise<void>): Promise<void> {
 
-        for (let i = 0 ; i < this._registrations.length; i++) {
+        for (let i = 0; i < this._registrations.length; i++) {
             await this.getNewCommands(this._registrations[i], handleCommands);
         }
     }
@@ -202,15 +205,24 @@ export class RegistrationManagementService implements IRegistrationManagementSer
     /**
      * Get the new command for a registration.
      * @param registration The registration to update.
-     * @returns Log of process.
+     * @param handleCommands Handle any new commands found from the registration.
      */
     private async getNewCommands(
         registration: IRegistration,
-        handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void> {
+        handleCommands: (
+            registration: IRegistration,
+            commands: IMamCommand[],
+            returnCommands: IMamCommand[]) => Promise<void>):
+        Promise<void> {
+
+        let updated = false;
+        let commands = [];
+        let returnCommands = [];
+
         if (registration.itemMamChannel) {
             const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
 
-            const commands = await mamChannel.receiveCommands(registration.itemMamChannel);
+            commands = await mamChannel.receiveCommands(registration.itemMamChannel);
 
             if (commands && commands.length > 0) {
                 // Has the channel been reset by one of the commands
@@ -218,12 +230,34 @@ export class RegistrationManagementService implements IRegistrationManagementSer
                     registration.itemMamChannel = undefined;
                 }
 
-                // If we retrieved new commands make sure we save the state
-                // for the updated mam channel, this will also save the reset details
-                await this._registrationStorageService.set(registration.id, registration);
-
-                await handleCommands(registration, commands);
+                updated = true;
             }
+        }
+
+        if (registration.returnMamChannel) {
+            const mamChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+            returnCommands = await mamChannel.receiveCommands(registration.returnMamChannel);
+
+            if (returnCommands && returnCommands.length > 0) {
+                // Has the channel been reset by one of the commands
+                if (registration.returnMamChannel.initialRoot && registration.returnMamChannel.sideKey === undefined) {
+                    registration.returnMamChannel = undefined;
+                }
+
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            // If we retrieved new commands make sure we save the state
+            // for the updated mam channel, this will also save the reset details
+            // If we are going to update the state
+            await this._registrationStorageService.set(registration.id, registration);
+        }
+
+        if (commands.length > 0 || returnCommands.length > 0) {
+            await handleCommands(registration, commands, returnCommands);
         }
     }
 }

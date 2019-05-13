@@ -1,7 +1,13 @@
+import { IBasicGridStrategyConsumerTotals } from "./IBasicGridStrategyConsumerTotals";
 /**
  * Definition of grid stratey state.
  */
 export interface IBasicGridStrategyState {
+    /**
+     * The initial time for the state.
+     */
+    initialTime?: number;
+
     /**
      * Running costs total.
      */
@@ -37,22 +43,5 @@ export interface IBasicGridStrategyState {
     /**
      * Consumer totals.
      */
-    consumerTotals: {
-        [id: string]: {
-            /**
-             * Total usage for the consumer.
-             */
-            usage: number;
-
-            /**
-             * Total paid by the consumer.
-             */
-            paid: number;
-
-            /**
-             * Total outstanding by the consumer.
-             */
-            outstanding: number;
-        }
-    };
+    consumerTotals: { [id: string]: IBasicGridStrategyConsumerTotals };
 }

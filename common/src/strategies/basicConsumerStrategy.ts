@@ -1,3 +1,4 @@
+import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IBasicConsumerStrategyState } from "../models/strategies/IBasicConsumerStrategyState";
@@ -11,6 +12,11 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
      * The base for timing.
      */
     private static readonly TIME_BASIS: number = 30000;
+
+    /**
+     * How long do we consider a time before item was idle.
+     */
+    private static readonly TIME_IDLE: number = 5 * 30000;
 
     /**
      * Initialise the state.
@@ -47,25 +53,62 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
         const commands: IConsumerUsageCommand[] = [];
         let updatedState = false;
 
-        while ((Date.now() - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_BASIS) {
-            const endTime = consumerState.strategyState.lastUsageTime + BasicConsumerStrategy.TIME_BASIS;
-            // tslint:disable-next-line:insecure-random
-            const usage =  Math.random();
+        const now = Date.now();
+        if ((now - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_IDLE) {
+            // Looks like the consumer has not been running for some time
+            // so create a catchup entry
             commands.push({
                 command: "usage",
                 startTime: consumerState.strategyState.lastUsageTime + 1,
-                endTime,
-                usage
+                endTime: now,
+                usage: 0
             });
 
             updatedState = true;
-            consumerState.strategyState.lastUsageTime = endTime;
-            consumerState.strategyState.usageTotal += usage;
+            consumerState.strategyState.lastUsageTime = now;
+        } else {
+            while ((Date.now() - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_BASIS) {
+                const endTime = consumerState.strategyState.lastUsageTime + BasicConsumerStrategy.TIME_BASIS;
+                // tslint:disable-next-line:insecure-random
+                const usage = Math.random();
+                commands.push({
+                    command: "usage",
+                    startTime: consumerState.strategyState.lastUsageTime + 1,
+                    endTime,
+                    usage
+                });
+
+                updatedState = true;
+                consumerState.strategyState.lastUsageTime = endTime;
+                consumerState.strategyState.usageTotal += usage;
+            }
         }
 
         return {
             updatedState,
             commands
+        };
+    }
+
+    /**
+     * Processes payment requests.
+     * @param consumerState The state for the manager calling the strategy
+     * @param paymentRequests Payment requests to process.
+     */
+    public async paymentRequests(
+        consumerState: IConsumerManagerState<IBasicConsumerStrategyState>,
+        paymentRequests: IConsumerPaymentRequestCommand[]):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }> {
+
+        consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
+
+        return {
+            updatedState: true
         };
     }
 }

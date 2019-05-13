@@ -72,7 +72,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                 producersTotalOutput: `${Math.ceil(producersTotalOutput)} kWh`,
                 producersTotalReceived: `${producersTotalReceived}i`,
                 producersTotalOwed: `${producersTotalOwed}i`,
-                consumersTotalUsage: `${Math.ceil(consumersTotalUsage)} kWh`,
+                consumersTotalUsage: `${consumersTotalUsage.toFixed(1)} kWh`,
                 consumersTotalOutstanding: `${consumersTotalOutstanding}i`,
                 consumersTotalPaid: `${consumersTotalPaid}i`
             });

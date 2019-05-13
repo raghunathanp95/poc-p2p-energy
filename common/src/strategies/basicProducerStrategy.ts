@@ -12,7 +12,12 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
     /**
      * The base for timing.
      */
-    private static readonly TIME_BASIS: number = 30000;
+    private static readonly TIME_INTERVAL: number = 30000;
+
+    /**
+     * How long do we consider a time before item was idle.
+     */
+    private static readonly TIME_IDLE: number = 5 * 30000;
 
     /**
      * Initialise the state.
@@ -55,51 +60,68 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
         const commands: IProducerOutputCommand[] = [];
         let updatedState = false;
 
-        while ((Date.now() - producerState.strategyState.lastOutputTime) > BasicProducerStrategy.TIME_BASIS) {
-            // Find any source data that uses the same time block
-            const endTime = producerState.strategyState.lastOutputTime + BasicProducerStrategy.TIME_BASIS;
-
-            let endTimeIndex = Math.floor(
-                producerState.strategyState.lastOutputTime / BasicProducerStrategy.TIME_BASIS);
-
-            // Delay the lookup by 30s (or 3 indexes ago) to allow the source data to propogate
-            endTimeIndex -= 3;
-
-            let producerTotal = 0;
-            for (const sourceId in sourceOutputById) {
-                const entryIdx = sourceOutputById[sourceId]
-                    .findIndex(u => Math.floor(u.endTime / BasicProducerStrategy.TIME_BASIS) === endTimeIndex);
-                if (entryIdx >= 0) {
-                    producerTotal += sourceOutputById[sourceId][entryIdx].output;
-                    sourceOutputById[sourceId].splice(entryIdx, 1);
-                }
-            }
-
-            // Calculate a payment address index to use based on the time, you could just always increment
-            // but for this example we will use a new payment address every hour
-            const addressIndex = Math.floor(
-                (producerState.strategyState.lastOutputTime - producerState.strategyState.initialTime) / 3600000
-            );
-            const paymentAddress = generateAddress(producerState.paymentSeed, addressIndex, 2);
-
+        const now = Date.now();
+        if ((now - producerState.strategyState.lastOutputTime) > BasicProducerStrategy.TIME_IDLE) {
+            // Looks like the producer has not been running for some time
+            // so create a catchup entry
             commands.push({
                 command: "output",
                 startTime: producerState.strategyState.lastOutputTime + 1,
-                endTime: endTime,
-                output: producerTotal,
-                // Calculate a cost for the producer output slice
-                // You could base this on your own costs, time of day, value etc
-                // This is a preferred cost and its up to the grid strategy to decide
-                // to use it or ignore it
-                // tslint:disable-next-line:insecure-random
-                price: Math.floor(Math.random() * 10) + 1,
-                paymentAddress
+                endTime: now,
+                price: 0,
+                paymentAddress: "",
+                output: 0
             });
 
-            producerState.strategyState.outputTotal += producerTotal;
-
-            producerState.strategyState.lastOutputTime = endTime;
             updatedState = true;
+            producerState.strategyState.lastOutputTime = now;
+        } else {
+            while ((Date.now() - producerState.strategyState.lastOutputTime) > BasicProducerStrategy.TIME_INTERVAL) {
+                // Find any source data that uses the same time block
+                const endTime = producerState.strategyState.lastOutputTime + BasicProducerStrategy.TIME_INTERVAL;
+
+                let endTimeIndex = Math.floor(
+                    producerState.strategyState.lastOutputTime / BasicProducerStrategy.TIME_INTERVAL);
+
+                // Delay the lookup by 30s (or 3 indexes ago) to allow the source data to propogate
+                endTimeIndex -= 3;
+
+                let producerTotal = 0;
+                for (const sourceId in sourceOutputById) {
+                    const entryIdx = sourceOutputById[sourceId]
+                        .findIndex(u => Math.floor(u.endTime / BasicProducerStrategy.TIME_INTERVAL) === endTimeIndex);
+                    if (entryIdx >= 0) {
+                        producerTotal += sourceOutputById[sourceId][entryIdx].output;
+                        sourceOutputById[sourceId].splice(entryIdx, 1);
+                    }
+                }
+
+                // Calculate a payment address index to use based on the time, you could just always increment
+                // but for this example we will use a new payment address every hour
+                const addressIndex = Math.floor(
+                    (producerState.strategyState.lastOutputTime - producerState.strategyState.initialTime) / 3600000
+                );
+                const paymentAddress = generateAddress(producerState.paymentSeed, addressIndex, 2);
+
+                commands.push({
+                    command: "output",
+                    startTime: producerState.strategyState.lastOutputTime + 1,
+                    endTime: endTime,
+                    output: producerTotal,
+                    // Calculate a cost for the producer output slice
+                    // You could base this on your own costs, time of day, value etc
+                    // This is a preferred cost and its up to the grid strategy to decide
+                    // to use it or ignore it
+                    // tslint:disable-next-line:insecure-random
+                    price: Math.floor(Math.random() * 10) + 1,
+                    paymentAddress
+                });
+
+                producerState.strategyState.outputTotal += producerTotal;
+
+                producerState.strategyState.lastOutputTime = endTime;
+                updatedState = true;
+            }
         }
 
         return {

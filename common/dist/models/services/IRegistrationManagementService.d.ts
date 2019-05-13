@@ -24,5 +24,5 @@ export interface IRegistrationManagementService {
      * Look for new commands for each registration.
      * @param handleCommands Handle any new commands found from the registration.
      */
-    pollCommands(handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void>;
+    pollCommands(handleCommands: (registration: IRegistration, commands: IMamCommand[], returnCommands: IMamCommand[]) => Promise<void>): Promise<void>;
 }

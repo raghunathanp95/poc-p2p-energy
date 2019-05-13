@@ -4,6 +4,7 @@ import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IMamCommand } from "../models/mam/IMamCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
+import { IRegistration } from "src/models/services/registration/IRegistration";
 /**
  * Class to handle a consumer.
  */
@@ -53,7 +54,13 @@ export declare class ConsumerManager<S> {
      */
     closedown(): Promise<void>;
     /**
-     * Call the strategy to produce usage values for the consumer.
+     * Process return commands for the registration.
+     * @param registration The registration.
+     * @param returnCommands The commands to process.
+     */
+    handleReturnCommands(registration: IRegistration, returnCommands: IMamCommand[]): Promise<void>;
+    /**
+     * Call the strategy to produce usage values for the consumer and check payment requests
      * @returns Any new consumer usage commands.
      */
     updateStrategy(): Promise<IConsumerUsageCommand[]>;

@@ -1,6 +1,9 @@
+import { generateAddress } from "@iota/core";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
+import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IGridManagerState } from "../models/state/IGridManagerState";
+import { IBasicGridStrategyConsumerTotals } from "../models/strategies/IBasicGridStrategyConsumerTotals";
 import { IBasicGridStrategyState } from "../models/strategies/IBasicGridStrategyState";
 import { IGridStrategy } from "../models/strategies/IGridStrategy";
 
@@ -13,6 +16,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      */
     public async init(): Promise<IBasicGridStrategyState> {
         return {
+            initialTime: Date.now(),
             runningCostsTotal: 0,
             runningCostsReceived: 0,
             producerTotals: {},
@@ -33,28 +37,58 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
              * Has the state been updated.
              */
             updatedState: boolean;
+
+            /**
+             * Commands to send for each consumer.
+             */
+            paymentRequests: { [id: string]: IConsumerPaymentRequestCommand };
         }> {
 
         let updatedState = false;
+        let paymentAddress = "";
+        const paymentRequests = {};
 
+        // Consume any new usage data and store it in the totals
         for (const consumerId in consumerUsageById) {
             if (!gridState.strategyState.consumerTotals[consumerId]) {
                 gridState.strategyState.consumerTotals[consumerId] = {
                     usage: 0,
+                    requestedUsage: 0,
                     outstanding: 0,
-                    paid: 0
+                    paid: 0,
+                    requested: 0
                 };
             }
 
             updatedState = true;
-            gridState.strategyState.consumerTotals[consumerId].usage +=
-                consumerUsageById[consumerId].reduce((a, b) => a + b.usage, 0);
+            const newUsage = consumerUsageById[consumerId].reduce((a, b) => a + b.usage, 0);
+
+            if (newUsage > 0 && paymentAddress.length === 0) {
+                // Calculate a payment address index to use based on the time, you could just always increment
+                // but for this example we will use a new payment address every hour
+                const addressIndex = Math.floor(
+                    (Date.now() - gridState.strategyState.initialTime) / 3600000
+                );
+                paymentAddress = generateAddress(gridState.paymentSeed, addressIndex, 2);
+            }
+
+            const paymentRequest = this.updateConsumerUsage(
+                paymentAddress,
+                gridState.strategyState.consumerTotals[consumerId],
+                newUsage);
+
+            if (paymentRequest) {
+                paymentRequests[consumerId] = paymentRequest;
+                gridState.strategyState.consumerTotals[consumerId].outstanding += paymentRequest.owed;
+                gridState.strategyState.runningCostsTotal += paymentRequest.owed / 5;
+            }
 
             consumerUsageById[consumerId] = [];
         }
 
         return {
-            updatedState
+            updatedState,
+            paymentRequests
         };
     }
 
@@ -93,5 +127,37 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
         return {
             updatedState
         };
+    }
+
+    /**
+     * Update the usage for the consumer.
+     * @param paymentAddress The payment address for the grid.
+     * @param consumerTotals The total for the consumer.
+     * @param newUsage Additional usage for the consumer.
+     * @returns A new payment request command or nothing.
+     */
+    private updateConsumerUsage(
+        paymentAddress: string,
+        consumerTotals: IBasicGridStrategyConsumerTotals,
+        newUsage: number): IConsumerPaymentRequestCommand | undefined {
+        consumerTotals.usage += newUsage;
+
+        // Add new requested for every whole kWh the consumer uses
+        const unrequestedUsage = Math.floor(consumerTotals.usage - consumerTotals.requestedUsage);
+        if (unrequestedUsage > 0) {
+            consumerTotals.requestedUsage += unrequestedUsage;
+
+            // For this example we charge 5i for every kWh, of which
+            // 1i is retained by the grid and 4i is split between the producers
+            // The producers can request a specific price but we don't have to use it
+            return {
+                command: "payment-request",
+                owed: unrequestedUsage * 5,
+                usage: unrequestedUsage,
+                paymentAddress
+            };
+        }
+
+        return undefined;
     }
 }

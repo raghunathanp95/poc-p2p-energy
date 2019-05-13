@@ -14,6 +14,7 @@ import { IRegistration } from "../models/services/registration/IRegistration";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IGridStrategy } from "../models/strategies/IGridStrategy";
 import { TrytesHelper } from "../utils/trytesHelper";
+import { MamCommandChannel } from "./mamCommandChannel";
 
 /**
  * Service to handle the grid.
@@ -207,9 +208,25 @@ export class GridManager<S> {
 
         const result = await this._strategy.consumers(consumerUsageById, this._state);
 
+        // Remove all the consumed usage data from the storage
         for (const consumerId in consumerUsageById) {
             if (consumerUsageById[consumerId].length === 0) {
                 await consumerUsageStoreService.remove(`${this._config.id}/${consumerId}`);
+            }
+        }
+
+        // Now send any payment requests to the consumers
+        const registrationStorageService =
+            ServiceFactory.get<IStorageService<IRegistration>>("registration-storage");
+
+        for (const consumerId in result.paymentRequests) {
+            const registration = await registrationStorageService.get(consumerId);
+
+            if (registration && registration.returnMamChannel) {
+                const mamReturnChannel = new MamCommandChannel(this._loadBalancerSettings);
+                await mamReturnChannel.sendCommand(registration.returnMamChannel, result.paymentRequests[consumerId]);
+
+                await registrationStorageService.set(consumerId, registration);
             }
         }
 

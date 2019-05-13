@@ -77,7 +77,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             this.setState(
                 {
                     usageTotal: consumerStrategyState && consumerStrategyState.usageTotal !== undefined ?
-                        `${Math.ceil(consumerStrategyState.usageTotal)} kWh` : "-----",
+                        `${consumerStrategyState.usageTotal.toFixed(1)} kWh` : "-----",
                     paidBalance: consumerStrategyState && consumerStrategyState.paidBalance !== undefined ?
                         `${consumerStrategyState.paidBalance}i` : "-----",
                     outstandingBalance: consumerStrategyState && consumerStrategyState.outstandingBalance !== undefined ?

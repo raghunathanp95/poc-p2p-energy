@@ -13,6 +13,11 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
     private static readonly TIME_BASIS: number = 30000;
 
     /**
+     * How long do we consider a time before item was idle.
+     */
+    private static readonly TIME_IDLE: number = 5 * 30000;
+
+    /**
      * Initialise the state.
      */
     public async init(): Promise<IBasicSourceStrategyState> {
@@ -42,21 +47,37 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
         // in a real setup this would come from hardware
         const commands: ISourceOutputCommand[] = [];
         let updatedState = false;
-        while ((Date.now() - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_BASIS) {
-            const endTime = sourceState.strategyState.lastOutputTime + BasicSourceStrategy.TIME_BASIS;
-            // tslint:disable-next-line:insecure-random
-            const output = (Math.random() * 8) + 2;
 
+        const now = Date.now();
+        if ((now - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_IDLE) {
+            // Looks like the source has not been running for some time
+            // so create a catchup entry
             commands.push({
                 command: "output",
                 startTime: sourceState.strategyState.lastOutputTime + 1,
-                endTime: endTime,
-                output
+                endTime: now,
+                output: 0
             });
 
             updatedState = true;
-            sourceState.strategyState.lastOutputTime = endTime;
-            sourceState.strategyState.outputTotal += output;
+            sourceState.strategyState.lastOutputTime = now;
+        } else {
+            while ((Date.now() - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_BASIS) {
+                const endTime = sourceState.strategyState.lastOutputTime + BasicSourceStrategy.TIME_BASIS;
+                // tslint:disable-next-line:insecure-random
+                const output = (Math.random() * 8) + 2;
+
+                commands.push({
+                    command: "output",
+                    startTime: sourceState.strategyState.lastOutputTime + 1,
+                    endTime: endTime,
+                    output
+                });
+
+                updatedState = true;
+                sourceState.strategyState.lastOutputTime = endTime;
+                sourceState.strategyState.outputTotal += output;
+            }
         }
 
         return {

@@ -1,3 +1,4 @@
+import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IBasicConsumerStrategyState } from "../models/strategies/IBasicConsumerStrategyState";
@@ -10,6 +11,10 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
      * The base for timing.
      */
     private static readonly TIME_BASIS;
+    /**
+     * How long do we consider a time before item was idle.
+     */
+    private static readonly TIME_IDLE;
     /**
      * Initialise the state.
      */
@@ -28,5 +33,16 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
          * New commands to output.
          */
         commands: IConsumerUsageCommand[];
+    }>;
+    /**
+     * Processes payment requests.
+     * @param consumerState The state for the manager calling the strategy
+     * @param paymentRequests Payment requests to process.
+     */
+    paymentRequests(consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
     }>;
 }

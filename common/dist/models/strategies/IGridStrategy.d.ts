@@ -1,5 +1,6 @@
 import { IConsumerUsageEntry } from "../db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../db/grid/IProducerOutputEntry";
+import { IConsumerPaymentRequestCommand } from "../mam/IConsumerPaymentRequestCommand";
 import { IGridManagerState } from "../state/IGridManagerState";
 /**
  * Interface definition for grid strategy for calculating outputs and payments
@@ -21,6 +22,12 @@ export interface IGridStrategy<S> {
          * Has the state been updated.
          */
         updatedState: boolean;
+        /**
+         * Commands to send for each consumer.
+         */
+        paymentRequests: {
+            [id: string]: IConsumerPaymentRequestCommand;
+        };
     }>;
     /**
      * Collated producer output.

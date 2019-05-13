@@ -52,7 +52,7 @@ export declare class RegistrationManagementService implements IRegistrationManag
      * Look for new command for each registration.
      * @param handleCommands Handle any new commands found from the registration.
      */
-    pollCommands(handleCommands: (registration: IRegistration, commands: IMamCommand[]) => Promise<void>): Promise<void>;
+    pollCommands(handleCommands: (registration: IRegistration, commands: IMamCommand[], returnCommands: IMamCommand[]) => Promise<void>): Promise<void>;
     /**
      * Build the mam channels for the registration.
      * @param itemRoot The root passed from the client.
@@ -68,7 +68,7 @@ export declare class RegistrationManagementService implements IRegistrationManag
     /**
      * Get the new command for a registration.
      * @param registration The registration to update.
-     * @returns Log of process.
+     * @param handleCommands Handle any new commands found from the registration.
      */
     private getNewCommands;
 }

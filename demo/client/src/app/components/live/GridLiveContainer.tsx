@@ -106,9 +106,15 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
                 {!this.state.status && (
                     <React.Fragment>
-                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately.</div>
+                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately.
+                            <br />
+                            In a real system the update speed would be much slower.
+                            <br />
+                            Payment is only requested from Consumers on whole kWh so they will have no outstanding balance immediately.
+                        </div>
 
-                        <br/>
+                        <hr />
+                        <br />
 
                         <div>Global Wallet Balance: {this.state.walletBalance}</div>
 

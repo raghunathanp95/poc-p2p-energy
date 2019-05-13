@@ -557,22 +557,31 @@ export class DemoGridManager {
         // First step on an update is to check all the mam registrations for new
         // commands in their channels
         const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
-        await registrationManagementService.pollCommands(async (registration: IRegistration, commands: IMamCommand[]) => {
-            // Producers and consumers are registered with the grid, so hand the commands to the grid manager
-            if (registration.itemType === "producer" || registration.itemType === "consumer") {
-                if (this._gridManager) {
-                    await this._gridManager.handleCommands(registration, commands);
-                }
-            } else {
-                // All other registrations are sources with producers, so find which
-                // producer the source belongs to.
-                if (this._sourceManagers && this._sourceManagers[registration.id]) {
-                    if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
-                        await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
+        await registrationManagementService.pollCommands(
+            async (registration: IRegistration, commands: IMamCommand[], returnCommands: IMamCommand[]) => {
+                // Producers and consumers are registered with the grid, so hand the commands to the grid manager
+                if (registration.itemType === "producer" || registration.itemType === "consumer") {
+                    if (this._gridManager) {
+                        await this._gridManager.handleCommands(registration, commands);
+                    }
+                } else {
+                    // All other registrations are sources with producers, so find which
+                    // producer the source belongs to.
+                    if (this._sourceManagers && this._sourceManagers[registration.id]) {
+                        if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
+                            await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
+                        }
                     }
                 }
-            }
-        });
+
+                // Return commands go back to the original item, currently only consumers have return channels
+                if (registration.itemType === "consumer") {
+                    if (this._consumerManagers && this._consumerManagers[registration.id]) {
+                        await this._consumerManagers[registration.id].handleReturnCommands(registration, returnCommands);
+                    }
+
+                }
+            });
     }
 
     /**
