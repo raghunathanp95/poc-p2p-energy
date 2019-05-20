@@ -12,8 +12,4 @@ export interface IConsumerPaymentRequestCommand extends IMamCommand {
      * The id of the item we are making the payment to.
      */
     paymentRegistrationId: string;
-    /**
-     * The address to send the payment to.
-     */
-    paymentAddress: string;
 }

@@ -20,9 +20,4 @@ export interface IProducerOutputCommand extends IMamCommand {
      * The price the producer would like for this output per kWh, not guaranteed to receive.
      */
     price: number;
-
-    /**
-     * The payment address for this output.
-     */
-    paymentAddress: string;
 }

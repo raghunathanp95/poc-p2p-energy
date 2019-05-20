@@ -1,8 +1,6 @@
-import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
-import { IPaymentService } from "../models/services/IPaymentService";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IBasicGridStrategyConsumerTotals } from "../models/strategies/IBasicGridStrategyConsumerTotals";
 import { IBasicGridStrategyState } from "../models/strategies/IBasicGridStrategyState";
@@ -17,10 +15,6 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      * @param gridId The id of the grid.
      */
     public async init(gridId: string): Promise<IBasicGridStrategyState> {
-        const paymentService = ServiceFactory.get<IPaymentService>("payment");
-
-        await paymentService.register(gridId);
-
         return {
             initialTime: Date.now(),
             runningCostsTotal: 0,
@@ -53,7 +47,6 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
         }> {
 
         let updatedState = false;
-        let paymentAddress = "";
         const paymentRequests = {};
 
         // Consume any new usage data and store it in the totals
@@ -71,20 +64,8 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             updatedState = true;
             const newUsage = consumerUsageById[consumerId].reduce((a, b) => a + b.usage, 0);
 
-            if (newUsage > 0 && paymentAddress.length === 0) {
-                // Calculate a payment address index to use based on the time, you could just always increment
-                // but for this example we will use a new payment address every hour
-                const addressIndex = Math.floor(
-                    (Date.now() - gridState.strategyState.initialTime) / 3600000
-                );
-
-                const paymentService = ServiceFactory.get<IPaymentService>("payment");
-                paymentAddress = await paymentService.getAddress(gridId, addressIndex);
-            }
-
             const paymentRequest = this.updateConsumerUsage(
                 gridId,
-                paymentAddress,
                 gridState.strategyState.consumerTotals[consumerId],
                 newUsage);
 
@@ -145,14 +126,12 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
     /**
      * Update the usage for the consumer.
      * @param gridId The id of the grid.
-     * @param paymentAddress The payment address for the grid.
      * @param consumerTotals The total for the consumer.
      * @param newUsage Additional usage for the consumer.
      * @returns A new payment request command or nothing.
      */
     private updateConsumerUsage(
         gridId: string,
-        paymentAddress: string,
         consumerTotals: IBasicGridStrategyConsumerTotals,
         newUsage: number): IConsumerPaymentRequestCommand | undefined {
         consumerTotals.usage += newUsage;
@@ -169,8 +148,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 command: "payment-request",
                 owed: unrequestedUsage * 5,
                 usage: unrequestedUsage,
-                paymentRegistrationId: gridId,
-                paymentAddress
+                paymentRegistrationId: gridId
             };
         }
 

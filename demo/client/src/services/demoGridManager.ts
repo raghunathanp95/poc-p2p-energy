@@ -19,7 +19,7 @@ import { IProducerStrategy } from "p2p-energy-common/dist/models/strategies/IPro
 import { ISourceStrategy } from "p2p-energy-common/dist/models/strategies/ISourceStrategy";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
-import { ApiPaymentService } from "p2p-energy-common/dist/services/payment/apiPaymentService";
+import { ApiWalletService } from "p2p-energy-common/dist/services/payment/apiWalletService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { DirectRegistrationService } from "p2p-energy-common/dist/services/registration/directRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
@@ -448,7 +448,7 @@ export class DemoGridManager {
             () => new BrowserStorageService<ISourceStore>(`${grid.id}/grid-consumer-usage`));
 
         ServiceFactory.register(
-            "payment",
+            "wallet",
             () => new ApiPaymentService(this._apiEndpoint));
     }
 

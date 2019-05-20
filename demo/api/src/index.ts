@@ -8,8 +8,8 @@ import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
 import { IDemoApiConfiguration } from "./models/IDemoApiConfiguration";
-import { PaymentRegistrationService } from "./services/PaymentRegistrationService";
-import { WalletStateService } from "./services/walletStateService";
+import { WalletService } from "./services/walletService";
+import { WalletTransferService } from "./services/walletTransferService";
 
 const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
@@ -18,18 +18,16 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid/:name", method: "put", folder: "grid", func: "gridPut" },
     { path: "/grid/:name", method: "delete", folder: "grid", func: "gridDelete" },
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" },
-    { path: "/payment/register", method: "post", folder: "payment", func: "registerPost" },
-    { path: "/payment/:registrationId/address/", method: "post", folder: "payment", func: "addressPost" },
-    { path: "/payment/:registrationId/transfer/", method: "post", folder: "payment", func: "transferPost" },
-    { path: "/wallet", method: "get", folder: "wallet", func: "walletGet" }
+    { path: "/wallet/poll", method: "get", folder: "wallet", func: "pollGet" },
+    { path: "/wallet/sweep", method: "get", folder: "wallet", func: "sweepGet" },
+    { path: "/wallet/:id", method: "get", folder: "wallet", func: "walletGet" },
+    { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" }
 ];
 
 const loggingService = new ConsoleLoggingService();
 const app = new App<IDemoApiConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
-    const walletStateService = new WalletStateService(config.dynamoDbConnection);
-
     ServiceFactory.register("logging", () => loggingService);
     if (config.localStorageFolder) {
         ServiceFactory.register(
@@ -43,26 +41,28 @@ app.build(routes, async (_1, config, _2) => {
     }
 
     ServiceFactory.register(
-        "wallet-state",
-        () => walletStateService);
+        "wallet",
+        () => new WalletService(config.dynamoDbConnection));
+
+    const walletTransferService = new WalletTransferService(config.dynamoDbConnection);
 
     ServiceFactory.register(
-        "payment-registration",
-        () => new PaymentRegistrationService(config.dynamoDbConnection));
+        "wallet-transfer",
+        () => walletTransferService);
 
     const loadBalancerSettings: LoadBalancerSettings = {
         nodeWalkStrategy: new RandomWalkStrategy(config.nodes),
-        timeoutMs: 10000
+        timeoutMs: 30000
     };
 
     ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
 
     const schedules: ISchedule[] = [
-        // {
-        //     name: "Send Transfers",
-        //     schedule: "*/5 * * * * *",
-        //     func: async () => walletStateService.sendTransfers(loadBalancerSettings, config.walletSeed)
-        // }
+        {
+            name: "Poll Wallet",
+            schedule: "*/5 * * * * *",
+            func: async () => walletTransferService.poll(loadBalancerSettings)
+        }
     ];
 
     await ScheduleHelper.build(schedules, loggingService);

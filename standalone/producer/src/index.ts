@@ -4,18 +4,19 @@ import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
+import { IBasicWalletState } from "p2p-energy-common/dist/models/services/IBasicWalletState";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
 import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProducerManagerState";
 import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
-import { SimplePaymentService } from "p2p-energy-common/dist/services/payment/simplePaymentService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { BasicWalletService } from "p2p-energy-common/dist/services/wallet/basicWalletService";
 import { BasicProducerStrategy } from "p2p-energy-common/dist/strategies/basicProducerStrategy";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
@@ -59,6 +60,12 @@ app.build(routes, async (_1, config, _2) => {
             () => new LocalFileStorageService<IProducerManagerState<IBasicProducerStrategyState>>(
                 `${config.localStorageFolder}/${config.producer.id}/state`)
         );
+
+        ServiceFactory.register(
+            "wallet-state",
+            () => new LocalFileStorageService<IBasicWalletState>(
+                `${config.localStorageFolder}/${config.producer.id}/wallet`)
+        );
     } else {
         ServiceFactory.register(
             "registration-storage",
@@ -72,11 +79,19 @@ app.build(routes, async (_1, config, _2) => {
                 config.producer.id,
                 "config"
             ));
+
+        ServiceFactory.register(
+            "wallet-state",
+            () => new ApiStorageService<IBasicWalletState>(
+                config.gridApiEndpoint,
+                config.producer.id,
+                "wallet"
+            ));
     }
 
     ServiceFactory.register("producer-registration", () => new ApiRegistrationService(config.gridApiEndpoint));
 
-    ServiceFactory.register("payment", () => new SimplePaymentService(loadBalancerSettings, config.seed));
+    ServiceFactory.register("wallet", () => new BasicWalletService(loadBalancerSettings, config.seed));
 
     const producerManager = new ProducerManager(config.producer, loadBalancerSettings, new BasicProducerStrategy());
     const registrationManagementService =

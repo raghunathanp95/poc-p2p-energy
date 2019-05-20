@@ -1,7 +1,5 @@
-import { ServiceFactory } from "../factories/serviceFactory";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
-import { IPaymentService } from "../models/services/IPaymentService";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
 import { IBasicProducerStrategyState } from "../models/strategies/IBasicProducerStrategyState";
 import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
@@ -25,10 +23,6 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
      * @param producerId The id of the producer.
      */
     public async init(producerId: string): Promise<IBasicProducerStrategyState> {
-        const paymentService = ServiceFactory.get<IPaymentService>("payment");
-
-        await paymentService.register(producerId);
-
         return {
             initialTime: Date.now(),
             lastOutputTime: Date.now(),
@@ -77,7 +71,6 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                 startTime: producerState.strategyState.lastOutputTime + 1,
                 endTime: now,
                 price: 0,
-                paymentAddress: "",
                 output: 0
             });
 
@@ -104,15 +97,6 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                     }
                 }
 
-                // Calculate a payment address index to use based on the time, you could just always increment
-                // but for this example we will use a new payment address every hour
-                const addressIndex = Math.floor(
-                    (producerState.strategyState.lastOutputTime - producerState.strategyState.initialTime) / 3600000
-                );
-                const paymentService = ServiceFactory.get<IPaymentService>("payment");
-
-                const paymentAddress = await paymentService.getAddress(producerId, addressIndex);
-
                 commands.push({
                     command: "output",
                     startTime: producerState.strategyState.lastOutputTime + 1,
@@ -123,8 +107,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                     // This is a preferred cost and its up to the grid strategy to decide
                     // to use it or ignore it
                     // tslint:disable-next-line:insecure-random
-                    price: Math.floor(Math.random() * 10) + 1,
-                    paymentAddress
+                    price: Math.floor(Math.random() * 10) + 1
                 });
 
                 producerState.strategyState.outputTotal += producerTotal;

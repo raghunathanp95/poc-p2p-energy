@@ -1,0 +1,41 @@
+### wallet/global
+GET http://localhost:4000/wallet/global
+content-type: application/json
+
+### wallet/poll
+GET http://localhost:4000/wallet/poll
+content-type: application/json
+
+### wallet/sweep
+GEt http://localhost:4000/wallet/sweep
+content-type: application/json
+
+
+### wallet/AAAAAAAAAAAAAAAAAAAAAAAAAAA
+GET http://localhost:4000/wallet/AAAAAAAAAAAAAAAAAAAAAAAAAAA
+content-type: application/json
+
+### wallet/BBBBBBBBBBBBBBBBBBBBBBBBBBB
+GET http://localhost:4000/wallet/BBBBBBBBBBBBBBBBBBBBBBBBBBB
+content-type: application/json
+
+
+### wallet/transfer
+POST http://localhost:4000/wallet/AAAAAAAAAAAAAAAAAAAAAAAAAAA/transfer
+content-type: application/json
+
+{
+    "toId": "BBBBBBBBBBBBBBBBBBBBBBBBBBB",
+    "amount": 1
+}
+
+
+### wallet/transfer
+POST http://localhost:4000/wallet/BBBBBBBBBBBBBBBBBBBBBBBBBBB/transfer
+content-type: application/json
+
+{
+    "toId": "AAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "amount": 10
+}
+

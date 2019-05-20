@@ -125,8 +125,7 @@ export class GridManager<S> {
                         endTime: outputCommand.endTime,
                         output: outputCommand.output,
                         producerPrice: outputCommand.price,
-                        paymentRegistrationId: registration.id,
-                        paymentAddress: outputCommand.paymentAddress
+                        paymentRegistrationId: registration.id
                     });
 
                     updateStore = true;

@@ -50,7 +50,6 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     /**
      * Update the usage for the consumer.
      * @param gridId The id of the grid.
-     * @param paymentAddress The payment address for the grid.
      * @param consumerTotals The total for the consumer.
      * @param newUsage Additional usage for the consumer.
      * @returns A new payment request command or nothing.

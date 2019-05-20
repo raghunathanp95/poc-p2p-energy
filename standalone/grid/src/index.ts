@@ -3,6 +3,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
+import { IBasicWalletState } from "p2p-energy-common/dist/models/services/IBasicWalletState";
 import { IGridManagerState } from "p2p-energy-common/dist/models/state/IGridManagerState";
 import { IBasicGridStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicGridStrategyState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
@@ -14,9 +15,9 @@ import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/co
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
-import { SimplePaymentService } from "p2p-energy-common/dist/services/payment/simplePaymentService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
+import { BasicWalletService } from "p2p-energy-common/dist/services/wallet/basicWalletService";
 import { BasicGridStrategy } from "p2p-energy-common/dist/strategies/basicGridStrategy";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
@@ -48,6 +49,11 @@ app.build(routes, async (_1, config, _2) => {
             "grid-storage-manager-state",
             () => new LocalFileStorageService<IGridManagerState<IBasicGridStrategyState>>
                 (`${config.localStorageFolder}/grid/state`));
+
+        ServiceFactory.register(
+            "wallet-state",
+            () => new LocalFileStorageService<IBasicWalletState>
+                (`${config.localStorageFolder}/wallet/state`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "registration-storage",
@@ -56,6 +62,10 @@ app.build(routes, async (_1, config, _2) => {
         ServiceFactory.register(
             "grid-storage-manager-state",
             () => new AmazonS3StorageService(config.s3Connection, "config"));
+
+        ServiceFactory.register(
+            "wallet-state",
+            () => new AmazonS3StorageService(config.s3Connection, "wallet"));
     }
 
     const loadBalancerSettings: LoadBalancerSettings = {
@@ -65,7 +75,7 @@ app.build(routes, async (_1, config, _2) => {
 
     ServiceFactory.register("load-balancer-settings", () => loadBalancerSettings);
 
-    ServiceFactory.register("payment", () => new SimplePaymentService(loadBalancerSettings, config.seed));
+    ServiceFactory.register("wallet", () => new BasicWalletService(loadBalancerSettings, config.seed));
 
     const gridManager = new GridManager(config.grid, loadBalancerSettings, new BasicGridStrategy());
     const registrationManagementService =

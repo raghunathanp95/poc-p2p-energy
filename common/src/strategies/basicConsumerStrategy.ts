@@ -2,7 +2,7 @@ import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
-import { IPaymentService } from "../models/services/IPaymentService";
+import { IWalletService } from "../models/services/IWalletService";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
 import { IBasicConsumerStrategyState } from "../models/strategies/IBasicConsumerStrategyState";
 import { IConsumerStrategy } from "../models/strategies/IConsumerStrategy";
@@ -38,10 +38,6 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
      * @param consumerId The id of the consumer
      */
     public async init(consumerId: string): Promise<IBasicConsumerStrategyState> {
-        const paymentService = ServiceFactory.get<IPaymentService>("payment");
-
-        await paymentService.register(consumerId);
-
         return {
             initialTime: Date.now(),
             lastUsageTime: Date.now(),
@@ -137,19 +133,16 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             // a real world system would keep track of which payments go to each address
             const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 10) * 10;
             if (payableBalance > 0) {
-                const paymentService = ServiceFactory.get<IPaymentService>("payment");
-                const bundle = await paymentService.transfer(
+                const walletService = ServiceFactory.get<IWalletService>("wallet");
+                const bundle = await walletService.transfer(
                     consumerId,
                     paymentRequests[paymentRequests.length - 1].paymentRegistrationId,
-                    paymentRequests[paymentRequests.length - 1].paymentAddress,
                     payableBalance);
 
                 consumerState.strategyState.outstandingBalance -= payableBalance;
                 consumerState.strategyState.paidBalance += payableBalance;
-                consumerState.strategyState.lastPaymentBundle = bundle;
 
-                this._loggingService.log("basic-consumer", "payment", {
-                    address: paymentRequests[paymentRequests.length - 1].paymentAddress,
+                this._loggingService.log("basic-consumer", "wallet", {
                     amount: payableBalance,
                     bundle
                 });
