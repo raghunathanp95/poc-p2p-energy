@@ -4,9 +4,9 @@ export interface IWalletTransferRequest {
      */
     id: string;
     /**
-     * The id of the item receiving the payment.
+     * The id of the item receiving the payment or an address.
      */
-    toId: string;
+    toIdOrAddress: string;
     /**
      * The amount for the payment.
      */

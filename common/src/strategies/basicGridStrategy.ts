@@ -1,6 +1,9 @@
+import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
+import { ILoggingService } from "../models/services/ILoggingService";
+import { IWalletService } from "../models/services/IWalletService";
 import { IGridManagerState } from "../models/state/IGridManagerState";
 import { IBasicGridStrategyConsumerTotals } from "../models/strategies/IBasicGridStrategyConsumerTotals";
 import { IBasicGridStrategyState } from "../models/strategies/IBasicGridStrategyState";
@@ -11,6 +14,24 @@ import { IGridStrategy } from "../models/strategies/IGridStrategy";
  */
 export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState> {
     /**
+     * Logging service.
+     */
+    private readonly _loggingService: ILoggingService;
+
+    /**
+     * Wallet service.
+     */
+    private readonly _walletService: IWalletService;
+
+    /**
+     * Create a new instance of BasicGridStrategy.
+     */
+    constructor() {
+        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._walletService = ServiceFactory.get<IWalletService>("wallet");
+    }
+
+    /**
      * Initialise the state.
      * @param gridId The id of the grid.
      */
@@ -20,7 +41,9 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             runningCostsTotal: 0,
             runningCostsReceived: 0,
             producerTotals: {},
-            consumerTotals: {}
+            consumerTotals: {},
+            lastIncomingTransferTime: 0,
+            lastOutgoingTransferTime: 0
         };
     }
 
@@ -73,6 +96,8 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 paymentRequests[consumerId] = paymentRequest;
                 gridState.strategyState.consumerTotals[consumerId].outstanding += paymentRequest.owed;
                 gridState.strategyState.runningCostsTotal += paymentRequest.owed / 5;
+
+                this._loggingService.log("basic-grid", `Request payment ${paymentRequest.owed} from ${consumerId}`);
             }
 
             consumerUsageById[consumerId] = [];
@@ -124,6 +149,59 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
     }
 
     /**
+     * Collated payments.
+     * @param gridId The id of the grid.
+     * @param gridState The current state of the grid.
+     */
+    public async payments(
+        gridId: string,
+        gridState: IGridManagerState<IBasicGridStrategyState>):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }> {
+        let updatedState = false;
+
+        // Get all the payment since the last epochs
+        const wallet = await this._walletService.getWallet(
+            gridId,
+            gridState.strategyState.lastIncomingTransferTime,
+            gridState.strategyState.lastOutgoingTransferTime);
+
+        if (wallet) {
+            if (wallet.incomingTransfers) {
+                for (let i = 0; i < wallet.incomingTransfers.length; i++) {
+                    const consumerId = wallet.incomingTransfers[i].reference;
+                    if (gridState.strategyState.consumerTotals[consumerId]) {
+                        gridState.strategyState.consumerTotals[consumerId].outstanding +=
+                            wallet.incomingTransfers[i].value;
+                        if (wallet.incomingTransfers[i].confirmed > gridState.strategyState.lastIncomingTransferTime) {
+                            gridState.strategyState.lastIncomingTransferTime = wallet.incomingTransfers[i].confirmed;
+                        }
+                    }
+                    gridState.strategyState.runningCostsReceived += wallet.incomingTransfers[i].value;
+                    updatedState = true;
+                }
+            }
+            // if (wallet.outgoingTransfers) {
+            //     for (let i = 0; i < wallet.outgoingTransfers.length; i++) {
+            //         if (wallet.outgoingTransfers[i].confirmed > gridState.strategyState.lastOutgoingTransferTime) {
+            //             gridState.strategyState.lastOutgoingTransferTime = wallet.outgoingTransfers[i].confirmed;
+            //         }
+            //         updatedState = true;
+            //     }
+            // }
+        }
+
+        return {
+            updatedState
+        };
+
+    }
+
+    /**
      * Update the usage for the consumer.
      * @param gridId The id of the grid.
      * @param consumerTotals The total for the consumer.
@@ -144,11 +222,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             // For this example we charge 5i for every kWh, of which
             // 1i is retained by the grid and 4i is split between the producers
             // The producers can request a specific price but we don't have to use it
+            // Also the payment id could be an actual IOTA address, but in our demo
+            // we are using it as a reference we use in the global demo wallet
             return {
                 command: "payment-request",
                 owed: unrequestedUsage * 5,
                 usage: unrequestedUsage,
-                paymentRegistrationId: gridId
+                paymentIdOrAddress: gridId
             };
         }
 

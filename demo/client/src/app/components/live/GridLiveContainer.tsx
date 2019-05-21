@@ -156,7 +156,7 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
      * Check the wallet balance for the global wallet.
      */
     private async checkWalletBalance(): Promise<void> {
-        const walletResponse = await this._apiClient.walletGet();
+        const walletResponse = await this._apiClient.walletGet({ id: "global" });
         if (walletResponse && walletResponse.success && walletResponse.balance) {
             this.setState({ walletBalance: `${walletResponse.balance}i` });
         }

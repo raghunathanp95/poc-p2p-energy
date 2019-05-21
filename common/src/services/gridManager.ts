@@ -125,7 +125,7 @@ export class GridManager<S> {
                         endTime: outputCommand.endTime,
                         output: outputCommand.output,
                         producerPrice: outputCommand.price,
-                        paymentRegistrationId: registration.id
+                        paymentIdOrAddress: outputCommand.paymentIdOrAddress
                     });
 
                     updateStore = true;
@@ -174,8 +174,9 @@ export class GridManager<S> {
     public async updateStrategy(): Promise<{ [id: string]: IMamCommand[] }> {
         const updatedState1 = await this.updateConsumers();
         const updatedState2 = await this.updateProducers();
+        const updatedState3 = await this._strategy.payments(this._config.id, this._state);
 
-        if (updatedState1.updatedState || updatedState2) {
+        if (updatedState1.updatedState || updatedState2 || updatedState3.updatedState) {
             await this.saveState();
         }
 

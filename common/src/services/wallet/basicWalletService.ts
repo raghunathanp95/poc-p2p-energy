@@ -42,9 +42,11 @@ export class BasicWalletService implements IWalletService {
     /**
      * Get the wallet details.
      * @param id The id of the wallet.
+     * @param incomingEpoch Only return incoming transfers after the epoch.
+     * @param outgoingEpoch Only return incoming transfers after the epoch.
      * @returns The wallet.
      */
-    public async getWallet(id: string): Promise<IWallet> {
+    public async getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet> {
         let walletState = await this._storageService.get(id);
 
         if (!walletState) {
@@ -83,20 +85,17 @@ export class BasicWalletService implements IWalletService {
     /**
      * Make a payment from a wallet.
      * @param id The wallet id the payment is from.
-     * @param toId The wallet id the payment is to.
+     * @param toIdOrAddress The wallet id the payment is to or an address.
      * @param amount The amount of the payment.
      */
     public async transfer(
         id: string,
-        toId: string,
+        toIdOrAddress: string,
         amount: number): Promise<void> {
 
         const walletStateFrom = await this._storageService.get(id);
 
-        const walletStateTo = await this._storageService.get(toId);
-
-        if (walletStateFrom && walletStateTo) {
-
+        if (walletStateFrom) {
             const iota = composeAPI(
                 this._loadBalancerSettings
             );
@@ -120,12 +119,12 @@ export class BasicWalletService implements IWalletService {
                 this._walletSeed,
                 [
                     {
-                        address: walletStateTo.receiveAddress,
+                        // The to ID in our basic wallet case is actually the IOTA address
+                        address: toIdOrAddress,
                         value: amount,
                         tag: "P9TO9P9ENERGY9POC",
                         message: TrytesHelper.toTrytes({
-                            from: id,
-                            to: toId
+                            from: id
                         })
                     }
                 ],

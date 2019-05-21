@@ -19,7 +19,7 @@ export interface IProducerOutputEntry {
      */
     producerPrice: number;
     /**
-     * The id of the item we are making the payment to.
+     * The id of the item we are making the payment to, this could be an IOTA address.
      */
-    paymentRegistrationId: string;
+    paymentIdOrAddress: string;
 }

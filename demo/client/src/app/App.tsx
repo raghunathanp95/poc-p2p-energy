@@ -19,6 +19,7 @@ import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
 import { GridParams } from "./routes/GridParams";
 import Introduction from "./routes/Introduction";
+import { ApiWalletService } from "p2p-energy-common/dist/services/wallet/apiWalletService";
 
 /**
  * Main application class.
@@ -63,6 +64,7 @@ class App extends Component<RouteComponentProps, AppState> {
             ServiceFactory.register("tangleExplorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
+            ServiceFactory.register("wallet", () => new ApiWalletService(config.apiEndpoint));
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
             ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings, config.apiEndpoint));
 

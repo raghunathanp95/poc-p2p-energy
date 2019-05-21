@@ -1,14 +1,15 @@
+import { IWalletTransfer } from "./IWalletTransfer";
 export interface IWallet {
     /**
-     * The current balance of the wallet.
+     * The balance.
      */
-    balance: number;
+    balance?: number;
     /**
-     * The last incoming payment bundle.
+     * The most recent outgoing wallet tranfers.
      */
-    incomingBundleHash?: string;
+    outgoingTransfers?: IWalletTransfer[];
     /**
-     * The last outgoing payment bundle.
+     * The most recent incoming wallet tranfers.
      */
-    outgoingBundleHash?: string;
+    incomingTransfers?: IWalletTransfer[];
 }

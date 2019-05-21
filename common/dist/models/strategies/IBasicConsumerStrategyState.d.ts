@@ -1,3 +1,4 @@
+import { IWalletTransfer } from "../../models/api/wallet/IWalletTransfer";
 /**
  * Definition of consumer stratey state.
  */
@@ -23,7 +24,15 @@ export interface IBasicConsumerStrategyState {
      */
     outstandingBalance?: number;
     /**
-     * Last payment bundle.
+     * The number of payments sent.
      */
-    lastPaymentBundle?: string;
+    paymentsSent?: number;
+    /**
+     * The number of payments confirmed.
+     */
+    paymentsConfirmed?: number;
+    /**
+     * Tranfers from the consumer wallet.
+     */
+    transfers?: IWalletTransfer[];
 }

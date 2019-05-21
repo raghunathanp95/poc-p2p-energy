@@ -16,14 +16,16 @@ export declare class ApiWalletService implements IWalletService {
     /**
      * Get the wallet details.
      * @param id The wallet id.
+     * @param incomingEpoch Only return incoming transfers after the epoch.
+     * @param outgoingEpoch Only return incoming transfers after the epoch.
      * @returns The wallet.
      */
-    getWallet(id: string): Promise<IWallet>;
+    getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet>;
     /**
      * Make a payment from a wallet.
      * @param id The wallet id the payment is from.
-     * @param toId The wallet id the payment is to.
+     * @param toIdOrAddress The wallet id the payment is to.
      * @param amount The amount of the payment.
      */
-    transfer(id: string, toId: string, amount: number): Promise<void>;
+    transfer(id: string, toIdOrAddress: string, amount: number): Promise<void>;
 }

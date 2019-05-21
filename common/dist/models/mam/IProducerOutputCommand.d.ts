@@ -16,4 +16,8 @@ export interface IProducerOutputCommand extends IMamCommand {
      * The price the producer would like for this output per kWh, not guaranteed to receive.
      */
     price: number;
+    /**
+     * The id of the item we are making the payment to, this could be an IOTA address.
+     */
+    paymentIdOrAddress: string;
 }

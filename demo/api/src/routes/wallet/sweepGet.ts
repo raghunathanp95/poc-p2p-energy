@@ -4,7 +4,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
-import { IWallet } from "../../models/services/IWallet";
+import { IDemoWallet } from "../../models/services/IDemoWallet";
 import { WalletService } from "../../services/walletService";
 import { WalletTransferService } from "../../services/walletTransferService";
 
@@ -22,7 +22,10 @@ export async function sweepGet(
 
     const walletTransferService = ServiceFactory.get<WalletTransferService>("wallet-transfer");
 
-    const iota = composeAPI(ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings"));
+    const iota = composeAPI({
+        ...ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings"),
+        timeoutMs: undefined
+    });
 
     let pageSize = 10;
     let page = 0;
@@ -31,7 +34,7 @@ export async function sweepGet(
         pageResponse = await walletService.page(undefined, page, pageSize);
 
         for (let i = 0; i < pageResponse.items.length; i++) {
-            const wallet: IWallet = pageResponse.items[i];
+            const wallet: IDemoWallet = pageResponse.items[i];
             if (wallet.id !== "global") {
                 const inputsResponse: Inputs = await iota.getInputs(wallet.seed, {
                     start: wallet.startIndex,

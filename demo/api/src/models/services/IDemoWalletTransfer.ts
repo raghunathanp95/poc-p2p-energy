@@ -1,4 +1,4 @@
-export interface IWalletTransfer {
+export interface IDemoWalletTransfer {
     /**
      * The source wallet for the transfer.
      */
@@ -27,4 +27,8 @@ export interface IWalletTransfer {
      * The bundle hash.
      */
     bundle?: string;
+    /**
+     * The time the bundle was confirmed.
+     */
+    confirmed?: number;
 }

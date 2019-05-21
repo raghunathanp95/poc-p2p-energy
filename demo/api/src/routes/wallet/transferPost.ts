@@ -1,9 +1,11 @@
+import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
+import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
 import { IWalletTransferRequest } from "p2p-energy-common/dist/models/api/wallet/IWalletTransferRequest";
-import { IWalletTransferResponse } from "p2p-energy-common/dist/models/api/wallet/IWalletTransferResponse";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
 import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
+import { WalletService } from "../../services/walletService";
 import { WalletTransferService } from "../../services/walletTransferService";
 
 /**
@@ -12,23 +14,28 @@ import { WalletTransferService } from "../../services/walletTransferService";
 export async function transferPost(
     config: IDemoApiConfiguration,
     request: IWalletTransferRequest):
-    Promise<IWalletTransferResponse> {
+    Promise<IResponse> {
 
     ValidationHelper.trytes(request.id, 27, "id");
-    ValidationHelper.trytes(request.toId, 27, "toId");
+    ValidationHelper.trytes(request.toIdOrAddress, 27, "toIdOrAddress");
     ValidationHelper.number(request.amount, "amount");
 
-    const walletTransferService = ServiceFactory.get<WalletTransferService>("wallet-transfer");
+    const walletService = ServiceFactory.get<WalletService>("wallet");
+    await walletService.getOrCreate(
+        request.id,
+        request.id === "global" ? config.walletSeed : undefined,
+        ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings"));
 
-    await walletTransferService.addTransfer(
+    const walletTransferService = ServiceFactory.get<WalletTransferService>("wallet-transfer");
+    walletTransferService.addTransfer(
         {
             sourceWalletId: "global",
-            receiveWalletId: request.toId,
+            receiveWalletId: request.toIdOrAddress,
             value: request.amount,
             tag: "P9TO9P9ENERGY9POC",
             message: TrytesHelper.toTrytes({
                 from: request.id,
-                to: request.toId
+                to: request.toIdOrAddress
             })
         }
     );

@@ -1,7 +1,7 @@
+import { IResponse } from "../../models/api/IResponse";
 import { IWalletGetRequest } from "../../models/api/wallet/IWalletGetRequest";
 import { IWalletGetResponse } from "../../models/api/wallet/IWalletGetResponse";
 import { IWalletTransferRequest } from "../../models/api/wallet/IWalletTransferRequest";
-import { IWalletTransferResponse } from "../../models/api/wallet/IWalletTransferResponse";
 /**
  * Class to handle storage api communications.
  */
@@ -27,5 +27,5 @@ export declare class WalletApiClient {
      * @param request The request to send.
      * @returns The response from the request.
      */
-    transfer(request: IWalletTransferRequest): Promise<IWalletTransferResponse>;
+    transfer(request: IWalletTransferRequest): Promise<IResponse>;
 }

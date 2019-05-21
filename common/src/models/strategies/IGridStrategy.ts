@@ -51,4 +51,19 @@ export interface IGridStrategy<S> {
              */
             updatedState: boolean;
         }>;
+
+    /**
+     * Collated payments.
+     * @param gridId The id of the grid.
+     * @param gridState The current state of the grid.
+     */
+    payments(
+        gridId: string,
+        gridState: IGridManagerState<S>):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }>;
 }

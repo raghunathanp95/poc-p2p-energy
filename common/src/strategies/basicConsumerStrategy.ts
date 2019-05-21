@@ -27,10 +27,16 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
     private readonly _loggingService: ILoggingService;
 
     /**
+     * Wallet service.
+     */
+    private readonly _walletService: IWalletService;
+
+    /**
      * Create a new instance of BasicConsumerStrategy.
      */
     constructor() {
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._walletService = ServiceFactory.get<IWalletService>("wallet");
     }
 
     /**
@@ -43,6 +49,8 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             lastUsageTime: Date.now(),
             usageTotal: 0,
             paidBalance: 0,
+            paymentsSent: 0,
+            paymentsConfirmed: 0,
             outstandingBalance: 0
         };
     }
@@ -126,6 +134,8 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             updatedState: boolean;
         }> {
 
+        let updatedState = false;
+
         if (paymentRequests.length > 0) {
             consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
 
@@ -133,14 +143,16 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             // a real world system would keep track of which payments go to each address
             const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 10) * 10;
             if (payableBalance > 0) {
-                const walletService = ServiceFactory.get<IWalletService>("wallet");
-                const bundle = await walletService.transfer(
+                const bundle = await this._walletService.transfer(
                     consumerId,
-                    paymentRequests[paymentRequests.length - 1].paymentRegistrationId,
+                    paymentRequests[paymentRequests.length - 1].paymentIdOrAddress,
                     payableBalance);
 
+                consumerState.strategyState.paymentsSent++;
                 consumerState.strategyState.outstandingBalance -= payableBalance;
                 consumerState.strategyState.paidBalance += payableBalance;
+
+                updatedState = true;
 
                 this._loggingService.log("basic-consumer", "wallet", {
                     amount: payableBalance,
@@ -149,8 +161,25 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             }
         }
 
+        if (consumerState.strategyState.paymentsSent < consumerState.strategyState.paymentsConfirmed) {
+            const lastOutgoingTransfer = consumerState.strategyState.transfers &&
+                consumerState.strategyState.transfers.length > 0 ?
+                consumerState.strategyState.transfers[consumerState.strategyState.transfers.length - 1].confirmed : 0;
+
+            const wallet = await this._walletService.getWallet(consumerId, undefined, lastOutgoingTransfer);
+
+            if (wallet && wallet.outgoingTransfers) {
+                consumerState.strategyState.transfers = consumerState.strategyState.transfers || [];
+                consumerState.strategyState.transfers =
+                    consumerState.strategyState.transfers.concat(wallet.outgoingTransfers);
+                consumerState.strategyState.transfers = consumerState.strategyState.transfers.slice(-10);
+                consumerState.strategyState.paymentsConfirmed += wallet.outgoingTransfers.length;
+                updatedState = true;
+            }
+        }
+
         return {
-            updatedState: paymentRequests.length > 0
+            updatedState
         };
     }
 }

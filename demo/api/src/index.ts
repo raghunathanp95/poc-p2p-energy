@@ -20,7 +20,7 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" },
     { path: "/wallet/poll", method: "get", folder: "wallet", func: "pollGet" },
     { path: "/wallet/sweep", method: "get", folder: "wallet", func: "sweepGet" },
-    { path: "/wallet/:id", method: "get", folder: "wallet", func: "walletGet" },
+    { path: "/wallet/:id/:incomingEpoch?/:outgoingEpoch?/", method: "get", folder: "wallet", func: "walletGet" },
     { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" }
 ];
 

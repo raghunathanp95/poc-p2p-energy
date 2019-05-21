@@ -90,6 +90,10 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         `${consumerStrategyState.paidBalance}i` : "-----",
                     outstandingBalance: consumerStrategyState && consumerStrategyState.outstandingBalance !== undefined ?
                         `${consumerStrategyState.outstandingBalance}i` : "-----",
+                    lastPaymentBundle: consumerStrategyState &&
+                        consumerStrategyState.transfers &&
+                        consumerStrategyState.transfers.length > 0 ?
+                        consumerStrategyState.transfers[consumerStrategyState.transfers.length - 1].bundle : "",
                     mamRoot: mamChannel && mamChannel.initialRoot,
                     sideKey: mamChannel && mamChannel.sideKey,
                     mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
@@ -142,7 +146,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         <div className="grid-live-consumer-info-data"><span>Outstanding:</span><span>{this.state.outstandingBalance}</span></div>
                         {this.state.lastPaymentBundle && (
                             <div className="grid-live-consumer-info-data"><span>Last Payment:</span><span>
-                                <Button color="secondary" long={true} onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
+                                <Button color="secondary" onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
                                     {this.state.lastPaymentBundle.substr(0, 10)}...
                             </Button>
                             </span></div>

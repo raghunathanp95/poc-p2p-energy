@@ -1,5 +1,7 @@
 import axios from "axios";
 import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
+import { IWalletGetRequest } from "p2p-energy-common/dist/models/api/wallet/IWalletGetRequest";
+import { IWalletGetResponse } from "p2p-energy-common/dist/models/api/wallet/IWalletGetResponse";
 import { ApiHelper } from "p2p-energy-common/dist/utils/apiHelper";
 import { IGridDeleteRequest } from "../models/api/IGridDeleteRequest";
 import { IGridGetRequest } from "../models/api/IGridGetRequest";
@@ -8,7 +10,6 @@ import { IGridPasswordPutRequest } from "../models/api/IGridPasswordPutRequest";
 import { IGridPostRequest } from "../models/api/IGridPostRequest";
 import { IGridPutRequest } from "../models/api/IGridPutRequest";
 import { IGridPutResponse } from "../models/api/IGridPutResponse";
-import { IWalletGetResponse } from "../models/api/IWalletGetResponse";
 
 /**
  * Class to handle api communications.
@@ -153,12 +154,12 @@ export class DemoApiClient {
      * @param request The request to send.
      * @returns The response from the request.
      */
-    public async walletGet(): Promise<IWalletGetResponse> {
+    public async walletGet(request: IWalletGetRequest): Promise<IWalletGetResponse> {
         const ax = axios.create({ baseURL: this._endpoint });
         let response: IWalletGetResponse;
 
         try {
-            const axiosResponse = await ax.get<IWalletGetResponse>(`wallet`);
+            const axiosResponse = await ax.get<IWalletGetResponse>(ApiHelper.joinParams(`wallet`, [request.id]));
 
             response = axiosResponse.data;
         } catch (err) {

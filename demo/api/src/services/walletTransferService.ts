@@ -5,14 +5,14 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IAWSDynamoDbConfiguration } from "p2p-energy-common/dist/models/config/IAWSDynamoDbConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonDynamoDbService } from "p2p-energy-common/dist/services/amazon/amazonDynamoDbService";
-import { IWalletTransfer } from "../models/services/IWalletTransfer";
-import { IWalletTransferContainer } from "../models/services/IWalletTransferContainer";
+import { IDemoWalletTransfer } from "../models/services/IDemoWalletTransfer";
+import { IDemoWalletTransferContainer } from "../models/services/IDemoWalletTransferContainer";
 import { WalletService } from "./walletService";
 
 /**
  * Service to payment entities states in AmazonS3.
  */
-export class WalletTransferService extends AmazonDynamoDbService<IWalletTransferContainer> {
+export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTransferContainer> {
     /**
      * The name of the database table.
      */
@@ -36,7 +36,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
     /**
      * Transfers ready to add.
      */
-    private _toAdd: IWalletTransfer[];
+    private _toAdd: IDemoWalletTransfer[];
 
     /**
      * Create a new instance of PaymentRegistrationService
@@ -54,7 +54,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
      * Add a new transfer for the service to perform.
      * @param transfer The tranfer to add
      */
-    public addTransfer(transfer: IWalletTransfer): void {
+    public addTransfer(transfer: IDemoWalletTransfer): void {
         this._toAdd.push(transfer);
     }
 
@@ -104,7 +104,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
      * @param walletTransferContainer The current transfers.
      * @returns True if the state was updated.
      */
-    private async sendTransaction(iota: API, walletTransferContainer: IWalletTransferContainer): Promise<boolean> {
+    private async sendTransaction(iota: API, walletTransferContainer: IDemoWalletTransferContainer): Promise<boolean> {
         let updated = false;
 
         if (!walletTransferContainer.pending && walletTransferContainer.queue.length > 0) {
@@ -181,7 +181,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
      * @param walletTransferContainer The current transfers.
      * @returns True if the state was updated.
      */
-    private async checkPending(iota: API, walletTransferContainer: IWalletTransferContainer): Promise<boolean> {
+    private async checkPending(iota: API, walletTransferContainer: IDemoWalletTransferContainer): Promise<boolean> {
         let updated = false;
 
         if (walletTransferContainer.pending) {
@@ -224,12 +224,13 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
                     if (confirmedIndex >= 0) {
                         const sourceWalletId = walletTransferContainer.pending.sourceWalletId;
                         const receiveWalletId = walletTransferContainer.pending.receiveWalletId;
-                        delete walletTransferContainer.pending.sourceWalletId;
-                        delete walletTransferContainer.pending.receiveWalletId;
+                        walletTransferContainer.pending.confirmed = Date.now();
 
                         const sourceWallet = await this._walletService.get(sourceWalletId);
                         if (sourceWallet) {
-                            sourceWallet.lastOutgoingTransfer = walletTransferContainer.pending;
+                            sourceWallet.outgoingTransfers = sourceWallet.outgoingTransfers || [];
+                            sourceWallet.outgoingTransfers.push(walletTransferContainer.pending);
+
                             sourceWallet.balance -= startTransactions[confirmedIndex].value;
 
                             await this._walletService.set(sourceWalletId, sourceWallet);
@@ -238,9 +239,12 @@ export class WalletTransferService extends AmazonDynamoDbService<IWalletTransfer
                         const receiveWallet = await this._walletService.get(receiveWalletId);
 
                         if (receiveWallet) {
+                            walletTransferContainer.pending.sourceWalletId = sourceWalletId;
+                            receiveWallet.incomingTransfers = receiveWallet.incomingTransfers || [];
+                            receiveWallet.incomingTransfers.push(walletTransferContainer.pending);
+
                             receiveWallet.balance += startTransactions[confirmedIndex].value;
                             receiveWallet.lastIndex++;
-                            receiveWallet.lastIncomingTransfer = walletTransferContainer.pending;
 
                             await this._walletService.set(receiveWalletId, receiveWallet);
                         }

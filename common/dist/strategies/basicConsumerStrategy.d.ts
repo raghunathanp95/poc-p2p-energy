@@ -20,6 +20,10 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
      */
     private readonly _loggingService;
     /**
+     * Wallet service.
+     */
+    private readonly _walletService;
+    /**
      * Create a new instance of BasicConsumerStrategy.
      */
     constructor();

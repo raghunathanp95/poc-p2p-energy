@@ -57,11 +57,6 @@ export declare class ConsumerManager<S> {
      */
     updateStrategy(): Promise<IConsumerUsageCommand[]>;
     /**
-     * Send a command to the channel.
-     * @private
-     */
-    private sendCommand;
-    /**
      * Load the state for the consumer.
      * @private
      */

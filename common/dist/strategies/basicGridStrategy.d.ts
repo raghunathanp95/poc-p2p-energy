@@ -9,6 +9,18 @@ import { IGridStrategy } from "../models/strategies/IGridStrategy";
  */
 export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState> {
     /**
+     * Logging service.
+     */
+    private readonly _loggingService;
+    /**
+     * Wallet service.
+     */
+    private readonly _walletService;
+    /**
+     * Create a new instance of BasicGridStrategy.
+     */
+    constructor();
+    /**
      * Initialise the state.
      * @param gridId The id of the grid.
      */
@@ -42,6 +54,17 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     producers(gridId: string, producerUsageById: {
         [id: string]: IProducerOutputEntry[];
     }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+    }>;
+    /**
+     * Collated payments.
+     * @param gridId The id of the grid.
+     * @param gridState The current state of the grid.
+     */
+    payments(gridId: string, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */

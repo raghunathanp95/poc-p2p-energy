@@ -1,6 +1,6 @@
-import { IWalletTransfer } from "./IWalletTransfer";
+import { IDemoWalletTransfer } from "./IDemoWalletTransfer";
 
-export interface IWallet {
+export interface IDemoWallet {
     /**
      * The id of the wallet.
      */
@@ -29,10 +29,10 @@ export interface IWallet {
     /**
      * The bundle hash of the last outgoing transfer.
      */
-    lastOutgoingTransfer?: IWalletTransfer;
+    outgoingTransfers?: IDemoWalletTransfer[];
 
     /**
      * The bundle hash of the last incoming transfer.
      */
-    lastIncomingTransfer?: IWalletTransfer;
+    incomingTransfers?: IDemoWalletTransfer[];
 }

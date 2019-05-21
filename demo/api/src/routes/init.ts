@@ -2,8 +2,8 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IGridServiceConfiguration } from "p2p-energy-common/dist/models/config/grid/IGridServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
-import { WalletTransferService } from "../services/walletTransferService";
 import { WalletService } from "../services/walletService";
+import { WalletTransferService } from "../services/walletTransferService";
 
 /**
  * Initialise the components for the demo api.

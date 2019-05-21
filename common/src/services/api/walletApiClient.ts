@@ -3,7 +3,6 @@ import { IResponse } from "../../models/api/IResponse";
 import { IWalletGetRequest } from "../../models/api/wallet/IWalletGetRequest";
 import { IWalletGetResponse } from "../../models/api/wallet/IWalletGetResponse";
 import { IWalletTransferRequest } from "../../models/api/wallet/IWalletTransferRequest";
-import { IWalletTransferResponse } from "../../models/api/wallet/IWalletTransferResponse";
 import { ApiHelper } from "../../utils/apiHelper";
 
 /**
@@ -34,9 +33,8 @@ export class WalletApiClient {
         let response: IWalletGetResponse;
 
         try {
-            const axiosResponse = await ax.post<IWalletGetResponse>(
-                ApiHelper.joinParams(`wallet`, [request.id]),
-                ApiHelper.removeKeys(request, ["id"])
+            const axiosResponse = await ax.get<IWalletGetResponse>(
+                ApiHelper.joinParams(`wallet`, [request.id, request.incomingEpoch, request.outgoingEpoch])
             );
 
             response = axiosResponse.data;
@@ -55,9 +53,9 @@ export class WalletApiClient {
      * @param request The request to send.
      * @returns The response from the request.
      */
-    public async transfer(request: IWalletTransferRequest): Promise<IWalletTransferResponse> {
+    public async transfer(request: IWalletTransferRequest): Promise<IResponse> {
         const ax = axios.create({ baseURL: this._endpoint });
-        let response: IWalletTransferResponse;
+        let response: IResponse;
 
         try {
             const axiosResponse = await ax.post<IResponse>(

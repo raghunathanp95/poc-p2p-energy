@@ -71,6 +71,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                 startTime: producerState.strategyState.lastOutputTime + 1,
                 endTime: now,
                 price: 0,
+                paymentIdOrAddress: producerId,
                 output: 0
             });
 
@@ -106,8 +107,13 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                     // You could base this on your own costs, time of day, value etc
                     // This is a preferred cost and its up to the grid strategy to decide
                     // to use it or ignore it
+                    // For this demo we are usong the producer id as the payment id
+                    // as all payments are handled by the central wallet which can
+                    // perform transfers using the ids, this could equally
+                    // be populated as an IOTA address
                     // tslint:disable-next-line:insecure-random
-                    price: Math.floor(Math.random() * 10) + 1
+                    price: Math.floor(Math.random() * 10) + 1,
+                    paymentIdOrAddress: producerId
                 });
 
                 producerState.strategyState.outputTotal += producerTotal;

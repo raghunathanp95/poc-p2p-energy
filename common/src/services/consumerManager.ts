@@ -3,7 +3,6 @@ import { ServiceFactory } from "../factories/serviceFactory";
 import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
-import { IMamCommand } from "../models/mam/IMamCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
 import { IStorageService } from "../models/services/IStorageService";
@@ -164,8 +163,12 @@ export class ConsumerManager<S> {
         const result = await this._strategy.usage(this._config.id, this._state);
         let updatedState = result.updatedState;
 
-        for (let i = 0; i < result.commands.length; i++) {
-            await this.sendCommand(result.commands[i]);
+        if (result.commands.length > 0) {
+            const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+            for (let i = 0; i < result.commands.length; i++) {
+                await mamCommandChannel.sendCommand(this._state.channel, result.commands[i]);
+            }
         }
 
         if (this._state.returnChannel) {
@@ -192,17 +195,6 @@ export class ConsumerManager<S> {
         }
 
         return result.commands;
-    }
-
-    /**
-     * Send a command to the channel.
-     * @private
-     */
-    private async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
-        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
-        await mamCommandChannel.sendCommand(this._state.channel, command);
-        await this.saveState();
-        return command;
     }
 
     /**
