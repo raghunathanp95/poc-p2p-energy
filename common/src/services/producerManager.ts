@@ -242,8 +242,14 @@ export class ProducerManager<S> {
 
             const result = await this._strategy.sources(this._config.id, sourceOutputById, this._state);
 
-            for (let i = 0; i < result.commands.length; i++) {
-                await this.sendCommand(result.commands[i]);
+            this._state.unsentCommands = this._state.unsentCommands.concat(result.commands);
+
+            if (this._state.unsentCommands.length > 0) {
+                const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
+                this._state.unsentCommands = await mamCommandChannel.sendCommandQueue(
+                    this._state.channel,
+                    this._state.unsentCommands
+                );
             }
 
             for (const sourceId in sourceOutputById) {
@@ -263,15 +269,6 @@ export class ProducerManager<S> {
     }
 
     /**
-     * Send a command to the channel.
-     */
-    public async sendCommand<T extends IMamCommand>(command: T): Promise<void> {
-        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
-        await mamCommandChannel.sendCommand(this._state.channel, command);
-        await this.saveState();
-    }
-
-    /**
      * Load the state for the producer.
      */
     private async loadState(): Promise<void> {
@@ -283,7 +280,8 @@ export class ProducerManager<S> {
         this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init(this._config.id)
+            strategyState: await this._strategy.init(this._config.id),
+            unsentCommands: []
         };
     }
 

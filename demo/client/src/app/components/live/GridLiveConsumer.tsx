@@ -85,7 +85,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             this.setState(
                 {
                     usageTotal: consumerStrategyState && consumerStrategyState.usageTotal !== undefined ?
-                        `${consumerStrategyState.usageTotal.toFixed(1)} kWh` : "-----",
+                        `${Math.floor(consumerStrategyState.usageTotal * 10) / 10} kWh` : "-----",
                     paidBalance: consumerStrategyState && consumerStrategyState.paidBalance !== undefined ?
                         `${consumerStrategyState.paidBalance}i` : "-----",
                     outstandingBalance: consumerStrategyState && consumerStrategyState.outstandingBalance !== undefined ?
@@ -146,9 +146,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         <div className="grid-live-consumer-info-data"><span>Outstanding:</span><span>{this.state.outstandingBalance}</span></div>
                         {this.state.lastPaymentBundle && (
                             <div className="grid-live-consumer-info-data"><span>Last Payment:</span><span>
-                                <Button color="secondary" onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
+                                <a onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
                                     {this.state.lastPaymentBundle.substr(0, 10)}...
-                            </Button>
+                                </a>
                             </span></div>
                         )}
                     </div>

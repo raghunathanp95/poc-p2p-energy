@@ -22,33 +22,39 @@ export async function walletGet(
         request.id === "global" ? config.walletSeed : undefined,
         ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings"));
 
+    const incomingEpoch: number = `${request.incomingEpoch}` === "undefined" ? undefined : +request.incomingEpoch;
+    const outgoingEpoch: number = `${request.outgoingEpoch}` === "undefined" ? undefined : +request.outgoingEpoch;
+
     let changed = false;
     let incomingTransfers;
     let outgoingTransfers;
-    if (wallet && wallet.incomingTransfers) {
-        const filterTime = request.incomingEpoch === undefined ? 0 : request.incomingEpoch;
+
+    if (wallet && wallet.incomingTransfers && incomingEpoch !== undefined) {
         const len = wallet.incomingTransfers.length;
-        incomingTransfers = wallet.incomingTransfers.filter(t => t.confirmed > filterTime).map(t => ({
-            value: t.value,
-            bundle: t.bundle,
-            confirmed: t.confirmed,
-            reference: t.receiveWalletId
-        }));
-        wallet.incomingTransfers = wallet.incomingTransfers.filter(t => t.confirmed <= filterTime);
+        incomingTransfers = wallet.incomingTransfers
+            .filter(t => t.confirmed > incomingEpoch)
+            .map(t => ({
+                value: t.value,
+                bundle: t.bundle,
+                confirmed: t.confirmed,
+                reference: t.payload.from
+            }));
+        wallet.incomingTransfers = wallet.incomingTransfers.filter(t => t.confirmed <= incomingEpoch);
         if (wallet.incomingTransfers.length !== len) {
             changed = true;
         }
     }
-    if (wallet && wallet.outgoingTransfers) {
-        const filterTime = request.outgoingEpoch === undefined ? 0 : request.outgoingEpoch;
+    if (wallet && wallet.outgoingTransfers && outgoingEpoch !== undefined) {
         const len = wallet.outgoingTransfers.length;
-        outgoingTransfers = wallet.outgoingTransfers.filter(t => t.confirmed > filterTime).map(t => ({
-            value: t.value,
-            bundle: t.bundle,
-            confirmed: t.confirmed,
-            reference: t.sourceWalletId
-        }));
-        wallet.outgoingTransfers = wallet.outgoingTransfers.filter(t => t.confirmed <= filterTime);
+        outgoingTransfers = wallet.outgoingTransfers
+            .filter(t => t.confirmed > outgoingEpoch)
+            .map(t => ({
+                value: t.value,
+                bundle: t.bundle,
+                confirmed: t.confirmed,
+                reference: t.payload.to
+            }));
+        wallet.outgoingTransfers = wallet.outgoingTransfers.filter(t => t.confirmed <= outgoingEpoch);
         if (wallet.outgoingTransfers.length !== len) {
             changed = true;
         }
@@ -62,7 +68,7 @@ export async function walletGet(
         success: true,
         message: "OK",
         balance: wallet && wallet.balance,
-        incomingTransfers: incomingTransfers,
-        outgoingTransfers: outgoingTransfers
+        incomingTransfers,
+        outgoingTransfers
     };
 }

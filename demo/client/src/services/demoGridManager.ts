@@ -583,7 +583,7 @@ export class DemoGridManager {
     }
 
     /**
-     * Send any commands to the retuen channels for the registrations.
+     * Send any commands to the return channels for the registrations.
      */
     private async updateReturnCommands(): Promise<void> {
         if (this._gridManager) {

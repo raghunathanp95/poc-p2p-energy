@@ -2,7 +2,6 @@ import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IResponse } from "p2p-energy-common/dist/models/api/IResponse";
 import { IWalletTransferRequest } from "p2p-energy-common/dist/models/api/wallet/IWalletTransferRequest";
-import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import { ValidationHelper } from "p2p-energy-common/dist/utils/validationHelper";
 import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 import { WalletService } from "../../services/walletService";
@@ -33,10 +32,10 @@ export async function transferPost(
             receiveWalletId: request.toIdOrAddress,
             value: request.amount,
             tag: "P9TO9P9ENERGY9POC",
-            message: TrytesHelper.toTrytes({
+            payload: {
                 from: request.id,
                 to: request.toIdOrAddress
-            })
+            }
         }
     );
 

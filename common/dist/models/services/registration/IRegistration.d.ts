@@ -1,4 +1,5 @@
 import { IMamChannelConfiguration } from "../../mam/IMamChannelConfiguration";
+import { IMamCommand } from "../../mam/IMamCommand";
 export interface IRegistration {
     /**
      * Registration id.
@@ -24,4 +25,8 @@ export interface IRegistration {
      * The configuration for the return item MAM channel.
      */
     returnMamChannel?: IMamChannelConfiguration;
+    /**
+     * Any mam commands that have not yet been sent through the return channel.
+     */
+    unsentReturnCommands?: IMamCommand[];
 }

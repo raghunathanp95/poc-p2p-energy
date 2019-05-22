@@ -39,3 +39,11 @@ content-type: application/json
     "amount": 10
 }
 
+### wallet/KYIPTZTEMKUBN9BGKNEABKDTKZS
+GET http://localhost:4000/wallet/KYIPTZTEMKUBN9BGKNEABKDTKZS
+content-type: application/json
+
+### wallet/TVAXQWDOVKSQCZUPTSPXPLLFGSE
+GET http://localhost:4000/wallet/TVAXQWDOVKSQCZUPTSPXPLLFGSE
+content-type: application/json
+

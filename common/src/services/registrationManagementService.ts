@@ -151,13 +151,20 @@ export class RegistrationManagementService implements IRegistrationManagementSer
             const registration = this._registrations.find(r => r.id === registrationId);
             if (registration) {
                 if (registration && registration.returnMamChannel) {
-                    const mamReturnChannel = new MamCommandChannel(this._loadBalancerSettings);
+                    registration.unsentReturnCommands = registration.unsentReturnCommands || [];
+                    registration.unsentReturnCommands =
+                        registration.unsentReturnCommands.concat(commands[registrationId]);
 
-                    for (let i = 0; i < commands[registrationId].length; i++) {
-                        await mamReturnChannel.sendCommand(registration.returnMamChannel, commands[registrationId][i]);
+                    if (registration.unsentReturnCommands.length > 0) {
+                        const mamReturnChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+                        registration.unsentReturnCommands = await mamReturnChannel.sendCommandQueue(
+                            registration.returnMamChannel,
+                            registration.unsentReturnCommands
+                        );
+
+                        await this._registrationStorageService.set(registrationId, registration);
                     }
-
-                    await this._registrationStorageService.set(registrationId, registration);
                 }
             }
         }

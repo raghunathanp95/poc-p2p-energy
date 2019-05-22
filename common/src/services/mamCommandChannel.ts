@@ -94,6 +94,30 @@ export class MamCommandChannel {
     }
 
     /**
+     * Send a queue of commands to the mam channel.
+     * @param channelConfiguration The current configuration for the channel.
+     * @param commands The commands to send.
+     * @return Unsent commands.
+     */
+    public async sendCommandQueue(
+        channelConfiguration: IMamChannelConfiguration,
+        commands: IMamCommand[]):
+        Promise<IMamCommand[]> {
+        const unsent = commands.slice(0);
+
+        for (let i = 0; i < commands.length; i++) {
+            try {
+                await this.sendCommand(channelConfiguration, unsent[0]);
+                unsent.shift();
+            } catch (err) {
+                this._loggingService.error("consumer", "Sending command failed, aborting queue", err);
+            }
+        }
+
+        return unsent;
+    }
+
+    /**
      * Send a command to the mam channel.
      * @param channelConfiguration The current configuration for the channel.
      * @param command The payload to send.

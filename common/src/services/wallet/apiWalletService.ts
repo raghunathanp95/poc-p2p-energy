@@ -27,8 +27,8 @@ export class ApiWalletService implements IWalletService {
      * @returns The wallet.
      */
     public async getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet> {
-        const paymentApiClient = new WalletApiClient(this._apiEndpoint);
-        return paymentApiClient.getWallet({ id, incomingEpoch, outgoingEpoch }).then(response => response);
+        const walletApiClient = new WalletApiClient(this._apiEndpoint);
+        return walletApiClient.getWallet({ id, incomingEpoch, outgoingEpoch }).then(response => response);
     }
 
     /**
@@ -41,8 +41,8 @@ export class ApiWalletService implements IWalletService {
         id: string,
         toIdOrAddress: string,
         amount: number): Promise<void> {
-        const paymentApiClient = new WalletApiClient(this._apiEndpoint);
-        return paymentApiClient.transfer({ id, toIdOrAddress, amount })
+        const walletApiClient = new WalletApiClient(this._apiEndpoint);
+        return walletApiClient.transfer({ id, toIdOrAddress, amount })
             .then(response => undefined);
     }
 }

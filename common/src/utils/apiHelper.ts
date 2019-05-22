@@ -10,12 +10,7 @@ export class ApiHelper {
     public static joinParams(command: string, params: any[]): string {
         let newCommand = command;
         for (let i = 0; i < params.length; i++) {
-            if (params[i] === undefined) {
-                newCommand += `/`;
-            } else {
-                newCommand += `/${encodeURIComponent(params[i])}`;
-            }
-
+            newCommand += `/${encodeURIComponent(params[i])}`;
         }
         return newCommand;
     }

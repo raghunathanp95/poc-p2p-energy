@@ -42,6 +42,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             runningCostsReceived: 0,
             producerTotals: {},
             consumerTotals: {},
+            lastTransferCheck: 0,
             lastIncomingTransferTime: 0,
             lastOutgoingTransferTime: 0
         };
@@ -79,8 +80,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                     usage: 0,
                     requestedUsage: 0,
                     outstanding: 0,
-                    paid: 0,
-                    requested: 0
+                    paid: 0
                 };
             }
 
@@ -164,35 +164,50 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
         }> {
         let updatedState = false;
 
-        // Get all the payment since the last epochs
-        const wallet = await this._walletService.getWallet(
-            gridId,
-            gridState.strategyState.lastIncomingTransferTime,
-            gridState.strategyState.lastOutgoingTransferTime);
+        const now = Date.now();
 
-        if (wallet) {
-            if (wallet.incomingTransfers) {
-                for (let i = 0; i < wallet.incomingTransfers.length; i++) {
-                    const consumerId = wallet.incomingTransfers[i].reference;
-                    if (gridState.strategyState.consumerTotals[consumerId]) {
-                        gridState.strategyState.consumerTotals[consumerId].outstanding +=
-                            wallet.incomingTransfers[i].value;
-                        if (wallet.incomingTransfers[i].confirmed > gridState.strategyState.lastIncomingTransferTime) {
-                            gridState.strategyState.lastIncomingTransferTime = wallet.incomingTransfers[i].confirmed;
+        if (now - gridState.strategyState.lastTransferCheck > 10000) {
+            // Get all the payment since the last epochs
+            const wallet = await this._walletService.getWallet(
+                gridId,
+                gridState.strategyState.lastIncomingTransferTime,
+                gridState.strategyState.lastOutgoingTransferTime);
+
+            if (wallet) {
+                if (wallet.incomingTransfers) {
+                    let totalIncoming = 0;
+                    for (let i = 0; i < wallet.incomingTransfers.length; i++) {
+                        const consumerId = wallet.incomingTransfers[i].reference;
+                        if (gridState.strategyState.consumerTotals[consumerId]) {
+                            gridState.strategyState.consumerTotals[consumerId].outstanding -=
+                                wallet.incomingTransfers[i].value;
+                            gridState.strategyState.consumerTotals[consumerId].paid +=
+                                wallet.incomingTransfers[i].value;
+
+                            totalIncoming += wallet.incomingTransfers[i].value;
+
+                            if (wallet.incomingTransfers[i].confirmed >
+                                gridState.strategyState.lastIncomingTransferTime) {
+                                gridState.strategyState.lastIncomingTransferTime =
+                                    wallet.incomingTransfers[i].confirmed;
+                            }
                         }
                     }
-                    gridState.strategyState.runningCostsReceived += wallet.incomingTransfers[i].value;
-                    updatedState = true;
+                    gridState.strategyState.runningCostsReceived += totalIncoming / 5;
                 }
+                // if (wallet.outgoingTransfers) {
+                //     for (let i = 0; i < wallet.outgoingTransfers.length; i++) {
+                //         if (wallet.outgoingTransfers[i].confirmed >
+                //gridState.strategyState.lastOutgoingTransferTime) {
+                //             gridState.strategyState.lastOutgoingTransferTime = wallet.outgoingTransfers[i].confirmed;
+                //         }
+                //         updatedState = true;
+                //     }
+                // }
             }
-            // if (wallet.outgoingTransfers) {
-            //     for (let i = 0; i < wallet.outgoingTransfers.length; i++) {
-            //         if (wallet.outgoingTransfers[i].confirmed > gridState.strategyState.lastOutgoingTransferTime) {
-            //             gridState.strategyState.lastOutgoingTransferTime = wallet.outgoingTransfers[i].confirmed;
-            //         }
-            //         updatedState = true;
-            //     }
-            // }
+
+            updatedState = true;
+            gridState.strategyState.lastTransferCheck = now;
         }
 
         return {

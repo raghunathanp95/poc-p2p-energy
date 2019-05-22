@@ -139,9 +139,9 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
         if (paymentRequests.length > 0) {
             consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
 
-            // Consumer pays the grid every multiple of 10i and using the most recent payment address
+            // Consumer pays the grid every multiple of 50i and using the most recent payment address
             // a real world system would keep track of which payments go to each address
-            const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 10) * 10;
+            const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 50) * 50;
             if (payableBalance > 0) {
                 const bundle = await this._walletService.transfer(
                     consumerId,
@@ -161,7 +161,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             }
         }
 
-        if (consumerState.strategyState.paymentsSent < consumerState.strategyState.paymentsConfirmed) {
+        if (consumerState.strategyState.paymentsConfirmed < consumerState.strategyState.paymentsSent) {
             const lastOutgoingTransfer = consumerState.strategyState.transfers &&
                 consumerState.strategyState.transfers.length > 0 ?
                 consumerState.strategyState.transfers[consumerState.strategyState.transfers.length - 1].confirmed : 0;

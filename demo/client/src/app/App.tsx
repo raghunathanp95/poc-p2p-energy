@@ -4,6 +4,7 @@ import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessa
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
+import { ApiWalletService } from "p2p-energy-common/dist/services/wallet/apiWalletService";
 import React, { Component, ReactNode } from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import logo from "../assets/logo.svg";
@@ -19,7 +20,6 @@ import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
 import { GridParams } from "./routes/GridParams";
 import Introduction from "./routes/Introduction";
-import { ApiWalletService } from "p2p-energy-common/dist/services/wallet/apiWalletService";
 
 /**
  * Main application class.
@@ -61,7 +61,7 @@ class App extends Component<RouteComponentProps, AppState> {
 
             ServiceFactory.register("configuration", () => configService);
             ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
-            ServiceFactory.register("tangleExplorer", () => new TangleExplorerService(config.tangleExplorer));
+            ServiceFactory.register("tangle-explorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
             ServiceFactory.register("wallet", () => new ApiWalletService(config.apiEndpoint));

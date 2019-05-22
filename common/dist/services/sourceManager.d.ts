@@ -1,6 +1,5 @@
 import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
-import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
 import { ISourceStrategy } from "../models/strategies/ISourceStrategy";
@@ -57,10 +56,6 @@ export declare class SourceManager<S> {
      * @returns Any new source output commands.
      */
     updateStrategy(): Promise<ISourceOutputCommand[]>;
-    /**
-     * Send a command to the channel.
-     */
-    sendCommand<T extends IMamCommand>(command: T): Promise<T>;
     /**
      * Load the state for the producer.
      */

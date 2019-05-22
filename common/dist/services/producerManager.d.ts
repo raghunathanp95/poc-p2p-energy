@@ -68,10 +68,6 @@ export declare class ProducerManager<S> {
      */
     updateStrategy(): Promise<IProducerOutputCommand[]>;
     /**
-     * Send a command to the channel.
-     */
-    sendCommand<T extends IMamCommand>(command: T): Promise<void>;
-    /**
      * Load the state for the producer.
      */
     private loadState;

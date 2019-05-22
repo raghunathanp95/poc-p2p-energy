@@ -5,6 +5,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IAWSDynamoDbConfiguration } from "p2p-energy-common/dist/models/config/IAWSDynamoDbConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonDynamoDbService } from "p2p-energy-common/dist/services/amazon/amazonDynamoDbService";
+import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import { IDemoWalletTransfer } from "../models/services/IDemoWalletTransfer";
 import { IDemoWalletTransferContainer } from "../models/services/IDemoWalletTransferContainer";
 import { WalletService } from "./walletService";
@@ -119,7 +120,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                         await iota.getInputs(sourceWallet.seed, {
                             start: sourceWallet.startIndex,
                             end: Math.max(sourceWallet.startIndex + 10, sourceWallet.lastIndex)
-                         });
+                        });
 
                     if (inputsResponse && inputsResponse.inputs && inputsResponse.inputs.length > 0) {
                         const lastSourceUsedIndex = Math.max(
@@ -142,7 +143,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                                 address: nextTransfer.address,
                                 value: nextTransfer.value,
                                 tag: nextTransfer.tag,
-                                message: nextTransfer.message
+                                message: nextTransfer.payload ? TrytesHelper.toTrytes(nextTransfer.payload) : ""
                             }],
                             {
                                 inputs: inputsResponse.inputs,
@@ -224,29 +225,41 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                     if (confirmedIndex >= 0) {
                         const sourceWalletId = walletTransferContainer.pending.sourceWalletId;
                         const receiveWalletId = walletTransferContainer.pending.receiveWalletId;
+
                         walletTransferContainer.pending.confirmed = Date.now();
 
                         const sourceWallet = await this._walletService.get(sourceWalletId);
                         if (sourceWallet) {
-                            sourceWallet.outgoingTransfers = sourceWallet.outgoingTransfers || [];
-                            sourceWallet.outgoingTransfers.push(walletTransferContainer.pending);
-
                             sourceWallet.balance -= startTransactions[confirmedIndex].value;
-
-                            await this._walletService.set(sourceWalletId, sourceWallet);
+                            await this._walletService.set(sourceWallet.id, sourceWallet);
                         }
 
                         const receiveWallet = await this._walletService.get(receiveWalletId);
-
                         if (receiveWallet) {
-                            walletTransferContainer.pending.sourceWalletId = sourceWalletId;
-                            receiveWallet.incomingTransfers = receiveWallet.incomingTransfers || [];
-                            receiveWallet.incomingTransfers.push(walletTransferContainer.pending);
-
                             receiveWallet.balance += startTransactions[confirmedIndex].value;
                             receiveWallet.lastIndex++;
 
-                            await this._walletService.set(receiveWalletId, receiveWallet);
+                            await this._walletService.set(receiveWallet.id, receiveWallet);
+                        }
+
+                        if (walletTransferContainer.pending.payload) {
+                            const fromWallet = await this._walletService.get(
+                                walletTransferContainer.pending.payload.from);
+                            if (fromWallet) {
+                                fromWallet.outgoingTransfers = fromWallet.outgoingTransfers || [];
+                                fromWallet.outgoingTransfers.push(walletTransferContainer.pending);
+
+                                await this._walletService.set(fromWallet.id, fromWallet);
+                            }
+
+                            const toWallet = await this._walletService.get(
+                                walletTransferContainer.pending.payload.to);
+                            if (toWallet) {
+                                toWallet.incomingTransfers = toWallet.incomingTransfers || [];
+                                toWallet.incomingTransfers.push(walletTransferContainer.pending);
+
+                                await this._walletService.set(toWallet.id, toWallet);
+                            }
                         }
 
                         walletTransferContainer.pending = undefined;

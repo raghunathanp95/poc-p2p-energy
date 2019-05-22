@@ -143,7 +143,7 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                         <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately. In a real system the update speed would be much slower.
                             <br /><br />
                             Payment is only requested from Consumers on whole kWh, so they will have no outstanding balance immediately.
-                            Additionally consumers only pay the grid when they have reached multiple of 10i.
+                            Additionally consumers only pay the grid when they have reached multiple of 50i.
                         </div>
 
                     </React.Fragment>

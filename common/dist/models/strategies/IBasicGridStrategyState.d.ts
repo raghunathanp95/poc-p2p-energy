@@ -45,6 +45,10 @@ export interface IBasicGridStrategyState {
         [id: string]: IBasicGridStrategyConsumerTotals;
     };
     /**
+     * Last time we checked for transfers.
+     */
+    lastTransferCheck: number;
+    /**
      * The time of the last incoming transfer.
      */
     lastIncomingTransferTime: number;

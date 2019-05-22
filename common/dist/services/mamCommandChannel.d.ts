@@ -37,6 +37,13 @@ export declare class MamCommandChannel {
      */
     closeWritable(channelConfiguration: IMamChannelConfiguration): Promise<void>;
     /**
+     * Send a queue of commands to the mam channel.
+     * @param channelConfiguration The current configuration for the channel.
+     * @param commands The commands to send.
+     * @return Unsent commands.
+     */
+    sendCommandQueue(channelConfiguration: IMamChannelConfiguration, commands: IMamCommand[]): Promise<IMamCommand[]>;
+    /**
      * Send a command to the mam channel.
      * @param channelConfiguration The current configuration for the channel.
      * @param command The payload to send.

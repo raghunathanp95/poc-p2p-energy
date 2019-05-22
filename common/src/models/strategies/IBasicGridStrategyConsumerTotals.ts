@@ -18,11 +18,6 @@ export interface IBasicGridStrategyConsumerTotals {
     paid: number;
 
     /**
-     * Total requested from the consumer.
-     */
-    requested: number;
-
-    /**
      * Total outstanding by the consumer.
      */
     outstanding: number;

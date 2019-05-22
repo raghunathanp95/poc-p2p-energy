@@ -163,12 +163,14 @@ export class ConsumerManager<S> {
         const result = await this._strategy.usage(this._config.id, this._state);
         let updatedState = result.updatedState;
 
-        if (result.commands.length > 0) {
+        this._state.unsentCommands = this._state.unsentCommands.concat(result.commands);
+
+        if (this._state.channel && this._state.unsentCommands.length > 0) {
             const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
 
-            for (let i = 0; i < result.commands.length; i++) {
-                await mamCommandChannel.sendCommand(this._state.channel, result.commands[i]);
-            }
+            this._state.unsentCommands = await mamCommandChannel.sendCommandQueue(
+                this._state.channel,
+                this._state.unsentCommands);
         }
 
         if (this._state.returnChannel) {
@@ -210,7 +212,8 @@ export class ConsumerManager<S> {
         this._loggingService.log("consumer", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init(this._config.id)
+            strategyState: await this._strategy.init(this._config.id),
+            unsentCommands: []
         };
     }
 

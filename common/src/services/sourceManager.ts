@@ -1,7 +1,6 @@
 import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
-import { IMamCommand } from "../models/mam/IMamCommand";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
 import { IRegistrationService } from "../models/services/IRegistrationService";
@@ -143,8 +142,14 @@ export class SourceManager<S> {
     public async updateStrategy(): Promise<ISourceOutputCommand[]> {
         const result = await this._strategy.value(this._config.id, this._state);
 
-        for (let i = 0; i < result.commands.length; i++) {
-            await this.sendCommand(result.commands[i]);
+        this._state.unsentCommands = this._state.unsentCommands.concat(result.commands);
+
+        if (this._state.channel && this._state.unsentCommands.length > 0) {
+            const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
+
+            this._state.unsentCommands = await mamCommandChannel.sendCommandQueue(
+                this._state.channel,
+                this._state.unsentCommands);
         }
 
         if (result.updatedState) {
@@ -152,16 +157,6 @@ export class SourceManager<S> {
         }
 
         return result.commands;
-    }
-
-    /**
-     * Send a command to the channel.
-     */
-    public async sendCommand<T extends IMamCommand>(command: T): Promise<T> {
-        const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
-        await mamCommandChannel.sendCommand(this._state.channel, command);
-        await this.saveState();
-        return command;
     }
 
     /**
@@ -176,7 +171,8 @@ export class SourceManager<S> {
         this._loggingService.log("source", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init(this._config.id)
+            strategyState: await this._strategy.init(this._config.id),
+            unsentCommands: []
         };
     }
 
