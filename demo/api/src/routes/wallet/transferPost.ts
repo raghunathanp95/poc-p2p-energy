@@ -15,8 +15,8 @@ export async function transferPost(
     request: IWalletTransferRequest):
     Promise<IResponse> {
 
-    ValidationHelper.trytes(request.id, 27, "id");
-    ValidationHelper.trytes(request.toIdOrAddress, 27, "toIdOrAddress");
+    ValidationHelper.trytes(request.id, 36, "id");
+    ValidationHelper.trytes(request.toIdOrAddress, 36, "toIdOrAddress");
     ValidationHelper.number(request.amount, "amount");
 
     const walletService = ServiceFactory.get<WalletService>("wallet");

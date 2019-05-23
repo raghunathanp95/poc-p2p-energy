@@ -23,18 +23,6 @@ $steps: 10;
     }
 }
 
-// .ct-line {
-//   stroke: var(--jade) !important;
-// }
-
-// .ct-point {
-//   stroke: var(--blueberry) !important;
-// }
-
-// .ct-area {
-//   fill: var(--jade) !important;
-// }
-
 // sass-lint:disable no-ids
 #root {
   display: flex;
@@ -73,4 +61,8 @@ $steps: 10;
 .small-vertical-margin * {
   margin-top: 1px;
   margin-bottom: 1px;
+}
+
+.modal {
+  box-shadow: 3px 3px 5px 0px rgba(0,0,0,0.25);
 }

@@ -18,6 +18,11 @@ export interface ListConfigureProps<T extends IIdItem> {
     items: T[];
 
     /**
+     * The maximum number of entries we can store in the list.
+     */
+    maxItems: number;
+
+    /**
      * Element to use for configuration.
      */
     configure(props: ItemConfigureProps<T>): void;

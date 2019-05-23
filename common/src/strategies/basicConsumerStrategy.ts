@@ -139,9 +139,9 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
         if (paymentRequests.length > 0) {
             consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
 
-            // Consumer pays the grid every multiple of 50i and using the most recent payment address
+            // Consumer pays the grid every multiple of 25i and using the dummy wallet
             // a real world system would keep track of which payments go to each address
-            const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 50) * 50;
+            const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 25) * 25;
             if (payableBalance > 0) {
                 const bundle = await this._walletService.transfer(
                     consumerId,

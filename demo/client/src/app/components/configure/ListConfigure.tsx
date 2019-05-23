@@ -45,7 +45,13 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                     <React.Fragment>
                         <Heading level={3} id={this.props.pluralName.toLowerCase()}>
                             {this.props.pluralName}
-                            &nbsp;<Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add</Button>
+                            &nbsp;
+                            {this.state.items.length < this.props.maxItems && (
+                                <Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add</Button>
+                            )}
+                            {this.state.items.length === this.props.maxItems && (
+                                <Button size="small" color="secondary" onClick={() => this.setState({ showMaxDialog: true })}>Add</Button>
+                            )}
                         </Heading>
 
                         <Table>
@@ -102,6 +108,20 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                         ]}
                     >
                         Are you sure you want to delete {this.props.itemName.toLowerCase()} '{this.state.deleteItem.name}' ?
+                    </Modal>
+                )}
+                {this.state.showMaxDialog && (
+                    <Modal
+                        title="Information"
+                        onClose={() => this.setState({ showMaxDialog: false })}
+                        buttons={[
+                            {
+                                id: "ok",
+                                label: "OK"
+                            }
+                        ]}
+                    >
+                        This demonstration only allows a maximum of {this.props.maxItems} {this.props.pluralName.toLowerCase()}.
                     </Modal>
                 )}
             </React.Fragment>

@@ -9,10 +9,14 @@ export declare class ApiWalletService implements IWalletService {
      */
     private readonly _apiEndpoint;
     /**
+     * The unique id for the client sending the requests.
+     */
+    private readonly _clientId;
+    /**
      * Create a new instance of ApiPaymentService
      * @param apiEndpoint The api configuration.
      */
-    constructor(apiEndpoint: string);
+    constructor(apiEndpoint: string, clientId: string);
     /**
      * Get the wallet details.
      * @param id The wallet id.

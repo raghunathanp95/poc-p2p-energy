@@ -5,6 +5,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
 import { ApiWalletService } from "p2p-energy-common/dist/services/wallet/apiWalletService";
+import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import logo from "../assets/logo.svg";
@@ -59,12 +60,27 @@ class App extends Component<RouteComponentProps, AppState> {
                 timeoutMs: 10000
             };
 
+            const appSettingsStorage = new BrowserStorageService<{
+                /**
+                 * A client id used for uniquely identifying this installation.
+                 */
+                clientId: string;
+            }>("settings");
+
+            let appSettings = await appSettingsStorage.get("default");
+            if (!appSettings || !appSettings.clientId) {
+                appSettings = {
+                    clientId: TrytesHelper.generateHash(9)
+                };
+                await appSettingsStorage.set("default", appSettings);
+            }
+
             ServiceFactory.register("configuration", () => configService);
             ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
             ServiceFactory.register("tangle-explorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => new ConsoleLoggingService());
-            ServiceFactory.register("wallet", () => new ApiWalletService(config.apiEndpoint));
+            ServiceFactory.register("wallet", () => new ApiWalletService(config.apiEndpoint, appSettings.clientId));
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
             ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings, config.apiEndpoint));
 

@@ -12,11 +12,17 @@ export class ApiWalletService implements IWalletService {
     private readonly _apiEndpoint: string;
 
     /**
+     * The unique id for the client sending the requests.
+     */
+    private readonly _clientId: string;
+
+    /**
      * Create a new instance of ApiPaymentService
      * @param apiEndpoint The api configuration.
      */
-    constructor(apiEndpoint: string) {
+    constructor(apiEndpoint: string, clientId: string) {
         this._apiEndpoint = apiEndpoint;
+        this._clientId = clientId;
     }
 
     /**
@@ -28,7 +34,27 @@ export class ApiWalletService implements IWalletService {
      */
     public async getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet> {
         const walletApiClient = new WalletApiClient(this._apiEndpoint);
-        return walletApiClient.getWallet({ id, incomingEpoch, outgoingEpoch }).then(response => response);
+        return walletApiClient.getWallet({
+            id: `${this._clientId}${id}`,
+            incomingEpoch,
+            outgoingEpoch
+        }).then(response => {
+            if (response.incomingTransfers) {
+                for (let i = 0; i < response.incomingTransfers.length; i++) {
+                    response.incomingTransfers[i].reference =
+                        response.incomingTransfers[i].reference.replace(new RegExp(`^${this._clientId}`), "");
+                }
+            }
+
+            if (response.outgoingTransfers) {
+                for (let i = 0; i < response.outgoingTransfers.length; i++) {
+                    response.outgoingTransfers[i].reference =
+                        response.outgoingTransfers[i].reference.replace(new RegExp(`^${this._clientId}`), "");
+                }
+            }
+
+            return response;
+        });
     }
 
     /**
@@ -42,7 +68,11 @@ export class ApiWalletService implements IWalletService {
         toIdOrAddress: string,
         amount: number): Promise<void> {
         const walletApiClient = new WalletApiClient(this._apiEndpoint);
-        return walletApiClient.transfer({ id, toIdOrAddress, amount })
+        return walletApiClient.transfer({
+            id: `${this._clientId}${id}`,
+            toIdOrAddress: `${this._clientId}${toIdOrAddress}`,
+            amount
+        })
             .then(response => undefined);
     }
 }

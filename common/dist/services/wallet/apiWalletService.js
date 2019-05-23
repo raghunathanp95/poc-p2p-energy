@@ -17,8 +17,9 @@ class ApiWalletService {
      * Create a new instance of ApiPaymentService
      * @param apiEndpoint The api configuration.
      */
-    constructor(apiEndpoint) {
+    constructor(apiEndpoint, clientId) {
         this._apiEndpoint = apiEndpoint;
+        this._clientId = clientId;
     }
     /**
      * Get the wallet details.
@@ -30,7 +31,25 @@ class ApiWalletService {
     getWallet(id, incomingEpoch, outgoingEpoch) {
         return __awaiter(this, void 0, void 0, function* () {
             const walletApiClient = new walletApiClient_1.WalletApiClient(this._apiEndpoint);
-            return walletApiClient.getWallet({ id, incomingEpoch, outgoingEpoch }).then(response => response);
+            return walletApiClient.getWallet({
+                id: `${this._clientId}${id}`,
+                incomingEpoch,
+                outgoingEpoch
+            }).then(response => {
+                if (response.incomingTransfers) {
+                    for (let i = 0; i < response.incomingTransfers.length; i++) {
+                        response.incomingTransfers[i].reference =
+                            response.incomingTransfers[i].reference.replace(new RegExp(`^${this._clientId}`), "");
+                    }
+                }
+                if (response.outgoingTransfers) {
+                    for (let i = 0; i < response.outgoingTransfers.length; i++) {
+                        response.outgoingTransfers[i].reference =
+                            response.outgoingTransfers[i].reference.replace(new RegExp(`^${this._clientId}`), "");
+                    }
+                }
+                return response;
+            });
         });
     }
     /**
@@ -42,10 +61,14 @@ class ApiWalletService {
     transfer(id, toIdOrAddress, amount) {
         return __awaiter(this, void 0, void 0, function* () {
             const walletApiClient = new walletApiClient_1.WalletApiClient(this._apiEndpoint);
-            return walletApiClient.transfer({ id, toIdOrAddress, amount })
+            return walletApiClient.transfer({
+                id: `${this._clientId}${id}`,
+                toIdOrAddress: `${this._clientId}${toIdOrAddress}`,
+                amount
+            })
                 .then(response => undefined);
         });
     }
 }
 exports.ApiWalletService = ApiWalletService;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBpV2FsbGV0U2VydmljZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zZXJ2aWNlcy93YWxsZXQvYXBpV2FsbGV0U2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBRUEsNERBQXlEO0FBRXpEOztHQUVHO0FBQ0gsTUFBYSxnQkFBZ0I7SUFNekI7OztPQUdHO0lBQ0gsWUFBWSxXQUFtQjtRQUMzQixJQUFJLENBQUMsWUFBWSxHQUFHLFdBQVcsQ0FBQztJQUNwQyxDQUFDO0lBRUQ7Ozs7OztPQU1HO0lBQ1UsU0FBUyxDQUFDLEVBQVUsRUFBRSxhQUFzQixFQUFFLGFBQXNCOztZQUM3RSxNQUFNLGVBQWUsR0FBRyxJQUFJLGlDQUFlLENBQUMsSUFBSSxDQUFDLFlBQVksQ0FBQyxDQUFDO1lBQy9ELE9BQU8sZUFBZSxDQUFDLFNBQVMsQ0FBQyxFQUFFLEVBQUUsRUFBRSxhQUFhLEVBQUUsYUFBYSxFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLEVBQUUsQ0FBQyxRQUFRLENBQUMsQ0FBQztRQUN0RyxDQUFDO0tBQUE7SUFFRDs7Ozs7T0FLRztJQUNVLFFBQVEsQ0FDakIsRUFBVSxFQUNWLGFBQXFCLEVBQ3JCLE1BQWM7O1lBQ2QsTUFBTSxlQUFlLEdBQUcsSUFBSSxpQ0FBZSxDQUFDLElBQUksQ0FBQyxZQUFZLENBQUMsQ0FBQztZQUMvRCxPQUFPLGVBQWUsQ0FBQyxRQUFRLENBQUMsRUFBRSxFQUFFLEVBQUUsYUFBYSxFQUFFLE1BQU0sRUFBRSxDQUFDO2lCQUN6RCxJQUFJLENBQUMsUUFBUSxDQUFDLEVBQUUsQ0FBQyxTQUFTLENBQUMsQ0FBQztRQUNyQyxDQUFDO0tBQUE7Q0FDSjtBQXhDRCw0Q0F3Q0MifQ==
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBpV2FsbGV0U2VydmljZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zZXJ2aWNlcy93YWxsZXQvYXBpV2FsbGV0U2VydmljZS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBRUEsNERBQXlEO0FBRXpEOztHQUVHO0FBQ0gsTUFBYSxnQkFBZ0I7SUFXekI7OztPQUdHO0lBQ0gsWUFBWSxXQUFtQixFQUFFLFFBQWdCO1FBQzdDLElBQUksQ0FBQyxZQUFZLEdBQUcsV0FBVyxDQUFDO1FBQ2hDLElBQUksQ0FBQyxTQUFTLEdBQUcsUUFBUSxDQUFDO0lBQzlCLENBQUM7SUFFRDs7Ozs7O09BTUc7SUFDVSxTQUFTLENBQUMsRUFBVSxFQUFFLGFBQXNCLEVBQUUsYUFBc0I7O1lBQzdFLE1BQU0sZUFBZSxHQUFHLElBQUksaUNBQWUsQ0FBQyxJQUFJLENBQUMsWUFBWSxDQUFDLENBQUM7WUFDL0QsT0FBTyxlQUFlLENBQUMsU0FBUyxDQUFDO2dCQUM3QixFQUFFLEVBQUUsR0FBRyxJQUFJLENBQUMsU0FBUyxHQUFHLEVBQUUsRUFBRTtnQkFDNUIsYUFBYTtnQkFDYixhQUFhO2FBQ2hCLENBQUMsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLEVBQUU7Z0JBQ2YsSUFBSSxRQUFRLENBQUMsaUJBQWlCLEVBQUU7b0JBQzVCLEtBQUssSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxRQUFRLENBQUMsaUJBQWlCLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFO3dCQUN4RCxRQUFRLENBQUMsaUJBQWlCLENBQUMsQ0FBQyxDQUFDLENBQUMsU0FBUzs0QkFDbkMsUUFBUSxDQUFDLGlCQUFpQixDQUFDLENBQUMsQ0FBQyxDQUFDLFNBQVMsQ0FBQyxPQUFPLENBQUMsSUFBSSxNQUFNLENBQUMsSUFBSSxJQUFJLENBQUMsU0FBUyxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQztxQkFDN0Y7aUJBQ0o7Z0JBRUQsSUFBSSxRQUFRLENBQUMsaUJBQWlCLEVBQUU7b0JBQzVCLEtBQUssSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxRQUFRLENBQUMsaUJBQWlCLENBQUMsTUFBTSxFQUFFLENBQUMsRUFBRSxFQUFFO3dCQUN4RCxRQUFRLENBQUMsaUJBQWlCLENBQUMsQ0FBQyxDQUFDLENBQUMsU0FBUzs0QkFDbkMsUUFBUSxDQUFDLGlCQUFpQixDQUFDLENBQUMsQ0FBQyxDQUFDLFNBQVMsQ0FBQyxPQUFPLENBQUMsSUFBSSxNQUFNLENBQUMsSUFBSSxJQUFJLENBQUMsU0FBUyxFQUFFLENBQUMsRUFBRSxFQUFFLENBQUMsQ0FBQztxQkFDN0Y7aUJBQ0o7Z0JBRUQsT0FBTyxRQUFRLENBQUM7WUFDcEIsQ0FBQyxDQUFDLENBQUM7UUFDUCxDQUFDO0tBQUE7SUFFRDs7Ozs7T0FLRztJQUNVLFFBQVEsQ0FDakIsRUFBVSxFQUNWLGFBQXFCLEVBQ3JCLE1BQWM7O1lBQ2QsTUFBTSxlQUFlLEdBQUcsSUFBSSxpQ0FBZSxDQUFDLElBQUksQ0FBQyxZQUFZLENBQUMsQ0FBQztZQUMvRCxPQUFPLGVBQWUsQ0FBQyxRQUFRLENBQUM7Z0JBQzVCLEVBQUUsRUFBRSxHQUFHLElBQUksQ0FBQyxTQUFTLEdBQUcsRUFBRSxFQUFFO2dCQUM1QixhQUFhLEVBQUUsR0FBRyxJQUFJLENBQUMsU0FBUyxHQUFHLGFBQWEsRUFBRTtnQkFDbEQsTUFBTTthQUNULENBQUM7aUJBQ0csSUFBSSxDQUFDLFFBQVEsQ0FBQyxFQUFFLENBQUMsU0FBUyxDQUFDLENBQUM7UUFDckMsQ0FBQztLQUFBO0NBQ0o7QUF0RUQsNENBc0VDIn0=

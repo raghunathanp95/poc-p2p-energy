@@ -63,6 +63,7 @@ class ProducerConfigure extends Component<ProducerConfigureProps, ProducerConfig
                     configure={(props) => {
                         this.setState({ configureSource: props });
                     }}
+                    maxItems={3}
                 />
                 {!this.state.configureSource && (
                     <React.Fragment>

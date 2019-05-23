@@ -174,7 +174,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 gridState.strategyState.lastOutgoingTransferTime);
 
             if (wallet) {
-                if (wallet.incomingTransfers) {
+                if (wallet.incomingTransfers && wallet.incomingTransfers.length > 0) {
+                    this._loggingService.log(
+                        "basic-grid",
+                        `Incoming transfers after ${gridState.strategyState.lastIncomingTransferTime}`,
+                        wallet.incomingTransfers
+                    );
+
                     let totalIncoming = 0;
                     for (let i = 0; i < wallet.incomingTransfers.length; i++) {
                         const consumerId = wallet.incomingTransfers[i].reference;
@@ -193,6 +199,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                             }
                         }
                     }
+                    // We are taking 1i out of every 5i as running costs
                     gridState.strategyState.runningCostsReceived += totalIncoming / 5;
                 }
                 // if (wallet.outgoingTransfers) {

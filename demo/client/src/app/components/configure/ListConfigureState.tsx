@@ -15,4 +15,9 @@ export interface ListConfigureState<T extends IIdItem> {
      * The item to delete.
      */
     deleteItem?: T;
+
+    /**
+     * Show the reached max entries dialog.
+     */
+    showMaxDialog?: boolean;
 }
