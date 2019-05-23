@@ -114,10 +114,13 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
 
                         <br />
                         <hr />
-                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately. In a real system the update speed would be much slower.
+                        <div>For this demonstration the updates are scheduled every 30s, so you may not see data immediately, in a real system the updates would be at even longer intervals.
                             <br /><br />
-                            Payment is only requested from Consumers on whole kWh, so they will have no outstanding balance immediately.
-                            Additionally consumers only pay the grid when they have reached multiple of 25i.
+                            Payment is only requested from Consumers on whole kWh, so they will have no outstanding balance immediately. Consumers only pay the grid when they reach multiples of 25i.
+                            <br /><br />
+                            The grid takes 20% of the payment for its running costs and then distributes the rest to the producers weighted by how much they have contributed to the grid.
+                            <br /><br />
+                            Payment distribution from the grid to the producers is done in 40i intervals.
                         </div>
 
                     </React.Fragment>

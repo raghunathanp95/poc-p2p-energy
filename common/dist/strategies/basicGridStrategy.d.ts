@@ -71,6 +71,12 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
         updatedState: boolean;
     }>;
     /**
+     * Pay the producers using their percentage contribution
+     * @param gridId The id of the grid.
+     * @param gridState The current state of the grid.
+     */
+    private payProducers;
+    /**
      * Update the usage for the consumer.
      * @param gridId The id of the grid.
      * @param consumerTotals The total for the consumer.

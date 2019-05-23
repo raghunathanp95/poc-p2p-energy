@@ -37,7 +37,7 @@ export interface GridLiveConsumerState {
     /**
      * The hash of the last payment bundle.
      */
-    lastPaymentBundle: string;
+    lastOutgoingBundle: string;
 
     /**
      * Are the details expanded.

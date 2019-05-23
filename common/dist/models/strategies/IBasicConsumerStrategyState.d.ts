@@ -32,7 +32,7 @@ export interface IBasicConsumerStrategyState {
      */
     paymentsConfirmed?: number;
     /**
-     * Tranfers from the consumer wallet.
+     * Last transfer from the consumer wallet.
      */
-    transfers?: IWalletTransfer[];
+    lastOutgoingTransfer?: IWalletTransfer;
 }

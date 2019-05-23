@@ -143,7 +143,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             // a real world system would keep track of which payments go to each address
             const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 25) * 25;
             if (payableBalance > 0) {
-                const bundle = await this._walletService.transfer(
+                await this._walletService.transfer(
                     consumerId,
                     paymentRequests[paymentRequests.length - 1].paymentIdOrAddress,
                     payableBalance);
@@ -155,24 +155,20 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
                 updatedState = true;
 
                 this._loggingService.log("basic-consumer", "wallet", {
-                    amount: payableBalance,
-                    bundle
+                    amount: payableBalance
                 });
             }
         }
 
         if (consumerState.strategyState.paymentsConfirmed < consumerState.strategyState.paymentsSent) {
-            const lastOutgoingTransfer = consumerState.strategyState.transfers &&
-                consumerState.strategyState.transfers.length > 0 ?
-                consumerState.strategyState.transfers[consumerState.strategyState.transfers.length - 1].created : 0;
+            const lastOutgoingEpoch = consumerState.strategyState.lastOutgoingTransfer ?
+                consumerState.strategyState.lastOutgoingTransfer.created : 0;
 
-            const wallet = await this._walletService.getWallet(consumerId, undefined, lastOutgoingTransfer);
+            const wallet = await this._walletService.getWallet(consumerId, undefined, lastOutgoingEpoch);
 
-            if (wallet && wallet.outgoingTransfers) {
-                consumerState.strategyState.transfers = consumerState.strategyState.transfers || [];
-                consumerState.strategyState.transfers =
-                    consumerState.strategyState.transfers.concat(wallet.outgoingTransfers);
-                consumerState.strategyState.transfers = consumerState.strategyState.transfers.slice(-10);
+            if (wallet && wallet.outgoingTransfers && wallet.outgoingTransfers.length > 0) {
+                consumerState.strategyState.lastOutgoingTransfer =
+                    wallet.outgoingTransfers[wallet.outgoingTransfers.length - 1];
                 consumerState.strategyState.paymentsConfirmed += wallet.outgoingTransfers.length;
                 updatedState = true;
             }

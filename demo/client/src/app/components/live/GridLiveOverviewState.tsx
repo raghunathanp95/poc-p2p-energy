@@ -1,3 +1,4 @@
+import { IWalletTransfer } from "p2p-energy-common/dist/models/api/wallet/IWalletTransfer";
 
 export interface GridLiveOverviewState {
     /**
@@ -9,6 +10,11 @@ export interface GridLiveOverviewState {
      * Running costs received.
      */
     runningCostsReceived: string;
+
+    /**
+     * The amount available to distrbute to producers.
+     */
+    distributionAvailable: string;
 
     /**
      * Producer output.
@@ -39,4 +45,14 @@ export interface GridLiveOverviewState {
      * Consumer owed.
      */
     consumersTotalOutstanding: string;
+
+    /**
+     * Last incoming transfer.
+     */
+    lastIncomingBundle: string;
+
+    /**
+     * Last outgoing transfer.
+     */
+    lastOutgoingBundle: string;
 }

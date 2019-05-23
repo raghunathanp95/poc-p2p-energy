@@ -1,3 +1,4 @@
+import { IWalletTransfer } from "../api/wallet/IWalletTransfer";
 import { IBasicGridStrategyConsumerTotals } from "./IBasicGridStrategyConsumerTotals";
 /**
  * Definition of grid stratey state.
@@ -24,6 +25,11 @@ export interface IBasicGridStrategyState {
     runningCostsReceived?: number;
 
     /**
+     * The total costs distribution available.
+     */
+    distributionAvailable?: number;
+
+    /**
      * Producer totals.
      */
     producerTotals: {
@@ -42,6 +48,11 @@ export interface IBasicGridStrategyState {
              * Total owed to the producer.
              */
             owed: number;
+
+            /**
+             * Global percentage.
+             */
+            percentage: number;
         }
     };
 
@@ -58,10 +69,10 @@ export interface IBasicGridStrategyState {
     /**
      * The time of the last incoming transfer.
      */
-    lastIncomingTransferTime: number;
+    lastIncomingTransfer?: IWalletTransfer;
 
     /**
      * The time of the last outgoing transfer.
      */
-    lastOutgoingTransferTime: number;
+    lastOutgoingTransfer?: IWalletTransfer;
 }

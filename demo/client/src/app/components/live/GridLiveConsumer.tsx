@@ -62,7 +62,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             usageTotal: "-----",
             paidBalance: "-----",
             outstandingBalance: "-----",
-            lastPaymentBundle: "",
+            lastOutgoingBundle: "",
             firstConsumerValueTime: 0,
             graphLabels: [],
             graphSeries: []
@@ -90,10 +90,8 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         `${consumerStrategyState.paidBalance}i` : "-----",
                     outstandingBalance: consumerStrategyState && consumerStrategyState.outstandingBalance !== undefined ?
                         `${consumerStrategyState.outstandingBalance}i` : "-----",
-                    lastPaymentBundle: consumerStrategyState &&
-                        consumerStrategyState.transfers &&
-                        consumerStrategyState.transfers.length > 0 ?
-                        consumerStrategyState.transfers[consumerStrategyState.transfers.length - 1].bundle : "",
+                    lastOutgoingBundle: consumerStrategyState &&
+                        consumerStrategyState.lastOutgoingTransfer ? consumerStrategyState.lastOutgoingTransfer.bundle : "",
                     mamRoot: mamChannel && mamChannel.initialRoot,
                     sideKey: mamChannel && mamChannel.sideKey,
                     mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
@@ -141,13 +139,13 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                     </button>
                     <div className="grid-live-consumer-info">
                         <div className="grid-live-consumer-info-id">ID: {this.props.consumer.id}</div>
-                        <div className="grid-live-consumer-info-data"><span>Usage:</span><span>{this.state.usageTotal}</span></div>
-                        <div className="grid-live-consumer-info-data"><span>Paid:</span><span>{this.state.paidBalance}</span></div>
-                        <div className="grid-live-consumer-info-data"><span>Outstanding:</span><span>{this.state.outstandingBalance}</span></div>
-                        {this.state.lastPaymentBundle && (
-                            <div className="grid-live-consumer-info-data"><span>Last Payment:</span><span>
-                                <a onClick={() => this._tangleExplorerService.bundle(this.state.lastPaymentBundle)}>
-                                    {this.state.lastPaymentBundle.substr(0, 10)}...
+                        <div className="grid-live-consumer-info-data"><span>Usage</span><span>{this.state.usageTotal}</span></div>
+                        <div className="grid-live-consumer-info-data"><span>Paid</span><span>{this.state.paidBalance}</span></div>
+                        <div className="grid-live-consumer-info-data"><span>Outstanding</span><span>{this.state.outstandingBalance}</span></div>
+                        {this.state.lastOutgoingBundle && (
+                            <div className="grid-live-consumer-info-data"><span>Confirmed</span><span>
+                                <a onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
+                                    {this.state.lastOutgoingBundle.substr(0, 10)}...
                                 </a>
                             </span></div>
                         )}

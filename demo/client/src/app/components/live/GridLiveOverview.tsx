@@ -2,6 +2,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import React, { Component, ReactNode } from "react";
 import grid from "../../../assets/grid/grid.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
+import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveOverview.scss";
 import { GridLiveOverviewProps } from "./GridLiveOverviewProps";
 import { GridLiveOverviewState } from "./GridLiveOverviewState";
@@ -16,6 +17,11 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
     private readonly _demoGridManager: DemoGridManager;
 
     /**
+     * Tangle explorer service.
+     */
+    private readonly _tangleExplorerService: TangleExplorerService;
+
+    /**
      * Create a new instance of GridLiveOverview.
      * @param props The props for the component.
      */
@@ -23,16 +29,20 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
         super(props);
 
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
+        this._tangleExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
 
         this.state = {
             runningCostsTotal: "-----",
             runningCostsReceived: "-----",
+            distributionAvailable: "-----",
             producersTotalOutput: "-----",
             producersTotalReceived: "-----",
             producersTotalOwed: "-----",
             consumersTotalUsage: "-----",
             consumersTotalPaid: "-----",
-            consumersTotalOutstanding: "-----"
+            consumersTotalOutstanding: "-----",
+            lastIncomingBundle: "",
+            lastOutgoingBundle: ""
         };
     }
 
@@ -69,12 +79,18 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                     ? `${gridStrategyState.runningCostsTotal}i` : "0i",
                 runningCostsReceived: gridStrategyState && gridStrategyState.runningCostsReceived !== undefined
                     ? `${gridStrategyState.runningCostsReceived}i` : "0i",
+                distributionAvailable: gridStrategyState && gridStrategyState.distributionAvailable !== undefined
+                    ? `${gridStrategyState.distributionAvailable}i` : "0i",
                 producersTotalOutput: `${Math.ceil(producersTotalOutput)} kWh`,
                 producersTotalReceived: `${producersTotalReceived}i`,
                 producersTotalOwed: `${producersTotalOwed}i`,
                 consumersTotalUsage: `${Math.floor(consumersTotalUsage * 10) / 10} kWh`,
                 consumersTotalOutstanding: `${consumersTotalOutstanding}i`,
-                consumersTotalPaid: `${consumersTotalPaid}i`
+                consumersTotalPaid: `${consumersTotalPaid}i`,
+                lastIncomingBundle: gridStrategyState && gridStrategyState.lastIncomingTransfer
+                    ? gridStrategyState.lastIncomingTransfer.bundle : "",
+                lastOutgoingBundle: gridStrategyState && gridStrategyState.lastOutgoingTransfer
+                    ? gridStrategyState.lastOutgoingTransfer.bundle : ""
             });
         });
     }
@@ -98,21 +114,88 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                     <div className="grid-live-caption-id">ID: {this.props.grid.id}</div>
                 </div>
                 <img src={grid} alt="Grid" />
-                <div className="grid-live-grid-sub-title">Connections</div>
-                <div>Producers: {this.props.grid.producers.length}</div>
-                <div>Consumers: {this.props.grid.consumers.length}</div>
-                <div className="grid-live-grid-sub-title">Totals</div>
-                <div className="positive">Running costs total: {this.state.runningCostsTotal}</div>
-                <div className="positive">Running costs received: {this.state.runningCostsReceived}</div>
+                <div className="grid-live-grid-sub-title">Grid</div>
+
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption wide">Running Costs Total</span>
+                    <span className="positive">{this.state.runningCostsTotal}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption wide">Running Costs Received</span>
+                    <span className="positive">{this.state.runningCostsReceived}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption wide">Distribution Available</span>
+                    <span className="positive">{this.state.distributionAvailable}</span>
+                </div>
+
                 <br />
-                <div>Producers output: {this.state.producersTotalOutput}</div>
-                <div className="positive">Producers received: {this.state.producersTotalReceived}</div>
-                <div className="negative">Producers owed: {this.state.producersTotalOwed}</div>
+
+                <div className="grid-live-grid-sub-title">
+                Producers
+                    <span className="grid-live-grid-sub-title-value">
+                        [{this.props.grid.producers.length}]
+                    </span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Output</span>
+                    <span>{this.state.producersTotalOutput}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Received</span>
+                    <span className="positive">{this.state.producersTotalReceived}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Owed</span>
+                    <span className="negative">{this.state.producersTotalOwed}</span>
+                </div>
+
                 <br />
-                <div>Consumers usage: {this.state.consumersTotalUsage}</div>
-                <div className="positive">Consumers paid: {this.state.consumersTotalPaid}</div>
-                <div className="negative">Consumers outstanding: {this.state.consumersTotalOutstanding}</div>
-            </div>
+                <div className="grid-live-grid-sub-title">
+                    Consumers
+                    <span className="grid-live-grid-sub-title-value">
+                        [{this.props.grid.consumers.length}]
+                    </span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Usage</span>
+                    <span>{this.state.consumersTotalUsage}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Paid</span>
+                    <span className="positive">{this.state.consumersTotalPaid}</span>
+                </div>
+                <div className="grid-live-grid-data">
+                    <span className="grid-live-grid-data-caption">Outstanding</span>
+                    <span className="negative">{this.state.consumersTotalOutstanding}</span>
+                </div>
+
+                {(this.state.lastIncomingBundle || this.state.lastOutgoingBundle) && (
+                    <React.Fragment>
+                        <br />
+                        <div className="grid-live-grid-sub-title">
+                            Transactions
+                        </div>
+                    </React.Fragment>
+                )}
+
+                {this.state.lastIncomingBundle && (
+                    <div className="grid-live-grid-data">
+                        <span className="grid-live-grid-data-caption">Last Incoming</span>
+                        <a onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
+                            {this.state.lastIncomingBundle.substr(0, 10)}...
+                        </a>
+                    </div>
+                )}
+                {this.state.lastOutgoingBundle && (
+                    <div className="grid-live-grid-data">
+                        <span className="grid-live-grid-data-caption">Last Outgoing</span>
+                        <a onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
+                            {this.state.lastOutgoingBundle.substr(0, 10)}...
+                        </a>
+                    </div>
+                )}
+            </div >
         );
     }
 }

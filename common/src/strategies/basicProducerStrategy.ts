@@ -1,5 +1,8 @@
+import { ServiceFactory } from "../factories/serviceFactory";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
+import { ILoggingService } from "../models/services/ILoggingService";
+import { IWalletService } from "../models/services/IWalletService";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
 import { IBasicProducerStrategyState } from "../models/strategies/IBasicProducerStrategyState";
 import { IProducerStrategy } from "../models/strategies/IProducerStrategy";
@@ -11,12 +14,30 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
     /**
      * The base for timing.
      */
-    private static readonly TIME_INTERVAL: number = 3000;
+    private static readonly TIME_INTERVAL: number = 30000;
 
     /**
      * How long do we consider a time before item was idle.
      */
     private static readonly TIME_IDLE: number = 5 * 30000;
+
+    /**
+     * Logging service.
+     */
+    private readonly _loggingService: ILoggingService;
+
+    /**
+     * Wallet service.
+     */
+    private readonly _walletService: IWalletService;
+
+    /**
+     * Create a new instance of BasicGridStrategy.
+     */
+    constructor() {
+        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+        this._walletService = ServiceFactory.get<IWalletService>("wallet");
+    }
 
     /**
      * Initialise the state.
@@ -28,7 +49,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
             lastOutputTime: Date.now(),
             outputTotal: 0,
             receivedBalance: 0,
-            owedBalance: 0
+            lastTransferCheck: 0
         };
     }
 
@@ -107,12 +128,12 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                     // You could base this on your own costs, time of day, value etc
                     // This is a preferred cost and its up to the grid strategy to decide
                     // to use it or ignore it
-                    // For this demo we are usong the producer id as the payment id
+                    // For this demonstration we fix it at 4i for 1kWh
+                    price: producerTotal * 4,
+                    // For this demo we are using the producer id as the payment id
                     // as all payments are handled by the central wallet which can
                     // perform transfers using the ids, this could equally
                     // be populated as an IOTA address
-                    // tslint:disable-next-line:insecure-random
-                    price: Math.floor(Math.random() * 10) + 1,
                     paymentIdOrAddress: producerId
                 });
 
@@ -126,6 +147,63 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
         return {
             updatedState,
             commands
+        };
+    }
+
+    /**
+     * Collated payments.
+     * @param producerId The id of the producer.
+     * @param producerState The current state of the producer.
+     */
+    public async payments(
+        producerId: string,
+        producerState: IProducerManagerState<IBasicProducerStrategyState>):
+        Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+        }> {
+        let updatedState = false;
+
+        const now = Date.now();
+
+        if (now - producerState.strategyState.lastTransferCheck > 10000) {
+            let incomingEpoch = producerState.strategyState.lastIncomingTransfer ?
+                producerState.strategyState.lastIncomingTransfer.created : 0;
+
+            const wallet = await this._walletService.getWallet(
+                producerId,
+                incomingEpoch,
+                undefined
+            );
+
+            if (wallet) {
+                if (wallet.incomingTransfers && wallet.incomingTransfers.length > 0) {
+                    this._loggingService.log(
+                        "basic-producer",
+                        `Incoming transfers after ${incomingEpoch}`,
+                        wallet.incomingTransfers
+                    );
+
+                    for (let i = 0; i < wallet.incomingTransfers.length; i++) {
+                        producerState.strategyState.receivedBalance += wallet.incomingTransfers[i].value;
+
+                        if (wallet.incomingTransfers[i].created > incomingEpoch) {
+                            incomingEpoch = wallet.incomingTransfers[i].created;
+                            producerState.strategyState.lastIncomingTransfer = wallet.incomingTransfers[i];
+                        }
+                    }
+                }
+            }
+
+            updatedState = true;
+            producerState.strategyState.lastTransferCheck = now;
+
+        }
+
+        return {
+            updatedState
         };
     }
 }

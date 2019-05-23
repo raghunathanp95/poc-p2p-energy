@@ -40,11 +40,12 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             initialTime: Date.now(),
             runningCostsTotal: 0,
             runningCostsReceived: 0,
+            distributionAvailable: 0,
             producerTotals: {},
             consumerTotals: {},
             lastTransferCheck: 0,
-            lastIncomingTransferTime: 0,
-            lastOutgoingTransferTime: 0
+            lastIncomingTransfer: undefined,
+            lastOutgoingTransfer: undefined
         };
     }
 
@@ -127,20 +128,38 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
         let updatedState = false;
 
-        for (const producerId in producerUsageById) {
-            if (!gridState.strategyState.producerTotals[producerId]) {
-                gridState.strategyState.producerTotals[producerId] = {
-                    output: 0,
-                    owed: 0,
-                    received: 0
-                };
+        if (Object.keys(producerUsageById).length > 0) {
+
+            // Update the producers output based on any commands
+            for (const producerId in producerUsageById) {
+                if (!gridState.strategyState.producerTotals[producerId]) {
+                    gridState.strategyState.producerTotals[producerId] = {
+                        output: 0,
+                        owed: 0,
+                        received: 0,
+                        percentage: 0
+                    };
+                }
+
+                updatedState = true;
+                gridState.strategyState.producerTotals[producerId].output +=
+                    producerUsageById[producerId].reduce((a, b) => a + b.output, 0);
+
+                // Just remove the usage data, in a real system we might want to archive this
+                producerUsageById[producerId] = [];
             }
 
-            updatedState = true;
-            gridState.strategyState.producerTotals[producerId].output +=
-                producerUsageById[producerId].reduce((a, b) => a + b.output, 0);
-
-            producerUsageById[producerId] = [];
+            // Now go through all the producers and calculate their percentage contribution to the
+            // total grid output, we will then later use that to decide how much of the consumer payments
+            // they will receive
+            let totalOutput = 0;
+            for (const producerId in gridState.strategyState.producerTotals) {
+                totalOutput += gridState.strategyState.producerTotals[producerId].output;
+            }
+            for (const producerId in gridState.strategyState.producerTotals) {
+                gridState.strategyState.producerTotals[producerId].percentage =
+                    gridState.strategyState.producerTotals[producerId].output / totalOutput;
+            }
         }
 
         return {
@@ -168,16 +187,22 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
         if (now - gridState.strategyState.lastTransferCheck > 10000) {
             // Get all the payment since the last epochs
+            let incomingEpoch = gridState.strategyState.lastIncomingTransfer ?
+                gridState.strategyState.lastIncomingTransfer.created : 0;
+            const outgoingEpoch = gridState.strategyState.lastOutgoingTransfer ?
+                gridState.strategyState.lastOutgoingTransfer.created : 0;
+
             const wallet = await this._walletService.getWallet(
                 gridId,
-                gridState.strategyState.lastIncomingTransferTime,
-                gridState.strategyState.lastOutgoingTransferTime);
+                incomingEpoch,
+                outgoingEpoch
+            );
 
             if (wallet) {
                 if (wallet.incomingTransfers && wallet.incomingTransfers.length > 0) {
                     this._loggingService.log(
                         "basic-grid",
-                        `Incoming transfers after ${gridState.strategyState.lastIncomingTransferTime}`,
+                        `Incoming transfers after ${incomingEpoch}`,
                         wallet.incomingTransfers
                     );
 
@@ -192,26 +217,44 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
                             totalIncoming += wallet.incomingTransfers[i].value;
 
-                            if (wallet.incomingTransfers[i].created >
-                                gridState.strategyState.lastIncomingTransferTime) {
-                                gridState.strategyState.lastIncomingTransferTime =
-                                    wallet.incomingTransfers[i].created;
+                            if (wallet.incomingTransfers[i].created > incomingEpoch) {
+                                incomingEpoch = wallet.incomingTransfers[i].created;
+                                gridState.strategyState.lastIncomingTransfer = wallet.incomingTransfers[i];
                             }
                         }
                     }
                     // We are taking 1i out of every 5i as running costs
-                    gridState.strategyState.runningCostsReceived += totalIncoming / 5;
+                    const runningCostsUsed = totalIncoming / 5;
+                    gridState.strategyState.runningCostsReceived += runningCostsUsed;
+                    // Add remainder to the total for distribution to producers
+                    gridState.strategyState.distributionAvailable += totalIncoming - runningCostsUsed;
                 }
-                // if (wallet.outgoingTransfers) {
-                //     for (let i = 0; i < wallet.outgoingTransfers.length; i++) {
-                //         if (wallet.outgoingTransfers[i].confirmed >
-                //gridState.strategyState.lastOutgoingTransferTime) {
-                //             gridState.strategyState.lastOutgoingTransferTime = wallet.outgoingTransfers[i].confirmed;
-                //         }
-                //         updatedState = true;
-                //     }
-                // }
+
+                if (wallet.outgoingTransfers && wallet.outgoingTransfers.length > 0) {
+                    this._loggingService.log(
+                        "basic-grid",
+                        `Outgoing transfers after ${outgoingEpoch}`,
+                        wallet.outgoingTransfers
+                    );
+
+                    for (let i = 0; i < wallet.outgoingTransfers.length; i++) {
+                        const producerId = wallet.outgoingTransfers[i].reference;
+                        if (gridState.strategyState.producerTotals[producerId]) {
+                            gridState.strategyState.producerTotals[producerId].owed -=
+                                wallet.outgoingTransfers[i].value;
+                            gridState.strategyState.producerTotals[producerId].received +=
+                                wallet.outgoingTransfers[i].value;
+
+                            if (wallet.outgoingTransfers[i].created > outgoingEpoch) {
+                                incomingEpoch = wallet.outgoingTransfers[i].created;
+                                gridState.strategyState.lastOutgoingTransfer = wallet.outgoingTransfers[i];
+                            }
+                        }
+                    }
+                }
             }
+
+            await this.payProducers(gridId, gridState);
 
             updatedState = true;
             gridState.strategyState.lastTransferCheck = now;
@@ -221,6 +264,38 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             updatedState
         };
 
+    }
+
+    /**
+     * Pay the producers using their percentage contribution
+     * @param gridId The id of the grid.
+     * @param gridState The current state of the grid.
+     */
+    private async payProducers(
+        gridId: string,
+        gridState: IGridManagerState<IBasicGridStrategyState>): Promise<void> {
+        // Pay out to producers on 40i boundaries
+        const dist = Math.floor(gridState.strategyState.distributionAvailable / 40) * 40;
+        if (dist > 0) {
+            gridState.strategyState.distributionAvailable -= dist;
+
+            for (const producerId in gridState.strategyState.producerTotals) {
+                // Now based on each producers contribution to the grid give them some money
+                const payableBalance = dist * gridState.strategyState.producerTotals[producerId].percentage;
+
+                gridState.strategyState.producerTotals[producerId].owed += payableBalance;
+
+                await this._walletService.transfer(
+                    gridId,
+                    producerId,
+                    payableBalance);
+
+                this._loggingService.log("basic-grid", "wallet", {
+                    to: producerId,
+                    amount: payableBalance
+                });
+            }
+        }
     }
 
     /**
@@ -236,13 +311,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
         newUsage: number): IConsumerPaymentRequestCommand | undefined {
         consumerTotals.usage += newUsage;
 
-        // Add new requested for every whole kWh the consumer uses
+        // Add new request for every whole kWh the consumer uses
         const unrequestedUsage = Math.floor(consumerTotals.usage - consumerTotals.requestedUsage);
         if (unrequestedUsage > 0) {
             consumerTotals.requestedUsage += unrequestedUsage;
 
-            // For this example we charge 5i for every kWh, of which
-            // 1i is retained by the grid and 4i is split between the producers
+            // For this example the producers are charging 4i for every kWh
+            // As a grid we then add an additional 1i for our running costs
             // The producers can request a specific price but we don't have to use it
             // Also the payment id could be an actual IOTA address, but in our demo
             // we are using it as a reference we use in the global demo wallet

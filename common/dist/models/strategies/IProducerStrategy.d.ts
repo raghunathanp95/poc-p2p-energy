@@ -29,4 +29,15 @@ export interface IProducerStrategy<S> {
          */
         commands: IProducerOutputCommand[];
     }>;
+    /**
+     * Collated payments.
+     * @param producerId The id of the producer.
+     * @param producerState The current state of the producer.
+     */
+    payments(producerId: string, producerState: IProducerManagerState<S>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
+    }>;
 }

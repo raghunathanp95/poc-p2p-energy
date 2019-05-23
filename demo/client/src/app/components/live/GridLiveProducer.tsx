@@ -9,6 +9,7 @@ import producer3 from "../../../assets/producers/producer3.svg";
 import { ISource } from "../../../models/api/ISource";
 import { DemoGridManager } from "../../../services/demoGridManager";
 import { MamExplorer } from "../../../services/mamExplorerService";
+import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
 import { GridLiveProducerState } from "./GridLiveProducerState";
@@ -39,6 +40,11 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     private readonly _mamExplorer: MamExplorer;
 
     /**
+     * Tangle explorer service.
+     */
+    private readonly _tangleExplorerService: TangleExplorerService;
+
+    /**
      * Create a new instance of GridLiveProducer.
      * @param props The props for the component.
      */
@@ -52,6 +58,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         ];
 
         this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
+        this._tangleExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
@@ -65,7 +72,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             sourceGraphSeries: [],
             outputTotal: "-----",
             receivedBalance: "-----",
-            owedBalance: "-----"
+            lastIncomingBundle: ""
         };
     }
 
@@ -96,8 +103,8 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     ? `${Math.ceil(producerStrategyState.outputTotal)} kWh` : "-----",
                 receivedBalance: producerStrategyState && producerStrategyState.receivedBalance !== undefined
                     ? `${producerStrategyState.receivedBalance}i` : "-----",
-                owedBalance: producerStrategyState && producerStrategyState.owedBalance !== undefined ?
-                    `${producerStrategyState.owedBalance}i` : "-----",
+                lastIncomingBundle: producerStrategyState && producerStrategyState.lastIncomingTransfer ?
+                    producerStrategyState.lastIncomingTransfer.bundle : "",
                 mamRoot: mamChannel && mamChannel.initialRoot,
                 sideKey: mamChannel && mamChannel.sideKey,
                 firstProducerValueTime: firstProducerTime,
@@ -143,9 +150,18 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     </button>
                     <div className="grid-live-producer-info">
                         <div className="grid-live-producer-info-id">ID: {this.props.producer.id}</div>
-                        <div className="grid-live-producer-info-data"><span>Output:</span><span>{this.state.outputTotal}</span></div>
-                        <div className="grid-live-producer-info-data"><span>Received:</span><span>{this.state.receivedBalance}</span></div>
-                        <div className="grid-live-producer-info-data"><span>Owed:</span><span>{this.state.owedBalance}</span></div>
+                        <div className="grid-live-producer-info-data"><span>Output</span><span>{this.state.outputTotal}</span></div>
+                        <div className="grid-live-producer-info-data"><span>Received</span><span>{this.state.receivedBalance}</span></div>
+                        {this.state.lastIncomingBundle && (
+                            <div className="grid-live-producer-info-data">
+                                <span>Confirmed</span>
+                                <span>
+                                    <a onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
+                                        {this.state.lastIncomingBundle.substr(0, 10)}...
+                                    </a>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 {this.state.isExpanded && (

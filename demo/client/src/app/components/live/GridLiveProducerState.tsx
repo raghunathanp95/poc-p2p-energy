@@ -22,9 +22,9 @@ export interface GridLiveProducerState {
     receivedBalance: string;
 
     /**
-     * Owed balance.
+     * The hash of the last payment bundle.
      */
-    owedBalance: string;
+    lastIncomingBundle: string;
 
     /**
      * Are the details expanded.

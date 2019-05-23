@@ -240,9 +240,9 @@ export class ProducerManager<S> {
                 pageSize = pageResponse.pageSize;
             } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
 
-            const result = await this._strategy.sources(this._config.id, sourceOutputById, this._state);
+            const result1 = await this._strategy.sources(this._config.id, sourceOutputById, this._state);
 
-            this._state.unsentCommands = this._state.unsentCommands.concat(result.commands);
+            this._state.unsentCommands = this._state.unsentCommands.concat(result1.commands);
 
             if (this._state.unsentCommands.length > 0) {
                 const mamCommandChannel = new MamCommandChannel(this._loadBalancerSettings);
@@ -258,11 +258,13 @@ export class ProducerManager<S> {
                 }
             }
 
-            if (result.updatedState) {
+            const result2 = await this._strategy.payments(this._config.id, this._state);
+
+            if (result1.updatedState || result2.updatedState) {
                 await this.saveState();
             }
 
-            return result.commands;
+            return result1.commands;
         }
 
         return [];

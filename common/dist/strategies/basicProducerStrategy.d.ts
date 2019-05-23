@@ -16,6 +16,18 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
      */
     private static readonly TIME_IDLE;
     /**
+     * Logging service.
+     */
+    private readonly _loggingService;
+    /**
+     * Wallet service.
+     */
+    private readonly _walletService;
+    /**
+     * Create a new instance of BasicGridStrategy.
+     */
+    constructor();
+    /**
      * Initialise the state.
      * @param producerId The id of the producer.
      */
@@ -38,5 +50,16 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
          * New commands to output.
          */
         commands: IProducerOutputCommand[];
+    }>;
+    /**
+     * Collated payments.
+     * @param producerId The id of the producer.
+     * @param producerState The current state of the producer.
+     */
+    payments(producerId: string, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
+        /**
+         * Has the state been updated.
+         */
+        updatedState: boolean;
     }>;
 }

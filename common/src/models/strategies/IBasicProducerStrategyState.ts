@@ -1,3 +1,5 @@
+import { IWalletTransfer } from "../api/wallet/IWalletTransfer";
+
 /**
  * Definition of producer strategy state.
  */
@@ -23,7 +25,12 @@ export interface IBasicProducerStrategyState {
     receivedBalance?: number;
 
     /**
-     * Owed balance.
+     * Last time we checked for transfers.
      */
-    owedBalance?: number;
+    lastTransferCheck: number;
+
+    /**
+     * Transfers to the producer.
+     */
+    lastIncomingTransfer?: IWalletTransfer;
 }
