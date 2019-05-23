@@ -192,10 +192,10 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
                             totalIncoming += wallet.incomingTransfers[i].value;
 
-                            if (wallet.incomingTransfers[i].confirmed >
+                            if (wallet.incomingTransfers[i].created >
                                 gridState.strategyState.lastIncomingTransferTime) {
                                 gridState.strategyState.lastIncomingTransferTime =
-                                    wallet.incomingTransfers[i].confirmed;
+                                    wallet.incomingTransfers[i].created;
                             }
                         }
                     }

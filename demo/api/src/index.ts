@@ -19,7 +19,6 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid/:name", method: "delete", folder: "grid", func: "gridDelete" },
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" },
     { path: "/wallet/poll", method: "get", folder: "wallet", func: "pollGet" },
-    { path: "/wallet/sweep", method: "get", folder: "wallet", func: "sweepGet" },
     { path: "/wallet/:id/:incomingEpoch?/:outgoingEpoch?/", method: "get", folder: "wallet", func: "walletGet" },
     { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" }
 ];
@@ -44,7 +43,7 @@ app.build(routes, async (_1, config, _2) => {
         "wallet",
         () => new WalletService(config.dynamoDbConnection));
 
-    const walletTransferService = new WalletTransferService(config.dynamoDbConnection);
+    const walletTransferService = new WalletTransferService(config.dynamoDbConnection, config.walletSeed);
 
     ServiceFactory.register(
         "wallet-transfer",

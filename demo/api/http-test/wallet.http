@@ -1,15 +1,6 @@
-### wallet/global
-GET http://localhost:4000/wallet/global
-content-type: application/json
-
 ### wallet/poll
 GET http://localhost:4000/wallet/poll
 content-type: application/json
-
-### wallet/sweep
-GEt http://localhost:4000/wallet/sweep
-content-type: application/json
-
 
 ### wallet/AAAAAAAAAAAAAAAAAAAAAAAAAAA
 GET http://localhost:4000/wallet/AAAAAAAAAAAAAAAAAAAAAAAAAAA

@@ -3,35 +3,27 @@ import { IDemoWalletTransferPayload } from "./IDemoWalletTransferPayload";
 
 export interface IDemoWalletTransfer {
     /**
-     * The source wallet for the transfer.
+     * The message.
      */
-    sourceWalletId: string;
+    transfer: IDemoWalletTransferPayload;
     /**
-     * The receiver of the transfer.
+     * The transfer tag.
      */
-    receiveWalletId: string;
+    tag: string;
+    /**
+     * The amount.
+     */
+    value: number;
     /**
      * The transfer address.
      */
     address?: string;
     /**
-     * The transfer tag.
-     */
-    tag?: string;
-    /**
-     * The amount.
-     */
-    value?: number;
-    /**
-     * The message.
-     */
-    payload?: IDemoWalletTransferPayload;
-    /**
      * The bundle hash.
      */
     bundle?: string;
     /**
-     * The time the bundle was confirmed.
+     * The time the bundle was created.
      */
-    confirmed?: number;
+    created?: number;
 }

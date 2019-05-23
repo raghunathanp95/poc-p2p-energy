@@ -35,6 +35,11 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
     private _isBusy: boolean;
 
     /**
+     * The seed for the global wallet.
+     */
+    private _globalSeed: string;
+
+    /**
      * Transfers ready to add.
      */
     private _toAdd: IDemoWalletTransfer[];
@@ -42,10 +47,12 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
     /**
      * Create a new instance of PaymentRegistrationService
      * @param config The configuration.
+     * @param globalSeed The seed for the global wallet.
      */
-    constructor(config: IAWSDynamoDbConfiguration) {
+    constructor(config: IAWSDynamoDbConfiguration, globalSeed?: string) {
         super(config, WalletTransferService.TABLE_NAME, "id");
 
+        this._globalSeed = globalSeed;
         this._toAdd = [];
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
         this._walletService = ServiceFactory.get<WalletService>("wallet");
@@ -72,6 +79,8 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
             let updated1 = false;
             if (!walletTransferContainer) {
                 walletTransferContainer = {
+                    startIndex: 0,
+                    lastUsedIndex: 0,
                     queue: []
                 };
                 updated1 = true;
@@ -112,59 +121,63 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
             try {
                 const nextTransfer = walletTransferContainer.queue[0];
 
-                const sourceWallet = await this._walletService.get(nextTransfer.sourceWalletId);
-                const receiveWallet = await this._walletService.get(nextTransfer.receiveWalletId);
+                const inputsResponse: Inputs =
+                    await iota.getInputs(this._globalSeed, {
+                        start: walletTransferContainer.startIndex,
+                        end: walletTransferContainer.lastUsedIndex
+                    });
 
-                if (sourceWallet && receiveWallet) {
-                    const inputsResponse: Inputs =
-                        await iota.getInputs(sourceWallet.seed, {
-                            start: sourceWallet.startIndex,
-                            end: Math.max(sourceWallet.startIndex + 10, sourceWallet.lastIndex)
+                if (inputsResponse && inputsResponse.inputs && inputsResponse.inputs.length > 0) {
+                    const lastUsed = Math.max(
+                        walletTransferContainer.lastUsedIndex,
+                        inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex);
+
+                    const remainderAddress = generateAddress(
+                        this._globalSeed,
+                        lastUsed + 1,
+                        2);
+
+                    nextTransfer.address = generateAddress(
+                        this._globalSeed,
+                        lastUsed + 2,
+                        2);
+
+                    const trytes = await iota.prepareTransfers(
+                        this._globalSeed,
+                        [{
+                            address: nextTransfer.address,
+                            value: nextTransfer.value,
+                            tag: nextTransfer.tag,
+                            message: TrytesHelper.toTrytes(nextTransfer.transfer)
+                        }],
+                        {
+                            inputs: inputsResponse.inputs,
+                            remainderAddress
                         });
 
-                    if (inputsResponse && inputsResponse.inputs && inputsResponse.inputs.length > 0) {
-                        const lastSourceUsedIndex = Math.max(
-                            inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
-                            sourceWallet.lastIndex);
+                    const sendTrytesResponse: Transaction[] =
+                        await iota.sendTrytes(trytes, undefined, undefined);
 
-                        sourceWallet.startIndex = inputsResponse.inputs[0].keyIndex;
-                        sourceWallet.lastIndex = lastSourceUsedIndex + 1;
-                        sourceWallet.balance = inputsResponse.totalBalance;
+                    nextTransfer.bundle = sendTrytesResponse[0].bundle;
+                    nextTransfer.created = Date.now();
 
-                        const remainderAddress = generateAddress(sourceWallet.seed, lastSourceUsedIndex + 1, 2);
+                    this._loggingService.log(
+                        "wallet",
+                        `Created transaction ${sendTrytesResponse[0].hash}`,
+                        nextTransfer.value);
 
-                        receiveWallet.lastIndex++;
+                    const fromWallet = await this._walletService.getOrCreate(nextTransfer.transfer.from);
+                    if (fromWallet) {
+                        fromWallet.balance -= nextTransfer.value;
 
-                        nextTransfer.address = generateAddress(receiveWallet.seed, receiveWallet.lastIndex, 2);
-
-                        const trytes = await iota.prepareTransfers(
-                            sourceWallet.seed,
-                            [{
-                                address: nextTransfer.address,
-                                value: nextTransfer.value,
-                                tag: nextTransfer.tag,
-                                message: nextTransfer.payload ? TrytesHelper.toTrytes(nextTransfer.payload) : ""
-                            }],
-                            {
-                                inputs: inputsResponse.inputs,
-                                remainderAddress
-                            });
-
-                        const sendTrytesResponse: Transaction[] =
-                            await iota.sendTrytes(trytes, undefined, undefined);
-
-                        nextTransfer.bundle = sendTrytesResponse[0].bundle;
-
-                        this._loggingService.log(
-                            "wallet",
-                            `Created transaction ${sendTrytesResponse[0].hash}`,
-                            sourceWallet.balance);
-
-                        await this._walletService.set(sourceWallet.id, sourceWallet);
-                        await this._walletService.set(receiveWallet.id, receiveWallet);
-
-                        walletTransferContainer.pending = nextTransfer;
+                        fromWallet.outgoingTransfers = fromWallet.outgoingTransfers || [];
+                        fromWallet.outgoingTransfers.push(nextTransfer);
+                        await this._walletService.set(fromWallet.id, fromWallet);
                     }
+
+                    walletTransferContainer.pending = nextTransfer;
+                    walletTransferContainer.startIndex = inputsResponse.inputs[0].keyIndex;
+                    walletTransferContainer.lastUsedIndex = lastUsed + 2;
                 }
                 walletTransferContainer.queue.shift();
                 updated = true;
@@ -223,43 +236,15 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                     }
 
                     if (confirmedIndex >= 0) {
-                        const sourceWalletId = walletTransferContainer.pending.sourceWalletId;
-                        const receiveWalletId = walletTransferContainer.pending.receiveWalletId;
+                        const toWallet = await this._walletService.getOrCreate(
+                            walletTransferContainer.pending.transfer.to);
+                        if (toWallet) {
+                            toWallet.balance += walletTransferContainer.pending.value;
 
-                        walletTransferContainer.pending.confirmed = Date.now();
+                            toWallet.incomingTransfers = toWallet.incomingTransfers || [];
+                            toWallet.incomingTransfers.push(walletTransferContainer.pending);
 
-                        const sourceWallet = await this._walletService.get(sourceWalletId);
-                        if (sourceWallet) {
-                            sourceWallet.balance -= startTransactions[confirmedIndex].value;
-                            await this._walletService.set(sourceWallet.id, sourceWallet);
-                        }
-
-                        const receiveWallet = await this._walletService.get(receiveWalletId);
-                        if (receiveWallet) {
-                            receiveWallet.balance += startTransactions[confirmedIndex].value;
-                            receiveWallet.lastIndex++;
-
-                            await this._walletService.set(receiveWallet.id, receiveWallet);
-                        }
-
-                        if (walletTransferContainer.pending.payload) {
-                            const fromWallet = await this._walletService.get(
-                                walletTransferContainer.pending.payload.from);
-                            if (fromWallet) {
-                                fromWallet.outgoingTransfers = fromWallet.outgoingTransfers || [];
-                                fromWallet.outgoingTransfers.push(walletTransferContainer.pending);
-
-                                await this._walletService.set(fromWallet.id, fromWallet);
-                            }
-
-                            const toWallet = await this._walletService.get(
-                                walletTransferContainer.pending.payload.to);
-                            if (toWallet) {
-                                toWallet.incomingTransfers = toWallet.incomingTransfers || [];
-                                toWallet.incomingTransfers.push(walletTransferContainer.pending);
-
-                                await this._walletService.set(toWallet.id, toWallet);
-                            }
+                            await this._walletService.set(toWallet.id, toWallet);
                         }
 
                         walletTransferContainer.pending = undefined;
@@ -283,6 +268,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                             //   await iota.promoteTransaction(tail, undefined, undefined);
                             //} else {
                             const isConsistent = await iota.checkConsistency([tail]);
+                            console.log("isConsistent", isConsistent);
 
                             const MILESTONE_INTERVAL = 2 * 60 * 1000;
                             const ONE_WAY_DELAY = 1 * 60 * 1000;
@@ -314,14 +300,14 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                             } else {
                                 // Bundle is not promotable, so replay it and store the new hash
                                 const sendTrytesResponse: Transaction[] =
-                                    await iota.replayBundle(startTransactions[0].hash, undefined, undefined);
+                                    await iota.replayBundle(tail, undefined, undefined);
 
                                 walletTransferContainer.pending.bundle = sendTrytesResponse[0].bundle;
                                 updated = true;
 
                                 this._loggingService.log(
                                     "wallet",
-                                    `Replaying bundle ${startTransactions[0].hash} to ${sendTrytesResponse[0].bundle}`);
+                                    `Replaying bundle ${tail} to ${sendTrytesResponse[0].bundle}`);
                             }
                         }
                     }

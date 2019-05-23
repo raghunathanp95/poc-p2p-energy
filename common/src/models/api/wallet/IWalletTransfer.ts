@@ -12,7 +12,7 @@ export interface IWalletTransfer {
      */
     reference: string;
     /**
-     * The timestamp of when it was confirmed.
+     * The timestamp of when it was created.
      */
-    confirmed: number;
+    created: number;
 }
