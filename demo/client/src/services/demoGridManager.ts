@@ -389,7 +389,7 @@ export class DemoGridManager {
      */
     private async startUpdates(): Promise<void> {
         if (!this._updateTimer) {
-            setTimeout(() => this.updateManagers(), 1000);
+            this._updateTimer = setTimeout(() => this.updateManagers(), 1000);
         }
     }
 
@@ -553,7 +553,7 @@ export class DemoGridManager {
 
             await this._demoGridStateStorageService.set(this._gridId, this._gridState);
         }
-        setTimeout(() => this.updateManagers(), 1000);
+        this._updateTimer = setTimeout(() => this.updateManagers(), 1000);
     }
 
     /**

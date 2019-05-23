@@ -30,7 +30,6 @@ export async function walletGet(
     let outgoingTransfers;
 
     if (wallet && wallet.incomingTransfers && incomingEpoch !== undefined) {
-        const len = wallet.incomingTransfers.length;
         incomingTransfers = wallet.incomingTransfers
             .filter(t => t.confirmed > incomingEpoch)
             .map(t => ({
@@ -39,13 +38,12 @@ export async function walletGet(
                 confirmed: t.confirmed,
                 reference: t.payload.from
             }));
-        wallet.incomingTransfers = wallet.incomingTransfers.filter(t => t.confirmed <= incomingEpoch);
-        if (wallet.incomingTransfers.length !== len) {
+        if (incomingTransfers.length > 0) {
+            wallet.incomingTransfers = wallet.incomingTransfers.filter(t => t.confirmed <= incomingEpoch);
             changed = true;
         }
     }
     if (wallet && wallet.outgoingTransfers && outgoingEpoch !== undefined) {
-        const len = wallet.outgoingTransfers.length;
         outgoingTransfers = wallet.outgoingTransfers
             .filter(t => t.confirmed > outgoingEpoch)
             .map(t => ({
@@ -54,8 +52,8 @@ export async function walletGet(
                 confirmed: t.confirmed,
                 reference: t.payload.to
             }));
-        wallet.outgoingTransfers = wallet.outgoingTransfers.filter(t => t.confirmed <= outgoingEpoch);
-        if (wallet.outgoingTransfers.length !== len) {
+        if (outgoingTransfers.length > 0) {
+            wallet.outgoingTransfers = wallet.outgoingTransfers.filter(t => t.confirmed <= outgoingEpoch);
             changed = true;
         }
     }
