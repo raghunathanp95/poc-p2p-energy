@@ -96,9 +96,9 @@ class BasicConsumerStrategy {
             let updatedState = false;
             if (paymentRequests.length > 0) {
                 consumerState.strategyState.outstandingBalance += paymentRequests.reduce((a, b) => a + b.owed, 0);
-                // Consumer pays the grid every multiple of 10i and using the dummy wallet
+                // Consumer pays the grid every multiple of 25i and using the dummy wallet
                 // a real world system would keep track of which payments go to each address
-                const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 10) * 10;
+                const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 25) * 25;
                 if (payableBalance > 0) {
                     const bundle = yield this._walletService.transfer(consumerId, paymentRequests[paymentRequests.length - 1].paymentIdOrAddress, payableBalance);
                     consumerState.strategyState.paymentsSent++;

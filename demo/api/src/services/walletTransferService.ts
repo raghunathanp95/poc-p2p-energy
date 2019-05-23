@@ -166,15 +166,6 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                         `Created transaction ${sendTrytesResponse[0].hash}`,
                         nextTransfer.value);
 
-                    const fromWallet = await this._walletService.getOrCreate(nextTransfer.transfer.from);
-                    if (fromWallet) {
-                        fromWallet.balance -= nextTransfer.value;
-
-                        fromWallet.outgoingTransfers = fromWallet.outgoingTransfers || [];
-                        fromWallet.outgoingTransfers.push(nextTransfer);
-                        await this._walletService.set(fromWallet.id, fromWallet);
-                    }
-
                     walletTransferContainer.pending = nextTransfer;
                     walletTransferContainer.startIndex = inputsResponse.inputs[0].keyIndex;
                     walletTransferContainer.lastUsedIndex = lastUsed + 2;
@@ -205,22 +196,22 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
 
                 if (txs && txs.length > 0) {
                     const remainingByHash: { [hash: string]: Transaction } = {};
-                    const startTransactions: Transaction[] = [];
+                    const tailTransactions: Transaction[] = [];
 
                     for (let i = 0; i < txs.length; i++) {
                         if (txs[i].currentIndex === 0) {
-                            startTransactions.push(txs[i]);
+                            tailTransactions.push(txs[i]);
                         } else {
                             remainingByHash[txs[i].hash] = txs[i];
                         }
                     }
 
-                    startTransactions.sort((a, b) => a.attachmentTimestamp - b.attachmentTimestamp);
+                    tailTransactions.sort((a, b) => a.attachmentTimestamp - b.attachmentTimestamp);
 
                     let confirmedIndex = -1;
-                    for (let i = 0; i < startTransactions.length; i++) {
-                        let currentHash = startTransactions[i].trunkTransaction;
-                        const subBundle = [startTransactions[i]];
+                    for (let i = 0; i < tailTransactions.length; i++) {
+                        let currentHash = tailTransactions[i].trunkTransaction;
+                        const subBundle = [tailTransactions[i]];
 
                         while (remainingByHash[currentHash]) {
                             subBundle.push(remainingByHash[currentHash]);
@@ -236,6 +227,16 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                     }
 
                     if (confirmedIndex >= 0) {
+                        const fromWallet = await this._walletService.getOrCreate(
+                            walletTransferContainer.pending.transfer.from);
+                        if (fromWallet) {
+                            fromWallet.balance -= walletTransferContainer.pending.value;
+
+                            fromWallet.outgoingTransfers = fromWallet.outgoingTransfers || [];
+                            fromWallet.outgoingTransfers.push(walletTransferContainer.pending);
+                            await this._walletService.set(fromWallet.id, fromWallet);
+                        }
+
                         const toWallet = await this._walletService.getOrCreate(
                             walletTransferContainer.pending.transfer.to);
                         if (toWallet) {
@@ -252,10 +253,10 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
 
                         this._loggingService.log(
                             "wallet",
-                            `Confirmed transaction ${startTransactions[confirmedIndex].hash}`);
+                            `Confirmed transaction ${tailTransactions[confirmedIndex].hash}`);
                     } else {
-                        const tail = startTransactions[0].hash;
-                        const attachmentTimestamp = startTransactions[0].attachmentTimestamp;
+                        const tail = tailTransactions[0].hash;
+                        const attachmentTimestamp = tailTransactions[0].attachmentTimestamp;
                         const timeSinceAttachment = Date.now() - attachmentTimestamp;
 
                         // If it is taking a long time to attach the bundle (10s)
@@ -268,7 +269,6 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                             //   await iota.promoteTransaction(tail, undefined, undefined);
                             //} else {
                             const isConsistent = await iota.checkConsistency([tail]);
-                            console.log("isConsistent", isConsistent);
 
                             const MILESTONE_INTERVAL = 2 * 60 * 1000;
                             const ONE_WAY_DELAY = 1 * 60 * 1000;
@@ -298,16 +298,28 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
 
                                 await iota.sendTrytes(spamTrytes, undefined, undefined, tail);
                             } else {
-                                // Bundle is not promotable, so replay it and store the new hash
-                                const sendTrytesResponse: Transaction[] =
-                                    await iota.replayBundle(tail, undefined, undefined);
-
-                                walletTransferContainer.pending.bundle = sendTrytesResponse[0].bundle;
+                                // Bundle is not promotable so just requeue it
+                                walletTransferContainer.pending.address = undefined;
+                                walletTransferContainer.pending.created = undefined;
+                                walletTransferContainer.pending.bundle = undefined;
+                                walletTransferContainer.queue.unshift(walletTransferContainer.pending);
+                                walletTransferContainer.pending = undefined;
                                 updated = true;
 
                                 this._loggingService.log(
                                     "wallet",
-                                    `Replaying bundle ${tail} to ${sendTrytesResponse[0].bundle}`);
+                                    `Requeuing bundle ${tail}`);
+
+                                // // Bundle is not promotable, so replay it and store the new hash
+                                // const sendTrytesResponse: Transaction[] =
+                                //     await iota.replayBundle(tail, undefined, undefined);
+
+                                // walletTransferContainer.pending.bundle = sendTrytesResponse[0].bundle;
+                                // updated = true;
+
+                                // this._loggingService.log(
+                                //     "wallet",
+                                //     `Replaying bundle ${tail} to ${sendTrytesResponse[0].bundle}`);
                             }
                         }
                     }
