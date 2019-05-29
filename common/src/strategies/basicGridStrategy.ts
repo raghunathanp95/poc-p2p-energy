@@ -37,7 +37,6 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      */
     public async init(gridId: string): Promise<IBasicGridStrategyState> {
         return {
-            initialTime: Date.now(),
             runningCostsTotal: 0,
             runningCostsReceived: 0,
             distributionAvailable: 0,

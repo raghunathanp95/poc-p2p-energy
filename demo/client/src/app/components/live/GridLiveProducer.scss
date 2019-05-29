@@ -5,6 +5,7 @@
   padding: 20px;
   border: 1px solid var(--light-grey);
   border-radius: 5px;
+  overflow: hidden;
 
   @media (max-width: 514px) {
     flex-direction: column;

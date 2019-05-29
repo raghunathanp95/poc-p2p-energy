@@ -1,27 +1,4 @@
-@import './node_modules/chartist/dist/scss/chartist';
-
-.ct-series-a {
-  .ct-slice-donut {
-    stroke: var(--jade) !important;
-  }
-}
-
-.ct-series-b {
-  .ct-slice-donut {
-    stroke: var(--blueberry) !important;
-  }
-}
-
-$steps: 10;
-
-@for $i from 0 to $steps {
-    .ct-series:nth-of-type(#{$i + 1}) .ct-line {
-      stroke: lighten(#1e9a93, percentage(($i / ($steps - 1) / 2))) !important;
-    }
-    .ct-series:nth-of-type(#{$i + 1}) .ct-point {
-      stroke: lighten(#603f98, percentage(($i / ($steps - 1) / 2))) !important;
-    }
-}
+@import 'charts';
 
 // sass-lint:disable no-ids
 #root {

@@ -53,14 +53,7 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
         const now = Date.now();
         if ((now - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_IDLE) {
             // Looks like the source has not been running for some time
-            // so create a catchup entry
-            commands.push({
-                command: "output",
-                startTime: sourceState.strategyState.lastOutputTime + 1,
-                endTime: now,
-                output: 0
-            });
-
+            // so reset the timer
             updatedState = true;
             sourceState.strategyState.lastOutputTime = now;
         } else {

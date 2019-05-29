@@ -37,7 +37,7 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
     /**
      * The seed for the global wallet.
      */
-    private _globalSeed: string;
+    private readonly _globalSeed: string;
 
     /**
      * Transfers ready to add.

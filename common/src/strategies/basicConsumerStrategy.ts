@@ -45,7 +45,6 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
      */
     public async init(consumerId: string): Promise<IBasicConsumerStrategyState> {
         return {
-            initialTime: Date.now(),
             lastUsageTime: Date.now(),
             usageTotal: 0,
             paidBalance: 0,
@@ -83,14 +82,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
         const now = Date.now();
         if ((now - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_IDLE) {
             // Looks like the consumer has not been running for some time
-            // so create a catchup entry
-            commands.push({
-                command: "usage",
-                startTime: consumerState.strategyState.lastUsageTime + 1,
-                endTime: now,
-                usage: 0
-            });
-
+            // so reset the timer
             updatedState = true;
             consumerState.strategyState.lastUsageTime = now;
         } else {

@@ -45,7 +45,6 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
      */
     public async init(producerId: string): Promise<IBasicProducerStrategyState> {
         return {
-            initialTime: Date.now(),
             lastOutputTime: Date.now(),
             outputTotal: 0,
             receivedBalance: 0,
@@ -86,16 +85,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
         const now = Date.now();
         if ((now - producerState.strategyState.lastOutputTime) > BasicProducerStrategy.TIME_IDLE) {
             // Looks like the producer has not been running for some time
-            // so create a catchup entry
-            commands.push({
-                command: "output",
-                startTime: producerState.strategyState.lastOutputTime + 1,
-                endTime: now,
-                price: 0,
-                paymentIdOrAddress: producerId,
-                output: 0
-            });
-
+            // so reset the timer
             updatedState = true;
             producerState.strategyState.lastOutputTime = now;
         } else {

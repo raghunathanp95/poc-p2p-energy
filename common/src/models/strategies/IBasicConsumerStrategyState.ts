@@ -4,11 +4,6 @@ import { IWalletTransfer } from "../../models/api/wallet/IWalletTransfer";
  */
 export interface IBasicConsumerStrategyState {
     /**
-     * The initial time the strategy was created.
-     */
-    initialTime?: number;
-
-    /**
      * The last usage time slot.
      */
     lastUsageTime?: number;

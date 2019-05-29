@@ -10,11 +10,6 @@ export interface IBasicGridStrategyState {
     paymentSeed?: string;
 
     /**
-     * The initial time for the state.
-     */
-    initialTime?: number;
-
-    /**
      * Running costs total.
      */
     runningCostsTotal?: number;
