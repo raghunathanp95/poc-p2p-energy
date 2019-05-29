@@ -75,11 +75,6 @@ export interface GridConfigureState {
     showDeleteConfirmation: boolean;
 
     /**
-     * The reset modal.
-     */
-    showResetConfirmation: boolean;
-
-    /**
      * Redirect back to main page.
      */
     redirect: boolean;

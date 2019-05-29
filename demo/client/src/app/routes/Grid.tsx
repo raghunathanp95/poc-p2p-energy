@@ -1,12 +1,14 @@
 import { Button, ButtonContainer, Fieldset, Form, FormActions, FormStatus, Heading } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
+import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { RouteComponentProps } from "react-router";
 import { IGrid } from "../../models/api/IGrid";
 import { IConfiguration } from "../../models/config/IConfiguration";
 import { IAppState } from "../../models/IAppState";
+import { IDemoGridState } from "../../models/services/IDemoGridState";
 import { ConfigurationService } from "../../services/configurationService";
 import { DemoApiClient } from "../../services/demoApiClient";
 import GridConfigure from "../components/configure/GridConfigure";
@@ -74,12 +76,24 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                             <Button size="small" color="secondary" onClick={() => this.loadCreateGrid()}>Load/Create Grid</Button>
                             <Button size="small" color={this.state.view === "live" ? "primary" : "secondary"} onClick={() => this.liveView()}>Live</Button>
                             <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
+                            {(this.state.view === "live" || this.state.view === "reset") && (
+                                <Button size="small" color={this.state.view === "reset" ? "primary" : "secondary"} onClick={() => this.gridReset()}>Reset</Button>
+                            )}
                         </ButtonContainer>
                         {this.state.view === "configure" && (
                             <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({ grid })} />
                         )}
                         {this.state.view === "live" && (
                             <GridLiveContainer grid={this.state.grid} />
+                        )}
+                        {this.state.view === "reset" && (
+                            <Form>
+                                <br/>
+                                <h1>Reset Grid</h1>
+                                <p>Are you sure you want to reset the grid ?</p>
+                                <Button size="small" color="primary" onClick={() => this.gridResetConfirmation()}>Yes</Button>
+                                <Button size="small" color="secondary" onClick={() => this.liveView()}>No</Button>
+                            </Form>
                         )}
                     </React.Fragment>
                 )}
@@ -230,6 +244,32 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                 view: "live"
             },
             () => this.validateData());
+    }
+
+    /**
+     * Reset the grid data.
+     */
+    private async gridReset(): Promise<void> {
+        this.setState({ view: "reset" });
+    }
+
+    /**
+     * Reset the grid data.
+     */
+    private async gridResetConfirmation(): Promise<void> {
+        if (this.state.grid) {
+            const demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
+            await demoGridStateStorageService.remove(this.state.grid.id);
+
+            const bs = new BrowserStorageService<any>(this.state.grid.id);
+
+            const allItemsForGrid = await bs.page("", 0);
+            for (let i = 0; i < allItemsForGrid.ids.length; i++) {
+                await bs.remove(allItemsForGrid.ids[i]);
+            }
+
+            this.setState({ view: "reset" });
+        }
     }
 }
 
