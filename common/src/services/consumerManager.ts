@@ -136,7 +136,11 @@ export class ConsumerManager<S> {
      * Unregister the source from the Grid.
      */
     public async closedown(): Promise<void> {
+        let sideKey;
+
         if (this._state && this._state.channel) {
+            sideKey = this._state.channel.sideKey;
+
             this._loggingService.log("consumer-closedown", `Sending Goodbye`);
 
             const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
@@ -150,7 +154,7 @@ export class ConsumerManager<S> {
 
         this._loggingService.log("consumer-closedown", `Unregistering from the Grid`);
 
-        await this._registrationService.unregister(this._config.id);
+        await this._registrationService.unregister(this._config.id, sideKey);
 
         this._loggingService.log("consumer-closedown", `Unregistered from the Grid`);
     }

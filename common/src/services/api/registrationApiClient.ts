@@ -58,7 +58,9 @@ export class RegistrationApiClient {
         let response: IResponse;
 
         try {
-            const axiosResponse = await ax.delete<IResponse>(`registration/${request.registrationId}`);
+            const axiosResponse = await ax.delete<IResponse>(
+                `registration/${request.registrationId}/${request.sideKey}`
+            );
 
             response = axiosResponse.data;
         } catch (err) {

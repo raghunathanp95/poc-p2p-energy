@@ -65,8 +65,9 @@ export class DirectRegistrationService implements IRegistrationService {
     /**
      * Remove a registration.
      * @param registrationId The registration id of the item.
+     * @param sideKey The client mam channel side key used for remove validation.
      */
-    public async unregister(registrationId: string): Promise<void> {
-        await this._registrationManagementService.removeRegistration(registrationId);
+    public async unregister(registrationId: string, sideKey: string): Promise<void> {
+        await this._registrationManagementService.removeRegistration(registrationId, sideKey);
     }
 }

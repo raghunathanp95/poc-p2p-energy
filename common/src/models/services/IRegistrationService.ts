@@ -25,6 +25,7 @@ export interface IRegistrationService {
     /**
      * Remove a registration.
      * @param registrationId The registration id of the item.
+     * @param sideKey The sideKey to validation the delete.
      */
-    unregister(registrationId: string): Promise<void>;
+    unregister(registrationId: string, sideKey: string): Promise<void>;
 }

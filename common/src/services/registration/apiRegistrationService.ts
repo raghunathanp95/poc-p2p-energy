@@ -51,10 +51,11 @@ export class ApiRegistrationService implements IRegistrationService {
     /**
      * Remove a registration.
      * @param registrationId The registration id of the item.
+     * @param sideKey The client mam channel side key used for remove validation.
      */
-    public async unregister(registrationId: string): Promise<void> {
+    public async unregister(registrationId: string, sideKey: string): Promise<void> {
         const registrationApiClient = new RegistrationApiClient(this._apiEndpoint);
 
-        await registrationApiClient.registrationDelete({ registrationId });
+        await registrationApiClient.registrationDelete({ registrationId, sideKey });
     }
 }

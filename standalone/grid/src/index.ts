@@ -31,7 +31,7 @@ const routes: IRoute<IGridServiceConfiguration>[] = [
     { path: "/storage/:registrationId/:context/:id", method: "get", inline: storageGet },
     { path: "/storage/:registrationId/:context?/:id?", method: "delete", inline: storageDelete },
     { path: "/registration/:registrationId", method: "put", inline: registrationSet },
-    { path: "/registration/:registrationId", method: "delete", inline: registrationDelete }
+    { path: "/registration/:registrationId/:sideKey", method: "delete", inline: registrationDelete }
 ];
 
 const captureLoggingService = new CaptureLoggingService();

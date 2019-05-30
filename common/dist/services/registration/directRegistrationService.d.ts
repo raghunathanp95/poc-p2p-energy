@@ -34,6 +34,7 @@ export declare class DirectRegistrationService implements IRegistrationService {
     /**
      * Remove a registration.
      * @param registrationId The registration id of the item.
+     * @param sideKey The client mam channel side key used for remove validation.
      */
-    unregister(registrationId: string): Promise<void>;
+    unregister(registrationId: string, sideKey: string): Promise<void>;
 }

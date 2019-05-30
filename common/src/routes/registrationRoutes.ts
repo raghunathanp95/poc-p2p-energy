@@ -58,11 +58,12 @@ export async function registrationDelete(config: any, request: IRegistrationDele
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
     ValidationHelper.string(request.registrationId, "registrationId", 8);
+    ValidationHelper.trytes(request.sideKey, 81, "sideKey");
 
     loggingService.log("registration", "Delete", request.registrationId);
     const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
 
-    await registrationManagementService.removeRegistration(request.registrationId);
+    await registrationManagementService.removeRegistration(request.registrationId, request.sideKey);
 
     const storageService = ServiceFactory.get<IStorageService<string>>("storage");
     await storageService.remove(`${request.registrationId}/`);

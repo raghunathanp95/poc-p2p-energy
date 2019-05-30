@@ -116,7 +116,10 @@ export class SourceManager<S> {
      * Unregister the source from the Producer.
      */
     public async closedown(): Promise<void> {
+        let sideKey;
         if (this._state && this._state.channel) {
+            sideKey = this._state.channel.sideKey;
+
             this._loggingService.log("source", `Sending Goodbye`);
 
             const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
@@ -130,7 +133,7 @@ export class SourceManager<S> {
 
         this._loggingService.log("source", `Unregistering from the Producer`);
 
-        await this._registrationService.unregister(this._config.id);
+        await this._registrationService.unregister(this._config.id, sideKey);
 
         this._loggingService.log("source", `Unregistered from the Producer`);
     }

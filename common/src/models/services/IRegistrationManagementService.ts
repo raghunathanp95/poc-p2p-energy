@@ -16,8 +16,9 @@ export interface IRegistrationManagementService {
     /**
      * Remove a registration from the service.
      * @param registration The registration details.
+     * @param sideKey The client mam channel side key used for remove validation.
      */
-    removeRegistration(registrationId: string): Promise<void>;
+    removeRegistration(registrationId: string, sideKey: string): Promise<void>;
 
     /**
      * Load the registrations to initialise the queues.

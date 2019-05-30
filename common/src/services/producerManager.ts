@@ -145,7 +145,11 @@ export class ProducerManager<S> {
      * Closedown the producer by unregistering from the Grid.
      */
     public async closedown(): Promise<void> {
+        let sideKey;
+
         if (this._state && this._state.channel) {
+            sideKey = this._state.channel.sideKey;
+
             this._loggingService.log("producer-closedown", `Sending Goodbye`);
 
             const itemMamChannel = new MamCommandChannel(this._loadBalancerSettings);
@@ -159,7 +163,7 @@ export class ProducerManager<S> {
 
         this._loggingService.log("producer-closedown", `Unregistering from the Grid`);
 
-        await this._registrationService.unregister(this._config.id);
+        await this._registrationService.unregister(this._config.id, sideKey);
 
         this._loggingService.log("producer-closedown", `Unregistered from the Grid`);
     }

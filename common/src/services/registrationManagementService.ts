@@ -88,12 +88,17 @@ export class RegistrationManagementService implements IRegistrationManagementSer
     /**
      * Remove a registration from the service.
      * @param registration The registration details.
+     * @param sideKey The client mam channel side key used for remove validation.
      */
-    public async removeRegistration(registrationId: string): Promise<void> {
+    public async removeRegistration(registrationId: string, sideKey: string): Promise<void> {
         const registration = await this._registrationStorageService.get(registrationId);
 
         if (!registration) {
             throw new Error(`Registration '${registrationId}' does not exist.`);
+        }
+
+        if (registration.itemMamChannel && registration.itemMamChannel.sideKey !== sideKey) {
+            throw new Error(`Registration '${registrationId}' sideKey failure.`);
         }
 
         // Remove if from the internal list if it exists
