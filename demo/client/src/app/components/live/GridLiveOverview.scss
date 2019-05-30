@@ -30,11 +30,14 @@
       }
     }
 
-    a {
-      font-size: 14px;
-      font-weight: bold;
-      color: var(--jade);
-    }
+    button {
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--jade);
+        background: none;
+        border: none;
+        padding: 0;
+      }
   }
 
   img {

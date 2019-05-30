@@ -110,10 +110,13 @@
             display: inline-block;
           }
   
-          a {
+          button {
             font-size: 14px;
             font-weight: bold;
             color: var(--jade);
+            background: none;
+            border: none;
+            padding: 0;
           }
         }
       }

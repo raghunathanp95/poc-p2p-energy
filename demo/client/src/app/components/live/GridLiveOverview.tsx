@@ -182,17 +182,17 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                 {this.state.lastIncomingBundle && (
                     <div className="grid-live-grid-data">
                         <span className="grid-live-grid-data-caption">Last Incoming</span>
-                        <a onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
+                        <button className="link" onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
                             {this.state.lastIncomingBundle.substr(0, 10)}...
-                        </a>
+                        </button>
                     </div>
                 )}
                 {this.state.lastOutgoingBundle && (
                     <div className="grid-live-grid-data">
                         <span className="grid-live-grid-data-caption">Last Outgoing</span>
-                        <a onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
+                        <button className="link" onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
                             {this.state.lastOutgoingBundle.substr(0, 10)}...
-                        </a>
+                        </button>
                     </div>
                 )}
             </div >

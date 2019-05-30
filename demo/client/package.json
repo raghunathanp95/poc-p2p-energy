@@ -1,7 +1,7 @@
 {
     "name": "poc-p2p-energy-demo-client",
     "description": "Demo UI for IOTA PoC Energy",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "author": "Martyn Janes <martyn.janes@iota.org>",
     "repository": {
         "type": "git",
@@ -20,7 +20,7 @@
         "react-chartist": "^0.13.3",
         "react-dom": "^16.8.6",
         "react-router-dom": "^4.3.1",
-        "react-scripts": "^2.1.8"
+        "react-scripts": "^3.0.1"
     },
     "engines": {
         "node": "10.x.x"
@@ -48,7 +48,7 @@
     "devDependencies": {
         "@types/chartist": "^0.9.44",
         "@types/classnames": "^2.2.6",
-        "@types/node": "^11.13.4",
+        "@types/node": "^12.0.3",
         "@types/react": "^16.8.13",
         "@types/react-dom": "^16.8.3",
         "@types/react-router-dom": "^4.3.1",

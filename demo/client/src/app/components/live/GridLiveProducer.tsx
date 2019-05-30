@@ -85,17 +85,17 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             const producerManagerState = producerState && producerState.producerManagerState;
             const producerStrategyState = producerManagerState && producerManagerState.strategyState;
 
+            const outputCommands = (producerState && producerState.outputCommands) || [];
+
             const firstProducerTime = this.state.firstProducerValueTime ||
-                (producerState && producerState.outputCommands && producerState.outputCommands.length > 0 ? producerState.outputCommands[0].endTime : 0);
+                (outputCommands.length > 0 ? outputCommands[0].endTime : 0);
 
             const producerGraphLabels: string[] = [];
-            if (producerState && producerState.outputCommands) {
-                for (let i = 0; i < producerState.outputCommands.length; i++) {
-                    // We take off 3 because we know the producer basic strategy delays 15s
-                    // before combining source values
-                    const labelValue = Math.floor((producerState.outputCommands[i].endTime - firstProducerTime) / GridLiveProducer.TIME_BASIS) - 3;
-                    producerGraphLabels.push(labelValue < 0 ? "n/a" : labelValue.toString());
-                }
+            for (let i = 0; i < outputCommands.length; i++) {
+                // We take off 3 because we know the producer basic strategy delays 15s
+                // before combining source values
+                const labelValue = Math.floor((outputCommands[i].endTime - firstProducerTime) / GridLiveProducer.TIME_BASIS) - 3;
+                producerGraphLabels.push(labelValue < 0 ? "n/a" : labelValue.toString());
             }
 
             this.setState({
@@ -108,8 +108,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                 mamRoot: mamChannel && mamChannel.initialRoot,
                 sideKey: mamChannel && mamChannel.sideKey,
                 firstProducerValueTime: firstProducerTime,
-                producerGraphSeries: producerState && producerState.outputCommands &&
-                    producerState.outputCommands.map(o => o.output) || [],
+                producerGraphSeries: outputCommands.map(o => o.output),
                 producerGraphLabels
             });
         });
@@ -156,9 +155,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                             <div className="grid-live-producer-info-data">
                                 <span>Confirmed</span>
                                 <span>
-                                    <a onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
+                                    <button className="link" onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
                                         {this.state.lastIncomingBundle.substr(0, 10)}...
-                                    </a>
+                                    </button>
                                 </span>
                             </div>
                         )}
@@ -278,8 +277,9 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
         if (isSelected && !this.state.selectedSources[source.id]) {
             this._demoGridManager.subscribeSource("liveProducer", source.id, (sourceState) => {
                 if (sourceState) {
-                    this.state.selectedSources[source.id] = sourceState;
-                    this.setState({ selectedSources: this.state.selectedSources }, () => this.calculateGraph());
+                    const newSelected = this.state.selectedSources;
+                    newSelected[source.id] = sourceState;
+                    this.setState({ selectedSources: newSelected }, () => this.calculateGraph());
                 }
             });
         } else if (!isSelected && this.state.selectedSources[source.id]) {

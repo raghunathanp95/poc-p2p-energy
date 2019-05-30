@@ -79,8 +79,10 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             const mamChannel = consumerManagerState && consumerManagerState.channel;
             const mamChannelReturn = consumerManagerState && consumerManagerState.returnChannel;
 
+            const usageCommands = (consumerState && consumerState.usageCommands) || [];
+
             const firstConsumerValueTime = this.state.firstConsumerValueTime ||
-                (consumerState && consumerState.usageCommands && consumerState.usageCommands.length > 0 ? consumerState.usageCommands[0].endTime : 0);
+                (usageCommands.length > 0 ? usageCommands[0].endTime : 0);
 
             this.setState(
                 {
@@ -97,9 +99,8 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                     mamRootReturn: mamChannelReturn && mamChannelReturn.initialRoot,
                     sideKeyReturn: mamChannelReturn && mamChannelReturn.sideKey,
                     firstConsumerValueTime,
-                    graphSeries: consumerState && consumerState.usageCommands && consumerState.usageCommands.map(u => u.usage) || [],
-                    graphLabels: consumerState && consumerState.usageCommands &&
-                        consumerState.usageCommands.map(u => Math.floor((u.endTime - firstConsumerValueTime) / GridLiveConsumer.TIME_BASIS).toString()) || []
+                    graphSeries: usageCommands.map(u => u.usage),
+                    graphLabels: usageCommands.map(u => Math.floor((u.endTime - firstConsumerValueTime) / GridLiveConsumer.TIME_BASIS).toString())
                 }
             );
         });
@@ -144,9 +145,9 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                         <div className="grid-live-consumer-info-data"><span>Outstanding</span><span>{this.state.outstandingBalance}</span></div>
                         {this.state.lastOutgoingBundle && (
                             <div className="grid-live-consumer-info-data"><span>Confirmed</span><span>
-                                <a onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
+                                <button className="link" onClick={() => this._tangleExplorerService.bundle(this.state.lastOutgoingBundle)}>
                                     {this.state.lastOutgoingBundle.substr(0, 10)}...
-                                </a>
+                                </button>
                             </span></div>
                         )}
                     </div>
