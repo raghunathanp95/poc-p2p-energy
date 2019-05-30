@@ -2,6 +2,7 @@ import { LoadBalancerSettings } from "@iota/client-load-balancer";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ISourceStore } from "p2p-energy-common/dist/models/db/producer/ISourceStore";
 import { IMamCommand } from "p2p-energy-common/dist/models/mam/IMamCommand";
+import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { IRegistrationManagementService } from "p2p-energy-common/dist/models/services/IRegistrationManagementService";
 import { IStorageService } from "p2p-energy-common/dist/models/services/IStorageService";
 import { IRegistration } from "p2p-energy-common/dist/models/services/registration/IRegistration";
@@ -44,9 +45,9 @@ export class DemoGridManager {
     private readonly _loadBalancerSettings: LoadBalancerSettings;
 
     /**
-     * The api endpoint.
+     * Logging service.
      */
-    private readonly _apiEndpoint: string;
+    private readonly _loggingService: ILoggingService;
 
     /**
      * The demo grid storage service.
@@ -120,6 +121,11 @@ export class DemoGridManager {
     private _updateTimer?: NodeJS.Timer;
 
     /**
+     * Is the manager running.
+     */
+    private _isRunning: boolean;
+
+    /**
      * Subscriptions to the grid state changes.
      */
     private readonly _subscriptionsGrid: { [id: string]: (state: IDemoGridState | undefined) => void };
@@ -142,18 +148,19 @@ export class DemoGridManager {
     /**
      * Create a new instance of DemoGridManager.
      * @param loadBalancerSettings Load balancer settings for communications.
-     * @param apiEndpoint The api endpoint.
      */
-    constructor(loadBalancerSettings: LoadBalancerSettings, apiEndpoint: string) {
+    constructor(loadBalancerSettings: LoadBalancerSettings) {
         this._loadBalancerSettings = loadBalancerSettings;
-        this._apiEndpoint = apiEndpoint;
 
         this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
+        this._loggingService = ServiceFactory.get<ILoggingService>("logging");
+
         this._producerStrategy = new BasicProducerStrategy();
         this._gridStrategy = new BasicGridStrategy();
         this._consumerStrategy = new BasicConsumerStrategy();
         this._sourceStrategy = new BasicSourceStrategy();
 
+        this._isRunning = false;
         this._subscriptionsGrid = {};
         this._subscriptionsProducer = {};
         this._subscriptionsConsumer = {};
@@ -194,6 +201,7 @@ export class DemoGridManager {
             await this._demoGridStateStorageService.set(grid.id, this._gridState);
         }
 
+        this._isRunning = true;
         await this.startUpdates();
     }
 
@@ -201,6 +209,7 @@ export class DemoGridManager {
      * Closedown the grid.
      */
     public closedown(): void {
+        this._isRunning = false;
         this.stopUpdates();
         this.clearManagers();
     }
@@ -538,22 +547,35 @@ export class DemoGridManager {
      * Update all the managers.
      */
     private async updateManagers(): Promise<void> {
-        if (this._gridId && this._gridManager) {
-            // In a real system the individual manager updates would be performed
-            // by the standalone entities.
-            await this.updateNewCommands();
+        try {
+            if (this._gridId && this._gridManager) {
+                // In a real system the individual manager updates would be performed
+                // by the standalone entities.
+                await this.updateNewCommands();
 
-            await this.updateSourceManagers();
+                await this.updateSourceManagers();
 
-            await this.updateProducerManagers();
+                await this.updateProducerManagers();
 
-            await this.updateConsumerManagers();
+                await this.updateConsumerManagers();
 
-            await this.updateReturnCommands();
+                await this.updateReturnCommands();
 
-            await this._demoGridStateStorageService.set(this._gridId, this._gridState);
+                await this._demoGridStateStorageService.set(this._gridId, this._gridState);
+            }
+        } catch (err) {
+            // If we got an error while in running state, we should at least log it
+            if (this._isRunning) {
+                this._loggingService.error("demo-manager", "While running", err);
+            } else {
+                // If we are not running ignore the error, it will be the result
+                // of an object being torn down that is now being access
+                // from the result of an async op
+            }
         }
-        this._updateTimer = setTimeout(() => this.updateManagers(), 1000);
+        if (this._isRunning) {
+            this._updateTimer = setTimeout(() => this.updateManagers(), 1000);
+        }
     }
 
     /**

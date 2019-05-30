@@ -2,6 +2,7 @@ import { StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import React, { Component, ReactNode } from "react";
 import { DemoGridManager } from "../../../services/demoGridManager";
+import LoggingView from "../services/LoggingView";
 import GridLiveConsumer from "./GridLiveConsumer";
 import "./GridLiveContainer.scss";
 import { GridLiveContainerProps } from "./GridLiveContainerProps";
@@ -112,32 +113,35 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
                             </div>
                         </div>
 
-                        <br />
-                        <hr />
-                        <div>For this demonstration the <strong>Source</strong> and <strong>Consumers</strong> generate values every 30s, so you will not see data immediately.
-                             In a real world system the updates would most likely be spaced at even longer intervals.
-                            <br /><br />
-                            Payment is only requested from <strong>Consumers</strong> on whole kWh, so they will have no outstanding balance until they have accumulated some
-                            usage. <strong>Consumers</strong> only pay the grid when they reach multiples of 25i.
-                            <br /><br />
-                            Once the <strong>Grid</strong> receives payments from the <strong>Consumers</strong> it takes 20% of the payment for its running costs and then distributes
-                             the rest to the <strong>Producers</strong> weighted by how much they have contributed to the <strong>Grid</strong>.
-                            <br /><br />
-                            Payment distribution from the <strong>Grid</strong> to the <strong>Producers</strong> is executed at 40i intervals.
-                            <br /><br />
-                            All of the payments in this demonstration are made from and to a central wallet, and transactions only appear when they are confirmed. In a real world
-                            system each entity would have its own wallet.
-                            <br /><br />
-                            All of the timing and payment strategies are easily replaceable in the source code provided.
-                        </div>
-                        <hr />
-                        <p>To find out more details on how this was this demo implemented, please read the Blueprint on the docs
-                            site <a href="https://docs.iota.org/docs/blueprints/0.1/p2p-energy/overview" target="_blank" rel="noopener noreferrer">P2P Energy Grid Blueprint</a> or
-                            view the source code on <a href="https://github.com/iotaledger/poc-p2p-energy" target="_blank" rel="noopener noreferrer">GitHub</a>.
-                        </p>
-
                     </React.Fragment>
                 )}
+
+                <LoggingView />
+
+                <br />
+                <hr />
+                <div>
+                    For this demonstration the <strong>Source</strong> and <strong>Consumers</strong> generate values every 30s, so you will not see data immediately.
+                     In a real world system the updates would most likely be spaced at even longer intervals.
+                    <br /><br />
+                    Payment is only requested from <strong>Consumers</strong> on whole kWh, so they will have no outstanding balance until they have accumulated some
+                    usage. <strong>Consumers</strong> only pay the grid when they reach multiples of 25i.
+                    <br /><br />
+                    Once the <strong>Grid</strong> receives payments from the <strong>Consumers</strong> it takes 20% of the payment for its running costs and then distributes
+                    the rest to the <strong>Producers</strong> weighted by how much they have contributed to the <strong>Grid</strong>.
+                    <br /><br />
+                    Payment distribution from the <strong>Grid</strong> to the <strong>Producers</strong> is executed at 40i intervals.
+                    <br /><br />
+                    All of the payments in this demonstration are made from and to a central wallet, and transactions only appear when they are confirmed. In a real world
+                    system each entity would have its own wallet.
+                    <br /><br />
+                    All of the timing and payment strategies are easily replaceable in the source code provided.
+                </div>
+                <hr />
+                <p>To find out more details on how this was this demo implemented, please read the Blueprint on the docs
+                    site <a href="https://docs.iota.org/docs/blueprints/0.1/p2p-energy/overview" target="_blank" rel="noopener noreferrer">P2P Energy Grid Blueprint</a> or
+                    view the source code on <a href="https://github.com/iotaledger/poc-p2p-energy" target="_blank" rel="noopener noreferrer">GitHub</a>.
+                </p>
             </div>
         );
     }

@@ -3,7 +3,9 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IRoute } from "p2p-energy-common/dist/models/app/IRoute";
 import { ISchedule } from "p2p-energy-common/dist/models/app/ISchedule";
 import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { App } from "p2p-energy-common/dist/utils/app";
 import { ScheduleHelper } from "p2p-energy-common/dist/utils/scheduleHelper";
@@ -23,7 +25,9 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" }
 ];
 
-const loggingService = new ConsoleLoggingService();
+const captureLoggingService = new CaptureLoggingService();
+ServiceFactory.register("capture-logging", () => captureLoggingService);
+const loggingService = new AggregateLoggingService([new ConsoleLoggingService(), captureLoggingService]);
 const app = new App<IDemoApiConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {

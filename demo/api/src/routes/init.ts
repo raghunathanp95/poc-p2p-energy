@@ -3,6 +3,7 @@ import { Inputs } from "@iota/core";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
 import { IDemoApiConfiguration } from "../models/IDemoApiConfiguration";
 import { IDemoWalletTransferContainer } from "../models/services/IDemoWalletTransferContainer";
 import { WalletService } from "../services/walletService";
@@ -12,9 +13,10 @@ import { WalletTransferService } from "../services/walletTransferService";
  * Initialise the components for the demo api.
  */
 export async function init(config: IDemoApiConfiguration): Promise<string[]> {
-    const loggingService = ServiceFactory.get<ILoggingService>("logging");
+    const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");
+    captureLoggingService.enable(["init", "s3", "dynamoDb"]);
 
-    loggingService.startCapture(["init", "s3", "dynamoDb"]);
+    const loggingService = ServiceFactory.get<ILoggingService>("logging");
     loggingService.log("init", "Initializing");
 
     try {
@@ -27,24 +29,30 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
             const walletTransferService = new WalletTransferService(config.dynamoDbConnection);
             await walletTransferService.createTable(loggingService);
 
-            const iota = composeAPI(
-                ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
-            );
+            const global = await walletTransferService.get("global");
 
-            const inputsResponse: Inputs =
-                await iota.getInputs(config.walletSeed);
+            if (!global) {
+                const iota = composeAPI(
+                    ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
+                );
 
-            if (inputsResponse &&
-                inputsResponse.totalBalance > 0 &&
-                inputsResponse.inputs &&
-                inputsResponse.inputs.length > 0) {
-                loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
-                const demoWalletTransferContainer: IDemoWalletTransferContainer = {
-                    startIndex: inputsResponse.inputs[0].keyIndex,
-                    lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
-                    queue: []
-                };
-                await walletTransferService.set("global", demoWalletTransferContainer);
+                const inputsResponse: Inputs =
+                    await iota.getInputs(config.walletSeed);
+
+                if (inputsResponse &&
+                    inputsResponse.totalBalance > 0 &&
+                    inputsResponse.inputs &&
+                    inputsResponse.inputs.length > 0) {
+                    loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
+                    const demoWalletTransferContainer: IDemoWalletTransferContainer = {
+                        startIndex: inputsResponse.inputs[0].keyIndex,
+                        lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
+                        queue: []
+                    };
+                    await walletTransferService.set("global", demoWalletTransferContainer);
+                }
+            } else {
+                loggingService.log("init", `Wallet Already Exists`);
             }
         }
 
@@ -53,5 +61,7 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
         loggingService.error("init", `Initialization Failed`, err);
     }
 
-    return loggingService.formatCapture(loggingService.stopCapture());
+    const capture = captureLoggingService.getCapture();
+    captureLoggingService.disable();
+    return captureLoggingService.formatCapture(capture);
 }

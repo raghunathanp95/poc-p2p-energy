@@ -2,7 +2,9 @@ import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-bala
 import "iota-css-theme";
 import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
+import { CallbackLoggingService } from "p2p-energy-common/dist/services/logging/callbackLoggingService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { BrowserStorageService } from "p2p-energy-common/dist/services/storage/browserStorageService";
 import { ApiWalletService } from "p2p-energy-common/dist/services/wallet/apiWalletService";
 import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
@@ -75,14 +77,18 @@ class App extends Component<RouteComponentProps, AppState> {
                 await appSettingsStorage.set("default", appSettings);
             }
 
+            const callbackLoggingService = new CallbackLoggingService();
+            ServiceFactory.register("callback-logging", () => callbackLoggingService);
+            const loggingService = new AggregateLoggingService([new ConsoleLoggingService(), callbackLoggingService]);
+
             ServiceFactory.register("configuration", () => configService);
             ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
             ServiceFactory.register("tangle-explorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
-            ServiceFactory.register("logging", () => new ConsoleLoggingService());
+            ServiceFactory.register("logging", () => loggingService);
             ServiceFactory.register("wallet", () => new ApiWalletService(config.apiEndpoint, appSettings.clientId));
             ServiceFactory.register("demo-grid-state-storage", () => new BrowserStorageService<IDemoGridState>("grid-state"));
-            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings, config.apiEndpoint));
+            ServiceFactory.register("demo-grid-manager", () => new DemoGridManager(loadBalancerSettings));
 
             this._configuration = config;
 

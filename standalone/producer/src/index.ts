@@ -10,7 +10,9 @@ import { IProducerManagerState } from "p2p-energy-common/dist/models/state/IProd
 import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
 import { registrationDelete, registrationSet } from "p2p-energy-common/dist/routes/registrationRoutes";
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
@@ -33,7 +35,9 @@ const routes: IRoute<IProducerServiceConfiguration>[] = [
     { path: "/registration/:registrationId", method: "delete", inline: registrationDelete }
 ];
 
-const loggingService = new ConsoleLoggingService();
+const captureLoggingService = new CaptureLoggingService();
+ServiceFactory.register("capture-logging", () => captureLoggingService);
+const loggingService = new AggregateLoggingService([new ConsoleLoggingService(), captureLoggingService]);
 const app = new App<IProducerServiceConfiguration>(4001, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {

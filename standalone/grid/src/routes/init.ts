@@ -9,14 +9,17 @@ import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/co
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { TransactionCacheService } from "p2p-energy-common/dist/services/db/transactionCacheService";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
 
 /**
  * Initialise the components for the Grid.
  */
 export async function init(config: IGridServiceConfiguration): Promise<string[]> {
+    const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");
+    captureLoggingService.enable(["init", "s3", "dynamoDb"]);
+
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
-    loggingService.startCapture(["init", "dynamoDb", "s3"]);
     loggingService.log("init", "Initializing");
 
     const loadBalancerSettings = ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings");
@@ -47,5 +50,7 @@ export async function init(config: IGridServiceConfiguration): Promise<string[]>
         loggingService.error("init", `Initialization Failed`, err);
     }
 
-    return loggingService.formatCapture(loggingService.stopCapture());
+    const capture = captureLoggingService.getCapture();
+    captureLoggingService.disable();
+    return captureLoggingService.formatCapture(capture);
 }

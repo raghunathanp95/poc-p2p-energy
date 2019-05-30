@@ -3,7 +3,7 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { ISourceServiceConfiguration } from "p2p-energy-common/dist/models/config/source/ISourceServiceConfiguration";
 import { ISourceManagerState } from "p2p-energy-common/dist/models/state/ISourceManagerState";
 import { IBasicSourceStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicSourceStrategyState";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { SourceManager } from "p2p-energy-common/dist/services/sourceManager";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";

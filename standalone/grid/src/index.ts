@@ -10,11 +10,13 @@ import { registrationDelete, registrationSet } from "p2p-energy-common/dist/rout
 import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-common/dist/routes/storageRoutes";
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
 import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/consumerUsageStoreService";
 import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
+import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { RegistrationManagementService } from "p2p-energy-common/dist/services/registrationManagementService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";
 import { BasicWalletService } from "p2p-energy-common/dist/services/wallet/basicWalletService";
@@ -32,7 +34,9 @@ const routes: IRoute<IGridServiceConfiguration>[] = [
     { path: "/registration/:registrationId", method: "delete", inline: registrationDelete }
 ];
 
-const loggingService = new ConsoleLoggingService();
+const captureLoggingService = new CaptureLoggingService();
+ServiceFactory.register("capture-logging", () => captureLoggingService);
+const loggingService = new AggregateLoggingService([new ConsoleLoggingService(), captureLoggingService]);
 const app = new App<IGridServiceConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {

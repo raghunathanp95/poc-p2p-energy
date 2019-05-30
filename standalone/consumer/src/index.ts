@@ -4,8 +4,8 @@ import { IConsumerServiceConfiguration } from "p2p-energy-common/dist/models/con
 import { IBasicWalletState } from "p2p-energy-common/dist/models/services/IBasicWalletState";
 import { IConsumerManagerState } from "p2p-energy-common/dist/models/state/IConsumerManagerState";
 import { IBasicConsumerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicConsumerStrategyState";
-import { ConsoleLoggingService } from "p2p-energy-common/dist/services/consoleLoggingService";
 import { ConsumerManager } from "p2p-energy-common/dist/services/consumerManager";
+import { ConsoleLoggingService } from "p2p-energy-common/dist/services/logging/consoleLoggingService";
 import { ApiRegistrationService } from "p2p-energy-common/dist/services/registration/apiRegistrationService";
 import { ApiStorageService } from "p2p-energy-common/dist/services/storage/apiStorageService";
 import { LocalFileStorageService } from "p2p-energy-common/dist/services/storage/localFileStorageService";

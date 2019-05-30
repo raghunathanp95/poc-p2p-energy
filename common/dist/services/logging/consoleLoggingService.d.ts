@@ -1,7 +1,8 @@
+import { ILoggingService } from "../../models/services/ILoggingService";
 /**
- * Interface definition for logging service;
+ * Service to handle console logging.
  */
-export interface ILoggingService {
+export declare class ConsoleLoggingService implements ILoggingService {
     /**
      * Log the message.
      * @param context The context for the log.

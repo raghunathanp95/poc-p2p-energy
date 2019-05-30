@@ -1,7 +1,17 @@
+import { ILoggingService } from "../../models/services/ILoggingService";
 /**
- * Interface definition for logging service;
+ * Service to handle multiple logging services.
  */
-export interface ILoggingService {
+export declare class AggregateLoggingService implements ILoggingService {
+    /**
+     * The list of services.
+     */
+    private readonly _services;
+    /**
+     * Create a new instance of AggregateLoggingService.
+     * @param services The list of services to aggregate.
+     */
+    constructor(services: ILoggingService[]);
     /**
      * Log the message.
      * @param context The context for the log.

@@ -2,15 +2,17 @@ import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory"
 import { IProducerServiceConfiguration } from "p2p-energy-common/dist/models/config/producer/IProducerServiceConfiguration";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { IBasicProducerStrategyState } from "p2p-energy-common/dist/models/strategies/IBasicProducerStrategyState";
+import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/captureLoggingService";
 import { ProducerManager } from "p2p-energy-common/dist/services/producerManager";
 
 /**
  * Initialise the producer.
  */
 export async function initialise(config: IProducerServiceConfiguration): Promise<string[]> {
-    const loggingService = ServiceFactory.get<ILoggingService>("logging");
+    const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");
+    captureLoggingService.enable(["initialise", "producer-init"]);
 
-    loggingService.startCapture(["init", "producer-init"]);
+    const loggingService = ServiceFactory.get<ILoggingService>("logging");
 
     loggingService.log("initialise", "Initializing");
 
@@ -23,5 +25,7 @@ export async function initialise(config: IProducerServiceConfiguration): Promise
         loggingService.error("initialise", `Failed`, err);
     }
 
-    return loggingService.formatCapture(loggingService.stopCapture());
+    const capture = captureLoggingService.getCapture();
+    captureLoggingService.disable();
+    return captureLoggingService.formatCapture(capture);
 }
