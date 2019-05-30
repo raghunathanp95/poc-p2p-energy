@@ -268,7 +268,7 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                 await bs.remove(allItemsForGrid.ids[i]);
             }
 
-            this.setState({ view: "reset" });
+            this.setState({ view: "live" });
         }
     }
 }
