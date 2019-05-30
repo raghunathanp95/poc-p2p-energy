@@ -276,11 +276,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
         // Pay out to producers on 40i boundaries
         const dist = Math.floor(gridState.strategyState.distributionAvailable / 40) * 40;
         if (dist > 0) {
-            gridState.strategyState.distributionAvailable -= dist;
+            let totalDistUsed = 0;
 
             for (const producerId in gridState.strategyState.producerTotals) {
                 // Now based on each producers contribution to the grid give them some money
-                const payableBalance = dist * gridState.strategyState.producerTotals[producerId].percentage;
+                const payableBalance = Math.floor(dist * gridState.strategyState.producerTotals[producerId].percentage);
+
+                totalDistUsed += payableBalance;
 
                 gridState.strategyState.producerTotals[producerId].owed += payableBalance;
 
@@ -294,6 +296,8 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                     amount: payableBalance
                 });
             }
+
+            gridState.strategyState.distributionAvailable -= totalDistUsed;
         }
     }
 
