@@ -22,4 +22,4 @@ See [./DEPLOYMENT.md](./DEPLOYMENT.md) for more details.
 
 ## Demonstration
 
-There is a demonstration available to view at <https://poc-p2p-energy-demo.dag.sh>
+There is a demonstration available to view at <https://iota-poc-p2p-energy-demo-client.dag.sh>
