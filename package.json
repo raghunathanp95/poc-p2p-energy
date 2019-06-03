@@ -7,6 +7,5 @@
         "type": "git",
         "url": "https://github.com/iotaledger/poc-p2p-energy.git"
     },
-    "license": "MIT",
-    "private": true
+    "license": "MIT"
 }

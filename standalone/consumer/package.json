@@ -8,7 +8,6 @@
         "url": "https://github.com/iotaledger/poc-p2p-energy/tree/master/standalone/consumer"
     },
     "license": "MIT",
-    "private": true,
     "scripts": {
         "build-clean": "rimraf ./dist/*",
         "build-compile": "tsc",
