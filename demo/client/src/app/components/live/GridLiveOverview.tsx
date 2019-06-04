@@ -117,7 +117,7 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                 <div className="grid-live-grid-sub-title">Grid</div>
 
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption wide">Running Costs Total</span>
+                    <span className="grid-live-grid-data-caption wide">Accumulated Running Costs</span>
                     <span className="positive">{this.state.runningCostsTotal}</span>
                 </div>
                 <div className="grid-live-grid-data">
@@ -125,49 +125,49 @@ class GridLiveOverview extends Component<GridLiveOverviewProps, GridLiveOverview
                     <span className="positive">{this.state.runningCostsReceived}</span>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption wide">Distribution Available</span>
+                    <span className="grid-live-grid-data-caption wide">Distribution Available<br/>for Producers</span>
                     <span className="positive">{this.state.distributionAvailable}</span>
                 </div>
 
                 <br />
 
                 <div className="grid-live-grid-sub-title">
-                Producers
+                    Grid &lt;&gt; Producers
                     <span className="grid-live-grid-sub-title-value">
                         [{this.props.grid.producers.length}]
                     </span>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Output</span>
+                    <span className="grid-live-grid-data-caption">Total Producer Output</span>
                     <span>{this.state.producersTotalOutput}</span>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Received</span>
+                    <span className="grid-live-grid-data-caption">Payments Distributed<br/>to Producers</span>
                     <span className="positive">{this.state.producersTotalReceived}</span>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Owed</span>
+                    <span className="grid-live-grid-data-caption">Distributions Owed<br/>to Producers</span>
                     <span className="negative">{this.state.producersTotalOwed}</span>
                 </div>
 
                 <br />
                 <div className="grid-live-grid-sub-title">
-                    Consumers
+                    Grid &lt;&gt; Consumers
                     <span className="grid-live-grid-sub-title-value">
                         [{this.props.grid.consumers.length}]
                     </span>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Usage</span>
-                    <span>{this.state.consumersTotalUsage}</span>
+                    <div className="grid-live-grid-data-caption">Total Consumer Usage</div>
+                    <div>{this.state.consumersTotalUsage}</div>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Paid</span>
-                    <span className="positive">{this.state.consumersTotalPaid}</span>
+                    <div className="grid-live-grid-data-caption">Confirmed Payments<br/>from Consumer</div>
+                    <div className="positive">{this.state.consumersTotalPaid}</div>
                 </div>
                 <div className="grid-live-grid-data">
-                    <span className="grid-live-grid-data-caption">Outstanding</span>
-                    <span className="negative">{this.state.consumersTotalOutstanding}</span>
+                    <div className="grid-live-grid-data-caption">Requested Payments<br/>from Consumer</div>
+                    <div className="negative">{this.state.consumersTotalOutstanding}</div>
                 </div>
 
                 {(this.state.lastIncomingBundle || this.state.lastOutgoingBundle) && (
