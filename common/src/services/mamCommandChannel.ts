@@ -63,6 +63,20 @@ export class MamCommandChannel {
                 initialRoot: channelConfiguration.initialRoot
             });
 
+        // Now read back from the channel until the hello is available to make sure
+        // when we communicate the details to other entities it is ready
+        let foundHello = false;
+        const testChannelConfiguration = {
+            sideKey: channelConfiguration.sideKey,
+            seed: channelConfiguration.seed,
+            initialRoot: channelConfiguration.initialRoot
+        };
+        do {
+            const commands = await this.receiveCommands(testChannelConfiguration, "hello");
+
+            foundHello = commands && commands.length > 0 && commands[0].command === "hello";
+        } while (!foundHello);
+
         return channelConfiguration;
     }
 
