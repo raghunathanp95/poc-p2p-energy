@@ -18,8 +18,8 @@ const node_schedule_1 = __importDefault(require("node-schedule"));
 class ScheduleHelper {
     /**
      * Build schedules for the app.
-     * @param config The configuration.
      * @param schedules The schedules to build.
+     * @param loggingService The logging service.
      */
     static build(schedules, loggingService) {
         return __awaiter(this, void 0, void 0, function* () {

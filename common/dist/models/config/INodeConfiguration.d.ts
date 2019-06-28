@@ -11,7 +11,7 @@ export interface INodeConfiguration {
      */
     depth: number;
     /**
-     * Minimunm weight magnitude for attaches.
+     * Minimum weight magnitude for attaches.
      */
     mwm: number;
 }

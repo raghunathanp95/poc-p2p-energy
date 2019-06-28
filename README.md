@@ -10,8 +10,8 @@ See [./demo/README.md](./demo/README.md) for more details.
 
 A deployed version of the demonstration is available at the following urls:
 
-* demo - <https://iota-poc-p2p-energy-demo-client.dag.sh>
-* api - <https://iota-poc-p2p-energy-demo-api.dag.sh>
+* demo - <https://p2p-energy.iota.org>
+* api - <https://p2p-energy-api.iota.org>
 
 ### Details
 

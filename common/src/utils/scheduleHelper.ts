@@ -8,8 +8,8 @@ import { ILoggingService } from "../models/services/ILoggingService";
 export class ScheduleHelper {
     /**
      * Build schedules for the app.
-     * @param config The configuration.
      * @param schedules The schedules to build.
+     * @param loggingService The logging service.
      */
     public static async build(schedules: ISchedule[], loggingService: ILoggingService): Promise<void> {
         if (schedules) {

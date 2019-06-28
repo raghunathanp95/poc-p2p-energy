@@ -16,8 +16,8 @@ You should copy `./public/data/config.template.json` to `./public/data/config.de
     "apiEndpoint": "API-ENDPOINT",                  /* URL of the demo API */
     "mamExplorer": "https://mam-explorer.firebaseapp.com/?root=:root&provider=:provider&mode=:mode&key=:sideKey",
      "tangleExplorer": {
-        "transactions": "https://thetangle.org/transaction/:transactionHash",
-        "bundles": "https://thetangle.org/bundle/:bundleHash"
+        "transactions": "https://devnet.thetangle.org/transaction/:transactionHash",
+        "bundles": "https://devnet.thetangle.org/bundle/:bundleHash"
     },
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"      /* Optional, google analytics id */
 }

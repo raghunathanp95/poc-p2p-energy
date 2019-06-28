@@ -6,8 +6,8 @@ import { ILoggingService } from "../models/services/ILoggingService";
 export declare class ScheduleHelper {
     /**
      * Build schedules for the app.
-     * @param config The configuration.
      * @param schedules The schedules to build.
+     * @param loggingService The logging service.
      */
     static build(schedules: ISchedule[], loggingService: ILoggingService): Promise<void>;
 }
