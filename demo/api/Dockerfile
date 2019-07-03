@@ -10,7 +10,6 @@ COPY . ./
 # Set the env variables
 ARG GITHUB_TOKEN
 RUN echo "CONFIG_ID=$CONFIG_ID"
-RUN echo "GITHUB_TOKEN=$GITHUB_TOKEN"
 
 # We are npm installing from private repos so we need github token with access
 RUN git config --global url."https://${GITHUB_TOKEN}:@github.com/".insteadOf "https://github.com/"
