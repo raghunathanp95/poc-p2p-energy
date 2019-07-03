@@ -99,6 +99,7 @@ export class CaptureLoggingService implements ILoggingService {
             for (let i = 0; i < capture.length; i++) {
                 if (capture[i].err) {
                     formatted.push(`[${capture[i].context}] Error::${capture[i].message}`);
+                    formatted.push(`[${capture[i].context}] Error::${capture[i].err.message}`);
                 } else {
                     if (capture[i].context === "" && capture[i].message === "") {
                         formatted.push("");
