@@ -1,5 +1,5 @@
 import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
-import { Inputs } from "@iota/core";
+import { generateAddress, Inputs } from "@iota/core";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
@@ -20,7 +20,6 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
     loggingService.log("init", "Initializing");
 
     const loadBalancerSettings = ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings");
-    const oldTimeout = loadBalancerSettings.timeoutMs;
 
     try {
         if (config.s3Connection) {
@@ -38,23 +37,41 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
                 loggingService.log("init", `Creating wallet`);
                 const iota = composeAPI(loadBalancerSettings);
 
-                // Set a long timeout during this process as it can take a long time
-                loadBalancerSettings.timeoutMs = 300000; // 5 Mins
+                const startIndex = 0;
+                const endIndex = 1000;
+                const itemsPerRequest = 25;
 
-                const inputsResponse: Inputs =
-                    await iota.getInputs(config.walletSeed);
+                let foundIndex = -1;
+                for (let i = startIndex; i < endIndex && foundIndex === -1; i += itemsPerRequest) {
 
-                if (inputsResponse &&
-                    inputsResponse.totalBalance > 0 &&
-                    inputsResponse.inputs &&
-                    inputsResponse.inputs.length > 0) {
-                    loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
-                    const demoWalletTransferContainer: IDemoWalletTransferContainer = {
-                        startIndex: inputsResponse.inputs[0].keyIndex,
-                        lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
-                        queue: []
-                    };
-                    await walletTransferService.set("global", demoWalletTransferContainer);
+                    const addresses = [];
+                    for (let j = 0; j < itemsPerRequest; j++) {
+                        addresses.push(generateAddress(config.walletSeed, i + j, 2));
+                    }
+
+                    const balancesResponse = await iota.getBalances(addresses, 100);
+
+                    const found = balancesResponse.balances.findIndex(b => b !== 0);
+                    if (found >= 0) {
+                        foundIndex = found + i;
+                    }
+                }
+
+                if (foundIndex >= 0) {
+                    const inputsResponse = await iota.getInputs(config.walletSeed, { start: foundIndex });
+
+                    if (inputsResponse &&
+                        inputsResponse.totalBalance > 0 &&
+                        inputsResponse.inputs &&
+                        inputsResponse.inputs.length > 0) {
+                        loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
+                        const demoWalletTransferContainer: IDemoWalletTransferContainer = {
+                            startIndex: inputsResponse.inputs[0].keyIndex,
+                            lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
+                            queue: []
+                        };
+                        await walletTransferService.set("global", demoWalletTransferContainer);
+                    }
                 }
             } else {
                 loggingService.log("init", `Wallet Already Exists`);
@@ -65,8 +82,6 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
     } catch (err) {
         loggingService.error("init", `Initialization Failed`, err);
     }
-
-    loadBalancerSettings.timeoutMs = oldTimeout;
 
     const capture = captureLoggingService.getCapture();
     captureLoggingService.disable();
