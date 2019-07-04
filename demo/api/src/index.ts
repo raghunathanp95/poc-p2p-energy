@@ -13,6 +13,8 @@ import { IDemoApiConfiguration } from "./models/IDemoApiConfiguration";
 import { WalletService } from "./services/walletService";
 import { WalletTransferService } from "./services/walletTransferService";
 
+let globalConfig;
+
 const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/init", method: "get", func: "init" },
     { path: "/grid", method: "post", folder: "grid", func: "gridPost" },
@@ -22,7 +24,8 @@ const routes: IRoute<IDemoApiConfiguration>[] = [
     { path: "/grid/password/:name", method: "put", folder: "grid", func: "gridPasswordPut" },
     { path: "/wallet/poll", method: "get", folder: "wallet", func: "pollGet" },
     { path: "/wallet/:id/:incomingEpoch?/:outgoingEpoch?/", method: "get", folder: "wallet", func: "walletGet" },
-    { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" }
+    { path: "/wallet/:id/transfer/", method: "post", folder: "wallet", func: "transferPost" },
+    { path: "/config/", method: "get", inline: () => globalConfig }
 ];
 
 const captureLoggingService = new CaptureLoggingService();
@@ -31,6 +34,8 @@ const loggingService = new AggregateLoggingService([new ConsoleLoggingService(),
 const app = new App<IDemoApiConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
+    globalConfig = config;
+
     ServiceFactory.register("logging", () => loggingService);
     if (config.localStorageFolder) {
         ServiceFactory.register(
