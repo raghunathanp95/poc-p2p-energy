@@ -74,34 +74,27 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
         if (!this._isBusy) {
             this._isBusy = true;
 
-            let walletTransferContainer = await super.get("global");
+            const walletTransferContainer = await super.get("global");
 
             let updated1 = false;
-            if (!walletTransferContainer) {
-                walletTransferContainer = {
-                    startIndex: 0,
-                    lastUsedIndex: 0,
-                    queue: []
-                };
-                updated1 = true;
-            }
+            if (walletTransferContainer) {
+                if (this._toAdd.length > 0) {
+                    walletTransferContainer.queue = walletTransferContainer.queue.concat(this._toAdd);
+                    this._toAdd = [];
+                    updated1 = true;
+                }
 
-            if (this._toAdd.length > 0) {
-                walletTransferContainer.queue = walletTransferContainer.queue.concat(this._toAdd);
-                this._toAdd = [];
-                updated1 = true;
-            }
+                const iota = composeAPI(
+                    loadBalancerSettings
+                );
 
-            const iota = composeAPI(
-                loadBalancerSettings
-            );
+                const updated2 = await this.checkPending(iota, walletTransferContainer);
 
-            const updated2 = await this.checkPending(iota, walletTransferContainer);
+                const updated3 = await this.sendTransaction(iota, walletTransferContainer);
 
-            const updated3 = await this.sendTransaction(iota, walletTransferContainer);
-
-            if (updated1 || updated2 || updated3) {
-                await super.set("global", walletTransferContainer);
+                if (updated1 || updated2 || updated3) {
+                    await super.set("global", walletTransferContainer);
+                }
             }
 
             this._isBusy = false;
