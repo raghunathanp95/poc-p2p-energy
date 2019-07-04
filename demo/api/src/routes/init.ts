@@ -19,6 +19,9 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
     loggingService.log("init", "Initializing");
 
+    const loadBalancerSettings = ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings");
+    const oldTimeout = loadBalancerSettings.timeoutMs;
+
     try {
         if (config.s3Connection) {
             await new AmazonS3Service(config.s3Connection, "grids")
@@ -33,9 +36,10 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
 
             if (!global || (global.lastUsedIndex === 0 && global.startIndex === 0)) {
                 loggingService.log("init", `Creating wallet`);
-                const iota = composeAPI(
-                    ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
-                );
+                const iota = composeAPI(loadBalancerSettings);
+
+                // Set a long timeout during this process as it can take a long time
+                loadBalancerSettings.timeoutMs = 300000; // 5 Mins
 
                 const inputsResponse: Inputs =
                     await iota.getInputs(config.walletSeed);
@@ -61,6 +65,8 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
     } catch (err) {
         loggingService.error("init", `Initialization Failed`, err);
     }
+
+    loadBalancerSettings.timeoutMs = oldTimeout;
 
     const capture = captureLoggingService.getCapture();
     captureLoggingService.disable();
