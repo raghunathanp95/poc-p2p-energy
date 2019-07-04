@@ -51,7 +51,7 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
 
                     const balancesResponse = await iota.getBalances(addresses, 100);
 
-                    const found = balancesResponse.balances.findIndex(b => b !== 0);
+                    const found: number = balancesResponse.balances.findIndex(b => b !== 0);
                     if (found >= 0) {
                         foundIndex = found + i;
                     }
