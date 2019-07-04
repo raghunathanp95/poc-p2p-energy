@@ -1,5 +1,5 @@
 import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
-import { generateAddress, Inputs } from "@iota/core";
+import { generateAddress } from "@iota/core";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { ILoggingService } from "p2p-energy-common/dist/models/services/ILoggingService";
 import { AmazonS3Service } from "p2p-energy-common/dist/services/amazon/amazonS3Service";
