@@ -31,7 +31,7 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
 
             const global = await walletTransferService.get("global");
 
-            if (!global) {
+            if (!global || (global.lastUsedIndex === 0 && global.startIndex === 0)) {
                 loggingService.log("init", `Creating wallet`);
                 const iota = composeAPI(
                     ServiceFactory.get<LoadBalancerSettings>("load-balancer-settings")
