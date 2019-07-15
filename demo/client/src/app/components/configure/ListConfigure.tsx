@@ -49,7 +49,7 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                             {this.state.items.length < this.props.maxItems && (
                                 <Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add</Button>
                             )}
-                            {this.state.items.length === this.props.maxItems && (
+                            {this.state.items.length >= this.props.maxItems && (
                                 <Button size="small" color="secondary" onClick={() => this.setState({ showMaxDialog: true })}>Add</Button>
                             )}
                         </Heading>
@@ -121,7 +121,7 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                             }
                         ]}
                     >
-                        This demonstration only allows a maximum of {this.props.maxItems} {this.props.pluralName.toLowerCase()}.
+                        This demonstration only allows a maximum of {this.props.maxItems} {this.props.maxItems > 1 ? this.props.pluralName.toLowerCase() : this.props.itemName.toLowerCase()}.
                     </Modal>
                 )}
             </React.Fragment>
