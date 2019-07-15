@@ -9,6 +9,9 @@ import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 
 /**
  * Delete a grid configuration.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function gridDelete(
     config: IDemoApiConfiguration,

@@ -42,6 +42,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
     /**
      * Initialise the state.
      * @param consumerId The id of the consumer
+     * @returns The state of the consumer.
      */
     public async init(consumerId: string): Promise<IBasicConsumerStrategyState> {
         return {
@@ -114,6 +115,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
      * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
+     * @returns If the state was updated.
      */
     public async paymentRequests(
         consumerId: string,

@@ -22,7 +22,7 @@ export class WalletService extends AmazonDynamoDbService<IDemoWallet> {
     /**
      * Get the data for the wallet.
      * @param id The id for the wallet.
-     * @param loadBalancerSettings The load balancer settings for communications.
+     * @returns The demo wallet.
      */
     public async getOrCreate(id: string): Promise<IDemoWallet> {
         let wallet = await super.get(id);

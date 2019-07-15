@@ -30,6 +30,7 @@ export class TransactionCacheService extends AmazonDynamoDbService<ITransaction>
     /**
      * Get the transaction with the given hash.
      * @param id The hash id.
+     * @returns The transaction.
      */
     public async get(id: string): Promise<ITransaction> {
         try {

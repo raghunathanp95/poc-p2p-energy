@@ -13,6 +13,9 @@ import { CaptureLoggingService } from "p2p-energy-common/dist/services/logging/c
 
 /**
  * Initialise the components for the Grid.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function init(config: IGridServiceConfiguration): Promise<string[]> {
     const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");

@@ -8,6 +8,9 @@ import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 
 /**
  * Get the data for the grid.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function gridGet(
     config: IDemoApiConfiguration,

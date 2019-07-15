@@ -17,6 +17,12 @@ export declare abstract class AmazonDynamoDbService<T> implements IStorageServic
      * The id field name.
      */
     protected readonly _idName: string;
+    /**
+     * Create a new instance of AmazonDynamoDbService.
+     * @param config The configuration to use.
+     * @param tableName The name of the db table.
+     * @param idName The name of the id field.
+     */
     constructor(config: IAWSDynamoDbConfiguration, tableName: string, idName: string);
     /**
      * Create the table for the items.
@@ -31,6 +37,7 @@ export declare abstract class AmazonDynamoDbService<T> implements IStorageServic
     get(id: string): Promise<T>;
     /**
      * Set the item.
+     * @param id The id of the item to set.
      * @param item The item to set.
      */
     set(id: string, item: T): Promise<void>;
@@ -68,4 +75,18 @@ export declare abstract class AmazonDynamoDbService<T> implements IStorageServic
          */
         pageSize: number;
     }>;
+    /**
+     * Create and set the configuration for db.
+     */
+    private createAndSetConfig;
+    /**
+     * Create a new DB connection.
+     * @returns DynamoDB client instance.
+     */
+    private createConnection;
+    /**
+     * Create a doc client connection.
+     * @returns DynamoDB doc client instance.
+     */
+    private createDocClient;
 }

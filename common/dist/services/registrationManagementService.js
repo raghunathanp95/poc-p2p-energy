@@ -58,7 +58,7 @@ class RegistrationManagementService {
     }
     /**
      * Remove a registration from the service.
-     * @param registration The registration details.
+     * @param registrationId The id of the registration.
      * @param sideKey The client mam channel side key used for remove validation.
      */
     removeRegistration(registrationId, sideKey) {

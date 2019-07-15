@@ -30,6 +30,7 @@ export class AmazonS3StorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The object retrieved from the service.
      */
     public async get(id: string): Promise<T> {
         const amazonS3Service = new AmazonS3Service(this._config, this._bucketName);
@@ -50,7 +51,7 @@ export class AmazonS3StorageService<T> implements IStorageService<T> {
 
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to delete.
      */
     public async remove(id: string): Promise<void> {
         const amazonS3Service = new AmazonS3Service(this._config, this._bucketName);

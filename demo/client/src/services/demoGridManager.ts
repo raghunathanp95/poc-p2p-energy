@@ -52,7 +52,7 @@ export class DemoGridManager {
     /**
      * The demo grid storage service.
      */
-    private _demoGridStateStorageService: IStorageService<IDemoGridState>;
+    private readonly _demoGridStateStorageService: IStorageService<IDemoGridState>;
 
     /**
      * The grid strategy.
@@ -472,7 +472,7 @@ export class DemoGridManager {
      * @param progressCallback Send callback messages.
      */
     private async constructManagers(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
-        this.initialiseServices(grid);
+        await this.initialiseServices(grid);
 
         const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
         await registrationManagementService.loadRegistrations();

@@ -19,6 +19,7 @@ export class ApiWalletService implements IWalletService {
     /**
      * Create a new instance of ApiPaymentService
      * @param apiEndpoint The api configuration.
+     * @param clientId The client id for the wallet.
      */
     constructor(apiEndpoint: string, clientId: string) {
         this._apiEndpoint = apiEndpoint;
@@ -62,6 +63,7 @@ export class ApiWalletService implements IWalletService {
      * @param id The wallet id the payment is from.
      * @param toIdOrAddress The wallet id the payment is to.
      * @param amount The amount of the payment.
+     * @returns Nothing.
      */
     public async transfer(
         id: string,

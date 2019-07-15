@@ -41,7 +41,7 @@ export declare class RegistrationManagementService implements IRegistrationManag
     addRegistration(registration: IRegistration, root: string, sideKey: string): Promise<void>;
     /**
      * Remove a registration from the service.
-     * @param registration The registration details.
+     * @param registrationId The id of the registration.
      * @param sideKey The client mam channel side key used for remove validation.
      */
     removeRegistration(registrationId: string, sideKey: string): Promise<void>;

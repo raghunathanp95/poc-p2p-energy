@@ -61,6 +61,7 @@ export class SourceManager<S> {
 
     /**
      * Get the state for the manager.
+     * @returns The state of the source manager.
      */
     public getState(): ISourceManagerState<S> {
         return this._state;

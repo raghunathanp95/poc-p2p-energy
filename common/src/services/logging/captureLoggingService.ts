@@ -80,6 +80,7 @@ export class CaptureLoggingService implements ILoggingService {
 
     /**
      * Get the logged items filter by context.
+     * @returns The captured log entries.
      */
     public getCapture(): ILoggingEntry[] {
         const log = this._log;
@@ -91,6 +92,8 @@ export class CaptureLoggingService implements ILoggingService {
 
     /**
      * Format a capture into readable text.
+     * @param capture A list of logging entries to format.
+     * @returns The formatted entries.
      */
     public formatCapture(capture: ILoggingEntry[]): string[] {
         const formatted = [];

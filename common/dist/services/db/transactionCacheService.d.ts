@@ -23,6 +23,7 @@ export declare class TransactionCacheService extends AmazonDynamoDbService<ITran
     /**
      * Get the transaction with the given hash.
      * @param id The hash id.
+     * @returns The transaction.
      */
     get(id: string): Promise<ITransaction>;
 }

@@ -5,6 +5,9 @@ import { WalletTransferService } from "../../services/walletTransferService";
 
 /**
  * Poll for any wallet transfers to send.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function pollGet(
     config: IDemoApiConfiguration,

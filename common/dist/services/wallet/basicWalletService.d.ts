@@ -27,7 +27,7 @@ export declare class BasicWalletService implements IWalletService {
      * Get the wallet details.
      * @param id The id of the wallet.
      * @param incomingEpoch Only return incoming transfers after the epoch.
-     * @param outgoingEpoch Only return incoming transfers after the epoch.
+     * @param outgoingEpoch Only return outgoing transfers after the epoch.
      * @returns The wallet.
      */
     getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet>;

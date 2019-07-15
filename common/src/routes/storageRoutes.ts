@@ -14,6 +14,9 @@ import { ValidationHelper } from "../utils/validationHelper";
 
 /**
  * Storage get command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function storageGet(config: any, request: IStorageGetRequest): Promise<IStorageGetResponse<any>> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
@@ -44,6 +47,10 @@ export async function storageGet(config: any, request: IStorageGetRequest): Prom
 
 /**
  * Storage set command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @param body The body of the object to store.
+ * @returns The route response.
  */
 export async function storageSet(config: any, request: IStorageSetRequest, body: any): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
@@ -72,6 +79,9 @@ export async function storageSet(config: any, request: IStorageSetRequest, body:
 
 /**
  * Storage delete command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function storageDelete(config: any, request: IStorageDeleteRequest): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");
@@ -104,6 +114,9 @@ export async function storageDelete(config: any, request: IStorageDeleteRequest)
 
 /**
  * Storage list command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function storageList(config: any, request: IStorageListRequest): Promise<IStorageListResponse<any>> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");

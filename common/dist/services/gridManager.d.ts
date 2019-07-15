@@ -37,6 +37,7 @@ export declare class GridManager<S> {
     constructor(gridConfig: IGridConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IGridStrategy<S>);
     /**
      * Get the state for the manager.
+     * @returns The state of the grid manager.
      */
     getState(): IGridManagerState<S>;
     /**
@@ -55,18 +56,19 @@ export declare class GridManager<S> {
     handleCommands(registration: IRegistration, commands: IMamCommand[]): Promise<void>;
     /**
      * Update strategy to process payments for registered entites.
+     * @returns Mam commands that need sending.
      */
     updateStrategy(): Promise<{
         [id: string]: IMamCommand[];
     }>;
     /**
      * Update the consumers using the strategy.
-     * @private
+     * @returns If the state was updated and any commands to send.
      */
     private updateConsumers;
     /**
      * Update the producers using the strategy.
-     * @private
+     * @returns True if the state was updated.
      */
     private updateProducers;
     /**

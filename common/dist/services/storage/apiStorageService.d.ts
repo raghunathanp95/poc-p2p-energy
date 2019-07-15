@@ -25,6 +25,7 @@ export declare class ApiStorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The item from the storage service.
      */
     get(id: string): Promise<T>;
     /**
@@ -35,7 +36,7 @@ export declare class ApiStorageService<T> implements IStorageService<T> {
     set(id: string, item: T): Promise<void>;
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to remove.
      */
     remove(id: string): Promise<void>;
     /**

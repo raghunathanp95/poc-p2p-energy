@@ -6,6 +6,7 @@ export class ApiHelper {
      * Join params onto command.
      * @param command The command.
      * @param params The params to add.
+     * @returns The joined parameters.
      */
     public static joinParams(command: string, params: any[]): string {
         let newCommand = command;

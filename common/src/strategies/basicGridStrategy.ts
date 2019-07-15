@@ -34,6 +34,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
     /**
      * Initialise the state.
      * @param gridId The id of the grid.
+     * @returns The state of the grid.
      */
     public async init(gridId: string): Promise<IBasicGridStrategyState> {
         return {
@@ -53,6 +54,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      * @param gridId The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
+     * @returns If the state has been updated and any payment requests to send.
      */
     public async consumers(
         gridId: string,
@@ -114,6 +116,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      * @param gridId The id of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
+     * @returns If the state was updated.
      */
     public async producers(
         gridId: string,
@@ -170,6 +173,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
      * Collated payments.
      * @param gridId The id of the grid.
      * @param gridState The current state of the grid.
+     * @returns If the state was updated.
      */
     public async payments(
         gridId: string,

@@ -20,6 +20,7 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
     /**
      * Initialise the state.
      * @param sourceId The id of the source.
+     * @returns The source state.
      */
     public async init(sourceId: string): Promise<IBasicSourceStrategyState> {
         return {

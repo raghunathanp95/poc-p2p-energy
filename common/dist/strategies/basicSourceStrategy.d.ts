@@ -17,6 +17,7 @@ export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSource
     /**
      * Initialise the state.
      * @param sourceId The id of the source.
+     * @returns The source state.
      */
     init(sourceId: string): Promise<IBasicSourceStrategyState>;
     /**

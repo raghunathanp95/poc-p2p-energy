@@ -15,17 +15,19 @@ export declare class LocalFileStorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The item read from local storage.
      */
     get(id: string): Promise<T>;
     /**
      * Store the item.
      * @param id The id of the item to set.
      * @param item The item to set.
+     * @returns Nothing.
      */
     set(id: string, item: T): Promise<void>;
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to delete.
      */
     remove(id: string): Promise<void>;
     /**

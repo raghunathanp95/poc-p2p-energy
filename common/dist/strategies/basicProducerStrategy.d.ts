@@ -30,6 +30,7 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
     /**
      * Initialise the state.
      * @param producerId The id of the producer.
+     * @returns The producer state.
      */
     init(producerId: string): Promise<IBasicProducerStrategyState>;
     /**
@@ -55,6 +56,7 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
      * Collated payments.
      * @param producerId The id of the producer.
      * @param producerState The current state of the producer.
+     * @returns If the state was updated.
      */
     payments(producerId: string, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
         /**

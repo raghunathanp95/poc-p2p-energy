@@ -22,6 +22,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The item read from local storage.
      */
     public async get(id: string): Promise<T> {
         try {
@@ -36,6 +37,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
      * Store the item.
      * @param id The id of the item to set.
      * @param item The item to set.
+     * @returns Nothing.
      */
     public async set(id: string, item: T): Promise<void> {
         try {
@@ -48,7 +50,7 @@ export class LocalFileStorageService<T> implements IStorageService<T> {
 
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to delete.
      */
     public async remove(id: string): Promise<void> {
         try {

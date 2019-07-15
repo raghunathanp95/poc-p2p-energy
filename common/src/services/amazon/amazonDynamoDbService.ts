@@ -1,7 +1,7 @@
+import * as aws from "aws-sdk";
 import { IAWSDynamoDbConfiguration } from "../../models/config/IAWSDynamoDbConfiguration";
 import { ILoggingService } from "../../models/services/ILoggingService";
 import { IStorageService } from "../../models/services/IStorageService";
-import { AmazonDynamoDbHelper } from "../../utils/amazonDynamoDbHelper";
 
 /**
  * Service to handle db requests.
@@ -22,6 +22,12 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
      */
     protected readonly _idName: string;
 
+    /**
+     * Create a new instance of AmazonDynamoDbService.
+     * @param config The configuration to use.
+     * @param tableName The name of the db table.
+     * @param idName The name of the id field.
+     */
     constructor(config: IAWSDynamoDbConfiguration, tableName: string, idName: string) {
         this._config = config;
         this._fullTableName = `${this._config.dbTablePrefix}${tableName}`;
@@ -36,7 +42,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
         loggingService.log("dynamoDb", `Creating table '${this._fullTableName}'`);
 
         try {
-            const dbConnection = AmazonDynamoDbHelper.createConnection(this._config);
+            const dbConnection = this.createConnection();
 
             const tableParams = {
                 AttributeDefinitions: [
@@ -83,7 +89,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
      */
     public async get(id: string): Promise<T> {
         try {
-            const docClient = AmazonDynamoDbHelper.createDocClient(this._config);
+            const docClient = this.createDocClient();
 
             const key = {};
             key[this._idName] = id;
@@ -100,10 +106,11 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
 
     /**
      * Set the item.
+     * @param id The id of the item to set.
      * @param item The item to set.
      */
     public async set(id: string, item: T): Promise<void> {
-        const docClient = AmazonDynamoDbHelper.createDocClient(this._config);
+        const docClient = this.createDocClient();
 
         item[this._idName] = id;
 
@@ -118,7 +125,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
      * @param itemKey The key of the item to remove.
      */
     public async remove(itemKey: string): Promise<void> {
-        const docClient = AmazonDynamoDbHelper.createDocClient(this._config);
+        const docClient = this.createDocClient();
 
         const key = {};
         key[this._idName] = itemKey;
@@ -159,7 +166,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
         pageSize: number;
     }> {
         try {
-            const docClient = AmazonDynamoDbHelper.createDocClient(this._config);
+            const docClient = this.createDocClient();
 
             if (page === 0) {
                 const response = await docClient.scan({
@@ -191,5 +198,41 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
                 pageSize: 0
             };
         }
+    }
+
+    /**
+     * Create and set the configuration for db.
+     */
+    private createAndSetConfig(): void {
+        const awsConfig = new aws.Config({
+            accessKeyId: this._config.accessKeyId,
+            secretAccessKey: this._config.secretAccessKey,
+            region: this._config.region
+        });
+
+        aws.config.update(awsConfig);
+    }
+
+    /**
+     * Create a new DB connection.
+     * @returns DynamoDB client instance.
+     */
+    private createConnection(): aws.DynamoDB {
+        this.createAndSetConfig();
+
+        return new aws.DynamoDB({ apiVersion: "2012-10-08" });
+    }
+
+    /**
+     * Create a doc client connection.
+     * @returns DynamoDB doc client instance.
+     */
+    private createDocClient(): aws.DynamoDB.DocumentClient {
+        this.createAndSetConfig();
+
+        return new aws.DynamoDB.DocumentClient({
+            apiVersion: "2012-10-08",
+            convertEmptyValues: true
+        });
     }
 }

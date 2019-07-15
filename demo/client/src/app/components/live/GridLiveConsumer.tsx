@@ -19,7 +19,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     /**
      * The base for timing.
      */
-    private static TIME_BASIS: number = 30000;
+    private static readonly TIME_BASIS: number = 30000;
 
     /**
      * The consumer images.

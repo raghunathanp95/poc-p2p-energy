@@ -7,6 +7,9 @@ import { WalletTransferService } from "../../services/walletTransferService";
 
 /**
  * Transfer a payment between entities.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function transferPost(
     config: IDemoApiConfiguration,

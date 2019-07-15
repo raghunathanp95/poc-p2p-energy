@@ -9,6 +9,9 @@ import { IDemoApiConfiguration } from "../../models/IDemoApiConfiguration";
 
 /**
  * Create a new grid.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function gridPost(
     config: IDemoApiConfiguration,

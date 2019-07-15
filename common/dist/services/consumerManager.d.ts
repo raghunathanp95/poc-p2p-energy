@@ -40,6 +40,7 @@ export declare class ConsumerManager<S> {
     constructor(consumerConfig: IConsumerConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IConsumerStrategy<S>);
     /**
      * Get the state for the manager.
+     * @returns The state of the manager.
      */
     getState(): IConsumerManagerState<S>;
     /**

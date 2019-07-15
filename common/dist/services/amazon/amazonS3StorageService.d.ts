@@ -21,6 +21,7 @@ export declare class AmazonS3StorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The object retrieved from the service.
      */
     get(id: string): Promise<T>;
     /**
@@ -31,7 +32,7 @@ export declare class AmazonS3StorageService<T> implements IStorageService<T> {
     set(id: string, item: T): Promise<void>;
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to delete.
      */
     remove(id: string): Promise<void>;
     /**

@@ -15,7 +15,7 @@ export declare class MamCommandChannel {
     private readonly _loggingService;
     /**
      * Create a new instance of MamChannel.
-     * @param nodeWalkStrategy The load balancer settings for communications.
+     * @param loadBalancerSettings The load balancer settings for communications.
      */
     constructor(loadBalancerSettings: LoadBalancerSettings);
     /**
@@ -40,7 +40,7 @@ export declare class MamCommandChannel {
      * Send a queue of commands to the mam channel.
      * @param channelConfiguration The current configuration for the channel.
      * @param commands The commands to send.
-     * @return Unsent commands.
+     * @returns Unsent commands.
      */
     sendCommandQueue(channelConfiguration: IMamChannelConfiguration, commands: IMamCommand[]): Promise<IMamCommand[]>;
     /**

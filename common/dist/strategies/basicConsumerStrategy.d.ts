@@ -30,6 +30,7 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
     /**
      * Initialise the state.
      * @param consumerId The id of the consumer
+     * @returns The state of the consumer.
      */
     init(consumerId: string): Promise<IBasicConsumerStrategyState>;
     /**
@@ -53,6 +54,7 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
      * @param consumerId The id of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
+     * @returns If the state was updated.
      */
     paymentRequests(consumerId: string, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
         /**

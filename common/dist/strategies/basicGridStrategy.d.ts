@@ -23,6 +23,7 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     /**
      * Initialise the state.
      * @param gridId The id of the grid.
+     * @returns The state of the grid.
      */
     init(gridId: string): Promise<IBasicGridStrategyState>;
     /**
@@ -30,6 +31,7 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
      * @param gridId The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
+     * @returns If the state has been updated and any payment requests to send.
      */
     consumers(gridId: string, consumerUsageById: {
         [id: string]: IConsumerUsageEntry[];
@@ -50,6 +52,7 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
      * @param gridId The id of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
+     * @returns If the state was updated.
      */
     producers(gridId: string, producerUsageById: {
         [id: string]: IProducerOutputEntry[];
@@ -63,6 +66,7 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
      * Collated payments.
      * @param gridId The id of the grid.
      * @param gridState The current state of the grid.
+     * @returns If the state was updated.
      */
     payments(gridId: string, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
         /**

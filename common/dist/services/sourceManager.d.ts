@@ -40,6 +40,7 @@ export declare class SourceManager<S> {
     constructor(sourceConfig: ISourceConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: ISourceStrategy<S>);
     /**
      * Get the state for the manager.
+     * @returns The state of the source manager.
      */
     getState(): ISourceManagerState<S>;
     /**

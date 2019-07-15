@@ -39,7 +39,7 @@ class ValidationHelper {
     /**
      * Is the value trytes.
      * @param str The string to validate.
-     * @poaram length The length to match.
+     * @param length The length to match.
      * @param name The parameter name.
      */
     static trytes(str, length, name) {

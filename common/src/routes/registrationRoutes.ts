@@ -11,6 +11,9 @@ import { ValidationHelper } from "../utils/validationHelper";
 
 /**
  * Registration post command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function registrationSet(config: any, request: IRegistrationSetRequest):
     Promise<IRegistrationSetResponse> {
@@ -53,6 +56,9 @@ export async function registrationSet(config: any, request: IRegistrationSetRequ
 
 /**
  * Registration delete command.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function registrationDelete(config: any, request: IRegistrationDeleteRequest): Promise<IResponse> {
     const loggingService = ServiceFactory.get<ILoggingService>("logging");

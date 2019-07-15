@@ -42,6 +42,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
     /**
      * Initialise the state.
      * @param producerId The id of the producer.
+     * @returns The producer state.
      */
     public async init(producerId: string): Promise<IBasicProducerStrategyState> {
         return {
@@ -144,6 +145,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
      * Collated payments.
      * @param producerId The id of the producer.
      * @param producerState The current state of the producer.
+     * @returns If the state was updated.
      */
     public async payments(
         producerId: string,

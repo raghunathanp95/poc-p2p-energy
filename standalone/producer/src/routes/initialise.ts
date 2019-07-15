@@ -7,6 +7,9 @@ import { ProducerManager } from "p2p-energy-common/dist/services/producerManager
 
 /**
  * Initialise the producer.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function initialise(config: IProducerServiceConfiguration): Promise<string[]> {
     const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");

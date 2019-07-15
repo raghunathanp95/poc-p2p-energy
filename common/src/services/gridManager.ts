@@ -62,6 +62,7 @@ export class GridManager<S> {
 
     /**
      * Get the state for the manager.
+     * @returns The state of the grid manager.
      */
     public getState(): IGridManagerState<S> {
         return this._state;
@@ -170,6 +171,7 @@ export class GridManager<S> {
 
     /**
      * Update strategy to process payments for registered entites.
+     * @returns Mam commands that need sending.
      */
     public async updateStrategy(): Promise<{ [id: string]: IMamCommand[] }> {
         const updatedState1 = await this.updateConsumers();
@@ -185,7 +187,7 @@ export class GridManager<S> {
 
     /**
      * Update the consumers using the strategy.
-     * @private
+     * @returns If the state was updated and any commands to send.
      */
     private async updateConsumers(): Promise<{
         /**
@@ -241,7 +243,7 @@ export class GridManager<S> {
 
     /**
      * Update the producers using the strategy.
-     * @private
+     * @returns True if the state was updated.
      */
     private async updateProducers(): Promise<boolean> {
         const producerOutputService = ServiceFactory.get<IStorageService<IProducerOutput>>(

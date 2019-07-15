@@ -1,7 +1,7 @@
+import * as aws from "aws-sdk";
 import { ObjectCannedACL } from "aws-sdk/clients/s3";
 import { IAWSS3Configuration } from "../../models/config/IAWSS3Configuration";
 import { ILoggingService } from "../../models/services/ILoggingService";
-import { AmazonS3Helper } from "../../utils/amazonS3Helper";
 
 /**
  * Class to communicate with amazon s3.
@@ -35,7 +35,7 @@ export class AmazonS3Service {
         loggingService.log("s3", `Creating Bucket' ${this._fullBucketName}'`);
 
         try {
-            const s3 = AmazonS3Helper.createClient(this._config);
+            const s3 = this.createClient();
 
             await s3.createBucket({
                 Bucket: this._fullBucketName,
@@ -60,7 +60,7 @@ export class AmazonS3Service {
      * @returns The item if it exists, undefined if it doesn't or could throw an error.
      */
     public async getItem<T>(itemName: string): Promise<T> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         try {
             const bucketData = await s3.getObject({
@@ -83,7 +83,7 @@ export class AmazonS3Service {
      * @returns The item if it exists, undefined if it doesn't or could throw an error.
      */
     public async getString(itemName: string): Promise<string> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         try {
             const bucketData = await s3.getObject({
@@ -106,7 +106,7 @@ export class AmazonS3Service {
      * @returns The item if it exists, undefined if it doesn't or could throw an error.
      */
     public async getBinary(itemName: string): Promise<Buffer> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         try {
             const bucketData = await s3.getObject({
@@ -131,7 +131,7 @@ export class AmazonS3Service {
      * @returns Promise.
      */
     public async putItem<T>(itemName: string, data: T, acl?: ObjectCannedACL): Promise<void> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         const json = JSON.stringify(data);
         return s3.putObject({
@@ -150,7 +150,7 @@ export class AmazonS3Service {
      * @returns Promise.
      */
     public async putString(itemName: string, data: string, acl?: ObjectCannedACL): Promise<void> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         return s3.putObject({
             Bucket: this._fullBucketName,
@@ -168,7 +168,7 @@ export class AmazonS3Service {
      * @returns Promise.
      */
     public async putBinary(itemName: string, data: Buffer, acl?: ObjectCannedACL): Promise<void> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         return s3.putObject({
             Bucket: this._fullBucketName,
@@ -183,7 +183,7 @@ export class AmazonS3Service {
      * @param itemName The name of the item to delete.
      */
     public async deleteItem(itemName: string): Promise<void> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         if (itemName.endsWith("/")) {
             let finished = false;
@@ -217,9 +217,10 @@ export class AmazonS3Service {
     /**
      * Does an item exist.
      * @param itemName The name of the item to check for existence.
+     * @returns True if the item exists.
      */
     public async existsItem(itemName: string): Promise<boolean> {
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         try {
             await s3.headObject({
@@ -245,7 +246,7 @@ export class AmazonS3Service {
     public async list(prefix: string): Promise<string[]> {
         const keys = [];
 
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         let finished = false;
         do {
@@ -280,7 +281,7 @@ export class AmazonS3Service {
     public async getAll<T>(keys: string[]): Promise<T[]> {
         const items: T[] = [];
 
-        const s3 = AmazonS3Helper.createClient(this._config);
+        const s3 = this.createClient();
 
         for (let i = 0; i < keys.length; i++) {
             const bucketData = await s3.getObject({
@@ -296,5 +297,20 @@ export class AmazonS3Service {
         }
 
         return items;
+    }
+
+    /**
+     * Create and set the configuration for s3.
+     * @param config The configuration to use for connection.
+     * @returns Client instance.
+     */
+    private createClient(): aws.S3 {
+        const s3Config = new aws.Config({
+            accessKeyId: this._config.accessKeyId,
+            secretAccessKey: this._config.secretAccessKey,
+            region: this._config.region
+        });
+
+        return new aws.S3(s3Config);
     }
 }

@@ -42,6 +42,7 @@ export declare class ProducerManager<S> {
     constructor(producerConfig: IProducerConfiguration, loadBalancerSettings: LoadBalancerSettings, strategy: IProducerStrategy<S>);
     /**
      * Get the state for the manager.
+     * @returns The state of the producer manager.
      */
     getState(): IProducerManagerState<S>;
     /**

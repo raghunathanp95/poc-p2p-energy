@@ -7,6 +7,9 @@ import { ProducerManager } from "p2p-energy-common/dist/services/producerManager
 
 /**
  * Closedown the producer.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function closedown(config: IProducerServiceConfiguration): Promise<string[]> {
     const captureLoggingService = ServiceFactory.get<CaptureLoggingService>("capture-logging");

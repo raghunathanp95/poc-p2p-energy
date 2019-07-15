@@ -67,6 +67,7 @@ export class ProducerManager<S> {
 
     /**
      * Get the state for the manager.
+     * @returns The state of the producer manager.
      */
     public getState(): IProducerManagerState<S> {
         return this._state;

@@ -7,6 +7,9 @@ import { WalletService } from "../../services/walletService";
 
 /**
  * Get the data for the wallet.
+ * @param config The service configuration.
+ * @param request The request for the route.
+ * @returns The route response.
  */
 export async function walletGet(
     config: IDemoApiConfiguration,

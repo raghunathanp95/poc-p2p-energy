@@ -35,6 +35,7 @@ export class ApiStorageService<T> implements IStorageService<T> {
     /**
      * Get the item.
      * @param id The id of the item.
+     * @returns The item from the storage service.
      */
     public async get(id: string): Promise<T> {
         const storageApiClient = new StorageApiClient(this._apiEndpoint);
@@ -67,7 +68,7 @@ export class ApiStorageService<T> implements IStorageService<T> {
 
     /**
      * Delete the item.
-     * @param item The item to store.
+     * @param id The id of the item to remove.
      */
     public async remove(id: string): Promise<void> {
         const storageApiClient = new StorageApiClient(this._apiEndpoint);

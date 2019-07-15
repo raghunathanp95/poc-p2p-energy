@@ -63,6 +63,7 @@ export class ConsumerManager<S> {
 
     /**
      * Get the state for the manager.
+     * @returns The state of the manager.
      */
     public getState(): IConsumerManagerState<S> {
         return this._state;

@@ -15,13 +15,14 @@ export declare class ApiWalletService implements IWalletService {
     /**
      * Create a new instance of ApiPaymentService
      * @param apiEndpoint The api configuration.
+     * @param clientId The client id for the wallet.
      */
     constructor(apiEndpoint: string, clientId: string);
     /**
      * Get the wallet details.
      * @param id The wallet id.
      * @param incomingEpoch Only return incoming transfers after the epoch.
-     * @param outgoingEpoch Only return incoming transfers after the epoch.
+     * @param outgoingEpoch Only return outgoing transfers after the epoch.
      * @returns The wallet.
      */
     getWallet(id: string, incomingEpoch?: number, outgoingEpoch?: number): Promise<IWallet>;
@@ -30,6 +31,7 @@ export declare class ApiWalletService implements IWalletService {
      * @param id The wallet id the payment is from.
      * @param toIdOrAddress The wallet id the payment is to.
      * @param amount The amount of the payment.
+     * @returns Nothing.
      */
     transfer(id: string, toIdOrAddress: string, amount: number): Promise<void>;
 }

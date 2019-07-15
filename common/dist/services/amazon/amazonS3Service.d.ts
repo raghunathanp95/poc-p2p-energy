@@ -75,6 +75,7 @@ export declare class AmazonS3Service {
     /**
      * Does an item exist.
      * @param itemName The name of the item to check for existence.
+     * @returns True if the item exists.
      */
     existsItem(itemName: string): Promise<boolean>;
     /**
@@ -89,4 +90,10 @@ export declare class AmazonS3Service {
      * @returns All the items with the provided prefix.
      */
     getAll<T>(keys: string[]): Promise<T[]>;
+    /**
+     * Create and set the configuration for s3.
+     * @param config The configuration to use for connection.
+     * @returns Client instance.
+     */
+    private createClient;
 }

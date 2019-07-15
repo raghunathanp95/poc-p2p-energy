@@ -42,10 +42,13 @@ export declare class CaptureLoggingService implements ILoggingService {
     disable(): void;
     /**
      * Get the logged items filter by context.
+     * @returns The captured log entries.
      */
     getCapture(): ILoggingEntry[];
     /**
      * Format a capture into readable text.
+     * @param capture A list of logging entries to format.
+     * @returns The formatted entries.
      */
     formatCapture(capture: ILoggingEntry[]): string[];
 }
