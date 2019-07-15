@@ -11,6 +11,6 @@ See [./client/README.md](./client/README.md) for more details.
 ## Api
 
 The api facilitates all the services required by `client`.
-It is a set of services running on NodeJS connecting to the Amazon S3.
+It is a set of services running on NodeJS connecting to the The Tangle, Amazon S3 and Amazon DynamoDB.
 
 See [./api/README.md](./api/README.md) for more details.

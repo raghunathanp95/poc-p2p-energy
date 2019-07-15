@@ -4,7 +4,7 @@ This package is an implementation of the P2P Energy Blueprint [https://docs.iota
 
 ## Demonstration
 
-The Demonstration contains a React Web UI with an API to back it which shows an overview of all the entities interacting.
+The Demonstration contains a React Web UI with an API to back it, which shows an overview of all the entities interacting.
 
 See [./demo/README.md](./demo/README.md) for more details.
 
@@ -12,6 +12,8 @@ A deployed version of the demonstration is available at the following urls:
 
 * demo - <https://p2p-energy.iota.org>
 * api - <https://p2p-energy-api.iota.org>
+
+The demonstration is limited with the number of entities it can create as it is all running inside the browser. In a real system each entity would most likely be a separate physical device and so no such limitation would apply.
 
 ### Details
 
@@ -33,10 +35,14 @@ All of the timing and payment strategies are easily replaceable in the source co
 
 ## Standalone
 
-The standalone folder contains examples of how to write `grid`, `producer`, `consumer`, `source` as standalone entities. It is easy to replace certain facilities within these components use pluggable services, such as storage. This means the entities could be run on lower power embedded devices using remote services for some of their actions.
+The standalone folder contains examples of how to write `grid`, `producer`, `consumer`, `source` as standalone entities. It is easy to replace certain features within these components using pluggable services, such as storage and registration. This means the entities could be run on lower power embedded devices using remote services for some of their actions.
 
 See [./standalone/README.md](./standalone/README.md) for more details.
 
 ## Common
 
 Both the `demonstration` and the `standalone` packages share a large percentage of their code, the shared code can be found in the `common` library.
+
+## License
+
+MIT License - Copyright (c) 2019 IOTA Stiftung
