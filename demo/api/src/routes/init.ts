@@ -36,45 +36,43 @@ export async function init(config: IDemoApiConfiguration): Promise<string[]> {
 
             const global = await walletTransferService.get("global");
 
-            if (!global || (global.lastUsedIndex === 0 && global.startIndex === 0)) {
-                loggingService.log("init", `Creating wallet`);
-                const iota = composeAPI(loadBalancerSettings);
+            loggingService.log("init", `Retrieving wallet balance`);
+            const iota = composeAPI(loadBalancerSettings);
 
-                const startIndex = 0;
-                const endIndex = 1000;
-                const itemsPerRequest = 25;
+            const startIndex = global ? global.startIndex : 0;
+            const endIndex = 1000;
+            const itemsPerRequest = 25;
 
-                let foundIndex = -1;
-                for (let i = startIndex; i < endIndex && foundIndex === -1; i += itemsPerRequest) {
+            let foundIndex = -1;
+            for (let i = startIndex; i < endIndex && foundIndex === -1; i += itemsPerRequest) {
 
-                    const addresses = [];
-                    for (let j = 0; j < itemsPerRequest; j++) {
-                        addresses.push(generateAddress(config.walletSeed, i + j, 2));
-                    }
-
-                    const balancesResponse = await iota.getBalances(addresses, 100);
-
-                    const found: number = balancesResponse.balances.findIndex(b => b !== 0);
-                    if (found >= 0) {
-                        foundIndex = found + i;
-                    }
+                const addresses = [];
+                for (let j = 0; j < itemsPerRequest; j++) {
+                    addresses.push(generateAddress(config.walletSeed, i + j, 2));
                 }
 
-                if (foundIndex >= 0) {
-                    const inputsResponse = await iota.getInputs(config.walletSeed, { start: foundIndex });
+                const balancesResponse = await iota.getBalances(addresses, 100);
 
-                    if (inputsResponse &&
-                        inputsResponse.totalBalance > 0 &&
-                        inputsResponse.inputs &&
-                        inputsResponse.inputs.length > 0) {
-                        loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
-                        const demoWalletTransferContainer: IDemoWalletTransferContainer = {
-                            startIndex: inputsResponse.inputs[0].keyIndex,
-                            lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
-                            queue: []
-                        };
-                        await walletTransferService.set("global", demoWalletTransferContainer);
-                    }
+                const found: number = balancesResponse.balances.findIndex(b => b !== 0);
+                if (found >= 0) {
+                    foundIndex = found + i;
+                }
+            }
+
+            if (foundIndex >= 0) {
+                const inputsResponse = await iota.getInputs(config.walletSeed, { start: foundIndex });
+
+                if (inputsResponse &&
+                    inputsResponse.totalBalance > 0 &&
+                    inputsResponse.inputs &&
+                    inputsResponse.inputs.length > 0) {
+                    loggingService.log("init", `Wallet balance ${inputsResponse.totalBalance}`);
+                    const demoWalletTransferContainer: IDemoWalletTransferContainer = {
+                        startIndex: inputsResponse.inputs[0].keyIndex,
+                        lastUsedIndex: inputsResponse.inputs[inputsResponse.inputs.length - 1].keyIndex,
+                        queue: []
+                    };
+                    await walletTransferService.set("global", demoWalletTransferContainer);
                 }
             } else {
                 loggingService.log("init", `Wallet Already Exists`);

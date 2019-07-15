@@ -20,6 +20,11 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
     private readonly _demoGridManager: DemoGridManager;
 
     /**
+     * The component was unmounted.
+     */
+    private _unmounted: boolean;
+
+    /**
      * Create a new instance of GridLiveContainer.
      * @param props The props for the component.
      */
@@ -27,6 +32,8 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
         super(props);
 
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
+
+        this._unmounted = false;
 
         this.state = {
             gridState: this._demoGridManager.getGridState(),
@@ -41,25 +48,33 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
      */
     public async componentDidMount(): Promise<void> {
         this._demoGridManager.subscribeGrid("liveContainer", (gridState) => {
-            this.setState({ gridState });
+            if (!this._unmounted) {
+                this.setState({ gridState });
+            }
         });
 
         try {
             await this._demoGridManager.initialise(this.props.grid, (progress) => {
+                if (!this._unmounted) {
+                    this.setState({
+                        status: progress
+                    });
+                }
+            });
+            if (!this._unmounted) {
                 this.setState({
-                    status: progress
+                    isBusy: false,
+                    status: ""
                 });
-            });
-            this.setState({
-                isBusy: false,
-                status: ""
-            });
+            }
         } catch (err) {
-            this.setState({
-                isBusy: false,
-                isError: true,
-                status: `${this.state.status}\nError: ${err.message}`
-            });
+            if (!this._unmounted) {
+                this.setState({
+                    isBusy: false,
+                    isError: true,
+                    status: `${this.state.status}\nError: ${err.message}`
+                });
+            }
         }
     }
 
@@ -70,6 +85,8 @@ class GridLiveContainer extends Component<GridLiveContainerProps, GridLiveContai
         this._demoGridManager.closedown();
 
         this._demoGridManager.unsubscribeGrid("liveContainer");
+
+        this._unmounted = true;
     }
 
     /**
