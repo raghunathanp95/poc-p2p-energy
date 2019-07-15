@@ -168,7 +168,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 configure={(props) => {
                                     this.setState({ configureConsumer: props });
                                 }}
-                                maxItems={3}
+                                maxItems={2}
                             />
                         )}
                         {!this.state.configureConsumer && !this.state.configureProducer && (
