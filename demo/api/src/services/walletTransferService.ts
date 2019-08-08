@@ -1,5 +1,5 @@
 import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
-import { API, generateAddress, Inputs } from "@iota/core";
+import { API, generateAddress, Inputs, Transfer } from "@iota/core";
 import { Transaction } from "@iota/transaction-converter";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { IAWSDynamoDbConfiguration } from "p2p-energy-common/dist/models/config/IAWSDynamoDbConfiguration";
@@ -257,9 +257,39 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                         if (timeSinceAttachment > 10000) {
                             // If the bundle is promotable then just spam some transactions
                             // against it
-                            const isPromotable = await iota.isPromotable(tail);
-                            if (isPromotable) {
-                              await iota.promoteTransaction(tail, undefined, undefined);
+                            //const isPromotable = await iota.isPromotable(tail);
+                            //if (isPromotable) {
+                            //   await iota.promoteTransaction(tail, undefined, undefined);
+                            //} else {
+                            const isConsistent = await iota.checkConsistency([tail]);
+
+                            const MILESTONE_INTERVAL = 2 * 60 * 1000;
+                            const ONE_WAY_DELAY = 1 * 60 * 1000;
+                            const DEPTH = 6;
+
+                            const isAboveMaxDepth = (at: number, depth = DEPTH) =>
+                                at < Date.now() && Date.now() - at < depth * MILESTONE_INTERVAL - ONE_WAY_DELAY;
+
+                            if (isConsistent && isAboveMaxDepth(attachmentTimestamp)) {
+                                this._loggingService.log(
+                                    "wallet",
+                                    `Promoting bundle ${tail}`);
+
+                                const spamTransfers: Transfer[] = [
+                                    {
+                                        address: "9".repeat(81),
+                                        value: 0,
+                                        tag: "9".repeat(27),
+                                        message: "9".repeat(27 * 81)
+                                    }
+                                ];
+
+                                const spamTrytes = await iota.prepareTransfers(
+                                    "9".repeat(81),
+                                    spamTransfers
+                                );
+
+                                await iota.sendTrytes(spamTrytes, undefined, undefined, tail);
                             } else {
                                 // Bundle is not promotable so just requeue it
                                 walletTransferContainer.pending.address = undefined;
@@ -272,6 +302,17 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                                 this._loggingService.log(
                                     "wallet",
                                     `Requeuing bundle ${tail}`);
+
+                                // // Bundle is not promotable, so replay it and store the new hash
+                                // const sendTrytesResponse: Transaction[] =
+                                //     await iota.replayBundle(tail, undefined, undefined);
+
+                                // walletTransferContainer.pending.bundle = sendTrytesResponse[0].bundle;
+                                // updated = true;
+
+                                // this._loggingService.log(
+                                //     "wallet",
+                                //     `Replaying bundle ${tail} to ${sendTrytesResponse[0].bundle}`);
                             }
                         }
                     }
