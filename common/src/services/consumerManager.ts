@@ -187,7 +187,7 @@ export class ConsumerManager<S> {
                 const paymentRequests: IConsumerPaymentRequestCommand[] = [];
                 for (let i = 0; i < returnCommands.length; i++) {
                     if (returnCommands[i].command === "payment-request") {
-                        paymentRequests.push(<IConsumerPaymentRequestCommand>returnCommands[i]);
+                        paymentRequests.push(returnCommands[i] as IConsumerPaymentRequestCommand);
                     }
                 }
                 if (paymentRequests.length > 0) {

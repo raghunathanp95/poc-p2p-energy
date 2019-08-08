@@ -83,7 +83,7 @@ app.build(routes, async (_1, config, _2) => {
 
     const gridManager = new GridManager(config.grid, loadBalancerSettings, new BasicGridStrategy());
     const registrationManagementService =
-        new RegistrationManagementService(loadBalancerSettings, (registration) => registration.itemType === "consumer");
+        new RegistrationManagementService(loadBalancerSettings, registration => registration.itemType === "consumer");
 
     ServiceFactory.register("registration-management", () => registrationManagementService);
     ServiceFactory.register("grid", () => gridManager);

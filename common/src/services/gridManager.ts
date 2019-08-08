@@ -110,7 +110,7 @@ export class GridManager<S> {
                 // This mam channel will have handled any mam operation
                 // at the moment there is nothing else for use to do
             } else if (commands[i].command === "output" && registration.itemType === "producer") {
-                const outputCommand = <IProducerOutputCommand>commands[i];
+                const outputCommand = commands[i] as IProducerOutputCommand;
 
                 if (!producerStore) {
                     producerStore = {
@@ -132,7 +132,7 @@ export class GridManager<S> {
                     updateStore = true;
                 }
             } else if (commands[i].command === "usage" && registration.itemType === "consumer") {
-                const outputCommand = <IConsumerUsageCommand>commands[i];
+                const outputCommand = commands[i] as IConsumerUsageCommand;
 
                 if (!consumerStore) {
                     consumerStore = {

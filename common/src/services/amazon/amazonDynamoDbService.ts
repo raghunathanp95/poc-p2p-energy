@@ -99,7 +99,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
                 Key: key
             }).promise();
 
-            return <T>response.Item;
+            return response.Item as T;
         } catch (err) {
         }
     }
@@ -175,7 +175,7 @@ export abstract class AmazonDynamoDbService<T> implements IStorageService<T> {
 
                 return {
                     ids: response.Items.map(i => i[this._idName]),
-                    items: <T[]>response.Items,
+                    items: response.Items as T[],
                     totalItems: response.Items.length,
                     totalPages: 1,
                     pageSize: response.Items.length

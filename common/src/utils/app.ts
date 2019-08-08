@@ -147,7 +147,7 @@ export class App<T> {
                 this._loggingService.log("rest", `${Date.now() - start}ms`, response);
                 this._loggingService.break();
                 if (routes[i].dataResponse) {
-                    const dataResponse = <IDataResponse>response;
+                    const dataResponse = response as IDataResponse;
                     res.setHeader("Content-Type", dataResponse.contentType);
                     if (dataResponse.filename) {
                         res.setHeader("Content-Disposition", `attachment; filename="${dataResponse.filename}"`);

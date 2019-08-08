@@ -186,7 +186,7 @@ export class ProducerManager<S> {
                 // This mam channel will have handled any mam operation
                 // at the moment there is nothing else for use to do
             } else if (commands[i].command === "output") {
-                const outputCommand = <ISourceOutputCommand>commands[i];
+                const outputCommand = commands[i] as ISourceOutputCommand;
 
                 if (!store) {
                     store = {

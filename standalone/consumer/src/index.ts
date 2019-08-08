@@ -74,4 +74,5 @@ async function start(consumerManager: ConsumerManager<IBasicConsumerStrategyStat
 }
 
 start(new ConsumerManager(config.consumer, loadBalancerSettings, new BasicConsumerStrategy()))
+    // tslint:disable-next-line:no-console
     .catch(err => console.log(err));

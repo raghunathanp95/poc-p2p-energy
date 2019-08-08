@@ -35,7 +35,10 @@
         "react-anchor-blank-noopener": true,
         "react-iframe-missing-sandbox": true,
         "react-no-dangerous-html": true,
-        "await-promise": [true, "Bluebird"],
+        "await-promise": [
+            true,
+            "Bluebird"
+        ],
         "forin": false,
         "jquery-deferred-must-complete": true,
         "label-position": true,
@@ -48,7 +51,7 @@
         "no-bitwise": false,
         "no-conditional-assignment": true,
         "no-console": [
-            false,
+            true,
             "debug",
             "info",
             "log",
@@ -106,7 +109,10 @@
             true,
             "array"
         ],
-        "arrow-parens": false,
+        "arrow-parens": [
+            true,
+            "ban-single-arg-parens"
+        ],
         "callable-types": true,
         "chai-prefer-contains-to-index-of": true,
         "chai-vague-errors": false,
@@ -128,7 +134,7 @@
         ],
         "import-name": false,
         "interface-name": [
-            true
+            false
         ],
         "jsdoc-format": true,
         "max-classes-per-file": [
@@ -141,7 +147,13 @@
         "max-func-body-length": [
             false
         ],
-        "max-line-length": [true, {"limit": 120, "ignore-pattern": "^import"}],
+        "max-line-length": [
+            true,
+            {
+                "limit": 120,
+                "ignore-pattern": "^import"
+            }
+        ],
         "member-access": true,
         "member-ordering": [
             true,
@@ -288,7 +300,7 @@
         ],
         "import-blacklist": false,
         "interface-over-type-literal": false,
-        "no-angle-bracket-type-assertion": false,
+        "no-angle-bracket-type-assertion": true,
         "no-inferred-empty-object-type": false,
         "no-internal-module": false,
         "no-magic-numbers": false,
@@ -297,7 +309,7 @@
         "no-reference": true,
         "no-unexternalized-strings": false,
         "object-literal-shorthand": false,
-        "prefer-type-cast": true,
+        "prefer-type-cast": false,
         "space-before-function-paren": false,
         "prefer-switch": false,
         "prefer-function-over-method": false,
@@ -337,6 +349,9 @@
         "jsx-no-multiline-js": false,
         "jsx-no-lambda": false,
         "prefer-readonly": true,
-        "react-a11y-anchors": false
-     }
+        "react-a11y-anchors": false,
+        "react-a11y-role-has-required-aria-props": false,
+        "use-simple-attributes": false,
+        "react-a11y-no-onchange": false
+    }
 }

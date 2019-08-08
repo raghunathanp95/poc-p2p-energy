@@ -11,6 +11,7 @@ export class ConsoleLoggingService implements ILoggingService {
      * @param params The parameters to log.
      */
     public log(context: string, message: string, ...params: any): void {
+        // tslint:disable-next-line:no-console
         console.log(`[${context}] ${message}`, ...params);
     }
 
@@ -18,6 +19,7 @@ export class ConsoleLoggingService implements ILoggingService {
      * Log a break.
      */
     public break(): void {
+        // tslint:disable-next-line:no-console
         console.log();
     }
 

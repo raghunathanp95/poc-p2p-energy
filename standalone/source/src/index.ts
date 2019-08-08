@@ -61,4 +61,5 @@ async function start(sourceManager: SourceManager<IBasicSourceStrategyState>): P
 }
 
 start(new SourceManager(config.source, loadBalancerSettings, new BasicSourceStrategy()))
+    // tslint:disable-next-line:no-console
     .catch(err => console.log(err));
