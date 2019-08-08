@@ -18,11 +18,6 @@ export interface IConfiguration {
     googleAnalyticsId: string;
 
     /**
-     * Url to use for mam exploration.
-     */
-    mamExplorer: string;
-
-    /**
      * Configuration for tangle explorer.
      */
     tangleExplorer: ITangleExplorerConfiguration;

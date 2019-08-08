@@ -1,3 +1,4 @@
+import { MamMode } from "@iota/mam";
 import { ITangleExplorerConfiguration } from "../models/config/ITangleExplorerConfiguration";
 
 /**
@@ -34,6 +35,23 @@ export class TangleExplorerService {
     public transaction(transactionHash?: string): void {
         if (transactionHash) {
             window.open(this._config.transactions.replace(":transactionHash", transactionHash), "_blank");
+        }
+    }
+
+    /**
+     * Open a mam explorer.
+     * @param root The root the explore the mam channel.
+     * @param mode The mode for the mam channel.
+     * @param key The key for the mam channel.
+     */
+    public mam(root?: string, mode?: MamMode, key?: string): void {
+        if (root && mode) {
+            window.open(
+                this._config.mam
+                    .replace(":root", root)
+                    .replace(":mode", mode)
+                    .replace(":key", key || ""),
+                "_blank");
         }
     }
 }

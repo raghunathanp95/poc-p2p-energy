@@ -8,7 +8,6 @@ import producer2 from "../../../assets/producers/producer2.svg";
 import producer3 from "../../../assets/producers/producer3.svg";
 import { ISource } from "../../../models/api/ISource";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer } from "../../../services/mamExplorerService";
 import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveProducer.scss";
 import { GridLiveProducerProps } from "./GridLiveProducerProps";
@@ -35,11 +34,6 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
     private readonly _demoGridManager: DemoGridManager;
 
     /**
-     * Mam explorer service.
-     */
-    private readonly _mamExplorer: MamExplorer;
-
-    /**
      * Tangle explorer service.
      */
     private readonly _tangleExplorerService: TangleExplorerService;
@@ -57,7 +51,6 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             producer3
         ];
 
-        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
         this._tangleExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
@@ -177,7 +170,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 <Button
                                     size="extra-small"
                                     color="secondary"
-                                    onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                                    onClick={() => this._tangleExplorerService.mam(this.state.mamRoot, "restricted", this.state.sideKey)}
                                 >
                                     MAM Output
                                 </Button>

@@ -6,7 +6,6 @@ import ChartistGraph from "react-chartist";
 import consumer1 from "../../../assets/consumers/consumer1.svg";
 import consumer2 from "../../../assets/consumers/consumer2.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer as MamExplorerService } from "../../../services/mamExplorerService";
 import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveConsumer.scss";
 import { GridLiveConsumerProps } from "./GridLiveConsumerProps";
@@ -32,11 +31,6 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
     private readonly _demoGridManager: DemoGridManager;
 
     /**
-     * Mam explorer service.
-     */
-    private readonly _mamExplorerService: MamExplorerService;
-
-    /**
      * Tangle explorer service.
      */
     private readonly _tangleExplorerService: TangleExplorerService;
@@ -53,7 +47,6 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
             consumer2
         ];
 
-        this._mamExplorerService = ServiceFactory.get<MamExplorerService>("mam-explorer");
         this._tangleExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
@@ -165,7 +158,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             <Button
                                 size="extra-small"
                                 color="secondary"
-                                onClick={() => this._mamExplorerService.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                                onClick={() => this._tangleExplorerService.mam(this.state.mamRoot, "restricted", this.state.sideKey)}
                             >
                                 MAM Usage
                             </Button>
@@ -174,7 +167,7 @@ class GridLiveConsumer extends Component<GridLiveConsumerProps, GridLiveConsumer
                             <Button
                                 size="extra-small"
                                 color="secondary"
-                                onClick={() => this._mamExplorerService.explore(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
+                                onClick={() => this._tangleExplorerService.mam(this.state.mamRootReturn, "restricted", this.state.sideKeyReturn)}
                             >
                                 MAM Billing
                             </Button>

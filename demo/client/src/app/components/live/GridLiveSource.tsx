@@ -7,7 +7,7 @@ import geothermal from "../../../assets/sources/geothermal.svg";
 import solar from "../../../assets/sources/solar.svg";
 import wind from "../../../assets/sources/wind.svg";
 import { DemoGridManager } from "../../../services/demoGridManager";
-import { MamExplorer } from "../../../services/mamExplorerService";
+import { TangleExplorerService } from "../../../services/tangleExplorerService";
 import "./GridLiveSource.scss";
 import { GridLiveSourceProps } from "./GridLiveSourceProps";
 import { GridLiveSourceState } from "./GridLiveSourceState";
@@ -27,9 +27,9 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
     private readonly _demoGridManager: DemoGridManager;
 
     /**
-     * Mam explorer service.
+     * Tangle explorer service.
      */
-    private readonly _mamExplorer: MamExplorer;
+    private readonly _tangeExplorerService: TangleExplorerService;
 
     /**
      * Create a new instance of GridLiveSource.
@@ -45,7 +45,7 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
             biomass
         };
 
-        this._mamExplorer = ServiceFactory.get<MamExplorer>("mam-explorer");
+        this._tangeExplorerService = ServiceFactory.get<TangleExplorerService>("tangle-explorer");
         this._demoGridManager = ServiceFactory.get<DemoGridManager>("demo-grid-manager");
 
         this.state = {
@@ -121,7 +121,7 @@ class GridLiveSource extends Component<GridLiveSourceProps, GridLiveSourceState>
                     <Button
                         size="extra-small"
                         color="secondary"
-                        onClick={() => this._mamExplorer.explore(this.state.mamRoot, "restricted", this.state.sideKey)}
+                        onClick={() => this._tangeExplorerService.mam(this.state.mamRoot, "restricted", this.state.sideKey)}
                     >
                         MAM Output
                     </Button>

@@ -17,7 +17,6 @@ import { IAppState } from "../models/IAppState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
 import { ConfigurationService } from "../services/configurationService";
 import { DemoGridManager } from "../services/demoGridManager";
-import { MamExplorer } from "../services/mamExplorerService";
 import { TangleExplorerService } from "../services/tangleExplorerService";
 import { AppState } from "./AppState";
 import Grid from "./routes/Grid";
@@ -82,7 +81,6 @@ class App extends Component<RouteComponentProps, AppState> {
             const loggingService = new AggregateLoggingService([new ConsoleLoggingService(), callbackLoggingService]);
 
             ServiceFactory.register("configuration", () => configService);
-            ServiceFactory.register("mam-explorer", () => new MamExplorer(config.mamExplorer, loadBalancerSettings));
             ServiceFactory.register("tangle-explorer", () => new TangleExplorerService(config.tangleExplorer));
             ServiceFactory.register("app-state-storage", () => new BrowserStorageService<IAppState>("app"));
             ServiceFactory.register("logging", () => loggingService);
