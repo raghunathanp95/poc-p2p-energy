@@ -28,7 +28,7 @@ RUN apk del git python make g++
 RUN npm prune --production
 RUN rm -rf poc-p2p-energy/common/node_modules
 
-EXPOSE 4000:4000
+EXPOSE 4000
 
 # Serve the prod build from the dist folder
 CMD ["node", "./dist/index"]

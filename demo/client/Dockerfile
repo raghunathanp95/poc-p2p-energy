@@ -32,7 +32,7 @@ RUN rm -rf poc-p2p-energy
 RUN npm install serve
 RUN apk del git
 
-EXPOSE 4001:4001
+EXPOSE 4001
 
 # Serve the prod build from the build folder
 CMD ["./node_modules/.bin/serve", "-s", "build", "-p", "4001"]
