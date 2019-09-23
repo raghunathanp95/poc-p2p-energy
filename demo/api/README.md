@@ -1,4 +1,4 @@
-# IOTA P2P Energy PoC Demo API
+# IOTA P2P Energy PoC Demo API 
 
 This package contains the APIs to facilitate the Demo Client.
 
