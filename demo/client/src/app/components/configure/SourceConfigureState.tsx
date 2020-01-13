@@ -10,6 +10,16 @@ export interface SourceConfigureState {
     type: string;
 
     /**
+     * Output type.
+     */
+    outputType: "random" | "fixed";
+
+    /**
+     * Fixed output value.
+     */
+    outputValue: string;
+
+    /**
      * Is the form data valid.
      */
     isValid?: boolean;

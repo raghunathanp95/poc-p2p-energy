@@ -1,3 +1,4 @@
+import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
 import { IBasicSourceStrategyState } from "../models/strategies/IBasicSourceStrategyState";
@@ -19,10 +20,9 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
 
     /**
      * Initialise the state.
-     * @param sourceId The id of the source.
      * @returns The source state.
      */
-    public async init(sourceId: string): Promise<IBasicSourceStrategyState> {
+    public async initState(): Promise<IBasicSourceStrategyState> {
         return {
             lastOutputTime: Date.now() - BasicSourceStrategy.TIME_BASIS,
             outputTotal: 0
@@ -31,20 +31,22 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
 
     /**
      * Gets the output values.
-     * @param sourceId The id of the source.
+     * @param config The id of the source.
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    public async value(sourceId: string, sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
-        /**
-         * Has the state been updated.
-         */
-        updatedState: boolean;
-        /**
-         * New commands to output.
-         */
-        commands: ISourceOutputCommand[];
-    }> {
+    public async value(
+        config: ISourceConfiguration,
+        sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
+            /**
+             * Has the state been updated.
+             */
+            updatedState: boolean;
+            /**
+             * New commands to output.
+             */
+            commands: ISourceOutputCommand[];
+        }> {
         // For this basic demonstration strategy we just supply a new random value
         // with a time based on a fictional time basis
         // in a real setup this would come from hardware
@@ -60,8 +62,11 @@ export class BasicSourceStrategy implements ISourceStrategy<IBasicSourceStrategy
         } else {
             while ((Date.now() - sourceState.strategyState.lastOutputTime) > BasicSourceStrategy.TIME_BASIS) {
                 const endTime = sourceState.strategyState.lastOutputTime + BasicSourceStrategy.TIME_BASIS;
-                // tslint:disable-next-line:insecure-random
-                const output = (Math.random() * 8) + 2;
+                const extProps = config.extendedProperties || {};
+                const output = extProps.outputType === "fixed" && extProps.outputValue !== undefined
+                    ? extProps.outputValue
+                    // tslint:disable-next-line:insecure-random
+                    : (Math.random() * 8) + 2;
 
                 commands.push({
                     command: "output",

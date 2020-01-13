@@ -1,4 +1,3 @@
-import { MamMode } from "@iota/mam";
 import { ITangleExplorerConfiguration } from "../models/config/ITangleExplorerConfiguration";
 
 /**
@@ -44,7 +43,7 @@ export class TangleExplorerService {
      * @param mode The mode for the mam channel.
      * @param key The key for the mam channel.
      */
-    public mam(root?: string, mode?: MamMode, key?: string): void {
+    public mam(root?: string, mode?: string, key?: string): void {
         if (root && mode) {
             window.open(
                 this._config.mam

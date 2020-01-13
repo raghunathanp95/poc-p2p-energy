@@ -1,3 +1,4 @@
+import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { IConsumerManagerState } from "../models/state/IConsumerManagerState";
@@ -29,17 +30,16 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
     constructor();
     /**
      * Initialise the state.
-     * @param consumerId The id of the consumer
      * @returns The state of the consumer.
      */
-    init(consumerId: string): Promise<IBasicConsumerStrategyState>;
+    initState(): Promise<IBasicConsumerStrategyState>;
     /**
      * Gets the usage values.
-     * @param consumerId The id of the consumer
+     * @param config The config of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
-    usage(consumerId: string, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<{
+    usage(config: IConsumerConfiguration, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */
@@ -51,12 +51,12 @@ export declare class BasicConsumerStrategy implements IConsumerStrategy<IBasicCo
     }>;
     /**
      * Processes payment requests.
-     * @param consumerId The id of the consumer
+     * @param config The config of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
      * @returns If the state was updated.
      */
-    paymentRequests(consumerId: string, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
+    paymentRequests(config: IConsumerConfiguration, consumerState: IConsumerManagerState<IBasicConsumerStrategyState>, paymentRequests: IConsumerPaymentRequestCommand[]): Promise<{
         /**
          * Has the state been updated.
          */

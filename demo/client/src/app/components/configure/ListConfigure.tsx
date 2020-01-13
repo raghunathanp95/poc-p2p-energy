@@ -50,7 +50,12 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                                 <Button size="small" color="secondary" onClick={() => this.itemAdd()}>Add</Button>
                             )}
                             {this.state.items.length >= this.props.maxItems && (
-                                <Button size="small" color="secondary" onClick={() => this.setState({ showMaxDialog: true })}>Add</Button>
+                                <Button
+                                    size="small"
+                                    color="secondary"
+                                    onClick={() => this.setState({ showMaxDialog: true })}>
+                                    Add
+                                </Button>
                             )}
                         </Heading>
 
@@ -82,8 +87,20 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                                         <TableBodyRowData>{item.id}</TableBodyRowData>
                                         <TableBodyRowData align="right">
                                             <div className="small-vertical-margin">
-                                                <Button size="small" color="secondary" onClick={() => this.itemConfigure(item)}>Configure</Button>
-                                                <Button size="small" color="secondary" onClick={() => this.itemDelete(item)}>Delete</Button>
+                                                <Button
+                                                    size="small"
+                                                    color="secondary"
+                                                    onClick={() => this.itemConfigure(item)}
+                                                >
+                                                    Configure
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    color="secondary"
+                                                    onClick={() => this.itemDelete(item)}
+                                                >
+                                                    Delete
+                                                </Button>
                                             </div>
                                         </TableBodyRowData>
                                     </TableBodyRow>
@@ -95,7 +112,7 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                 {this.state.deleteItem && (
                     <Modal
                         title="Confirmation"
-                        onClose={(id) => this.itemDeleteConfirmation(id)}
+                        onClose={id => this.itemDeleteConfirmation(id)}
                         buttons={[
                             {
                                 id: "yes",
@@ -107,7 +124,8 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                             }
                         ]}
                     >
-                        Are you sure you want to delete {this.props.itemName.toLowerCase()} '{this.state.deleteItem.name}' ?
+                        Are you sure you want to delete {
+                            this.props.itemName.toLowerCase()} '{this.state.deleteItem.name}' ?
                     </Modal>
                 )}
                 {this.state.showMaxDialog && (
@@ -121,7 +139,9 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
                             }
                         ]}
                     >
-                        This demonstration only allows a maximum of {this.props.maxItems} {this.props.maxItems > 1 ? this.props.pluralName.toLowerCase() : this.props.itemName.toLowerCase()}.
+                        This demonstration only allows a maximum of {this.props.maxItems} {
+                            this.props.maxItems > 1 ?
+                                this.props.pluralName.toLowerCase() : this.props.itemName.toLowerCase()}.
                     </Modal>
                 )}
             </React.Fragment>
@@ -135,7 +155,7 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
         ScrollHelper.scrollRoot();
 
         this.setState({ configuring: true });
-        this.props.configure({ item: this.props.newInstance(), onChange: (result) => this.itemUpdate(result) });
+        this.props.configure({ item: this.props.newInstance(), onChange: result => this.itemUpdate(result) });
     }
 
     /**
@@ -146,7 +166,7 @@ class ListConfigure<T extends IIdItem> extends Component<ListConfigureProps<T>, 
         ScrollHelper.scrollRoot();
 
         this.setState({ configuring: true });
-        this.props.configure({ item, onChange: (result) => this.itemUpdate(result) });
+        this.props.configure({ item, onChange: result => this.itemUpdate(result) });
     }
 
     /**

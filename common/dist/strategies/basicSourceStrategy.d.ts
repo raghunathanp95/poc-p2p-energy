@@ -1,3 +1,4 @@
+import { ISourceConfiguration } from "../models/config/source/ISourceConfiguration";
 import { ISourceOutputCommand } from "../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../models/state/ISourceManagerState";
 import { IBasicSourceStrategyState } from "../models/strategies/IBasicSourceStrategyState";
@@ -16,17 +17,16 @@ export declare class BasicSourceStrategy implements ISourceStrategy<IBasicSource
     private static readonly TIME_IDLE;
     /**
      * Initialise the state.
-     * @param sourceId The id of the source.
      * @returns The source state.
      */
-    init(sourceId: string): Promise<IBasicSourceStrategyState>;
+    initState(): Promise<IBasicSourceStrategyState>;
     /**
      * Gets the output values.
-     * @param sourceId The id of the source.
+     * @param config The id of the source.
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    value(sourceId: string, sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
+    value(config: ISourceConfiguration, sourceState: ISourceManagerState<IBasicSourceStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */

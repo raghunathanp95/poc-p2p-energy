@@ -33,7 +33,7 @@ class LoggingView extends Component<any, LoggingViewState> {
     public async componentDidMount(): Promise<void> {
         this._callbackLoggingService = ServiceFactory.get<CallbackLoggingService>("callback-logging");
 
-        this._callbackLoggingService.addCallback("view", (log) => {
+        this._callbackLoggingService.addCallback("view", log => {
             let current = this.state.entries;
             current.unshift(log);
             current = current.slice(0, 30);

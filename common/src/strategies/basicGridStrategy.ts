@@ -1,4 +1,5 @@
 import { ServiceFactory } from "../factories/serviceFactory";
+import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
@@ -33,10 +34,9 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Initialise the state.
-     * @param gridId The id of the grid.
      * @returns The state of the grid.
      */
-    public async init(gridId: string): Promise<IBasicGridStrategyState> {
+    public async initState(): Promise<IBasicGridStrategyState> {
         return {
             runningCostsTotal: 0,
             runningCostsReceived: 0,
@@ -51,13 +51,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Collated consumers usage.
-     * @param gridId The id of the grid.
+     * @param config The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
      * @returns If the state has been updated and any payment requests to send.
      */
     public async consumers(
-        gridId: string,
+        config: IGridConfiguration,
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<IBasicGridStrategyState>):
         Promise<{
@@ -90,7 +90,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
             const newUsage = consumerUsageById[consumerId].reduce((a, b) => a + b.usage, 0);
 
             const paymentRequest = this.updateConsumerUsage(
-                gridId,
+                config.id,
                 gridState.strategyState.consumerTotals[consumerId],
                 newUsage);
 
@@ -113,13 +113,13 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Collated producer output.
-     * @param gridId The id of the grid.
+     * @param config The config of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
      * @returns If the state was updated.
      */
     public async producers(
-        gridId: string,
+        config: IGridConfiguration,
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
         gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
             /**
@@ -171,12 +171,12 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
 
     /**
      * Collated payments.
-     * @param gridId The id of the grid.
+     * @param config The config of the grid.
      * @param gridState The current state of the grid.
      * @returns If the state was updated.
      */
     public async payments(
-        gridId: string,
+        config: IGridConfiguration,
         gridState: IGridManagerState<IBasicGridStrategyState>):
         Promise<{
             /**
@@ -196,7 +196,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 gridState.strategyState.lastOutgoingTransfer.created : 0;
 
             const wallet = await this._walletService.getWallet(
-                gridId,
+                config.id,
                 incomingEpoch,
                 outgoingEpoch
             );
@@ -257,7 +257,7 @@ export class BasicGridStrategy implements IGridStrategy<IBasicGridStrategyState>
                 }
             }
 
-            await this.payProducers(gridId, gridState);
+            await this.payProducers(config.id, gridState);
 
             updatedState = true;
             gridState.strategyState.lastTransferCheck = now;

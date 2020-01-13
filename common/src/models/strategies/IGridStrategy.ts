@@ -1,3 +1,4 @@
+import { IGridConfiguration } from "../config/grid/IGridConfiguration";
 import { IConsumerUsageEntry } from "../db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../mam/IConsumerPaymentRequestCommand";
@@ -9,18 +10,17 @@ import { IGridManagerState } from "../state/IGridManagerState";
 export interface IGridStrategy<S> {
     /**
      * Initialise the state.
-     * @param gridId The id of the grid.
      */
-    init(gridId: string): Promise<S>;
+    initState(): Promise<S>;
 
     /**
      * Collated consumers usage.
-     * @param gridId The id of the grid.
+     * @param config The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
      */
     consumers(
-        gridId: string,
+        config: IGridConfiguration,
         consumerUsageById: { [id: string]: IConsumerUsageEntry[] },
         gridState: IGridManagerState<S>):
         Promise<{
@@ -37,12 +37,12 @@ export interface IGridStrategy<S> {
 
     /**
      * Collated producer output.
-     * @param gridId The id of the grid.
+     * @param config The id of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
      */
     producers(
-        gridId: string,
+        config: IGridConfiguration,
         producerUsageById: { [id: string]: IProducerOutputEntry[] },
         gridState: IGridManagerState<S>):
         Promise<{
@@ -54,11 +54,11 @@ export interface IGridStrategy<S> {
 
     /**
      * Collated payments.
-     * @param gridId The id of the grid.
+     * @param config The id of the grid.
      * @param gridState The current state of the grid.
      */
     payments(
-        gridId: string,
+        config: IGridConfiguration,
         gridState: IGridManagerState<S>):
         Promise<{
             /**

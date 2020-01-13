@@ -1,3 +1,4 @@
+import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
 import { IProducerManagerState } from "../models/state/IProducerManagerState";
@@ -29,18 +30,17 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
     constructor();
     /**
      * Initialise the state.
-     * @param producerId The id of the producer.
      * @returns The producer state.
      */
-    init(producerId: string): Promise<IBasicProducerStrategyState>;
+    initState(): Promise<IBasicProducerStrategyState>;
     /**
      * Collated sources output.
-     * @param producerId The id of the producer.
+     * @param config The id of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
-    sources(producerId: string, sourceOutputById: {
+    sources(config: IProducerConfiguration, sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
     }, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
         /**
@@ -54,11 +54,11 @@ export declare class BasicProducerStrategy implements IProducerStrategy<IBasicPr
     }>;
     /**
      * Collated payments.
-     * @param producerId The id of the producer.
+     * @param config The config of the producer.
      * @param producerState The current state of the producer.
      * @returns If the state was updated.
      */
-    payments(producerId: string, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
+    payments(config: IProducerConfiguration, producerState: IProducerManagerState<IBasicProducerStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */

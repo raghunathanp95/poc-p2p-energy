@@ -16,4 +16,9 @@ export interface ISourceConfiguration {
      * The type of the source.
      */
     type: string;
+
+    /**
+     * Extended properties for the source.
+     */
+    extendedProperties?: { [id: string]: any };
 }

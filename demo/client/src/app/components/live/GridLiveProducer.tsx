@@ -73,8 +73,10 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      * The component mounted.
      */
     public async componentDidMount(): Promise<void> {
-        this._demoGridManager.subscribeProducer("liveProducer", this.props.producer.id, (producerState) => {
-            const mamChannel = producerState && producerState.producerManagerState && producerState.producerManagerState.channel;
+        this._demoGridManager.subscribeProducer("liveProducer", this.props.producer.id, producerState => {
+            const mamChannel = producerState &&
+                producerState.producerManagerState &&
+                producerState.producerManagerState.channel;
             const producerManagerState = producerState && producerState.producerManagerState;
             const producerStrategyState = producerManagerState && producerManagerState.strategyState;
 
@@ -87,7 +89,8 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
             for (let i = 0; i < outputCommands.length; i++) {
                 // We take off 3 because we know the producer basic strategy delays 15s
                 // before combining source values
-                const labelValue = Math.floor((outputCommands[i].endTime - firstProducerTime) / GridLiveProducer.TIME_BASIS) - 3;
+                const labelValue =
+                    Math.floor((outputCommands[i].endTime - firstProducerTime) / GridLiveProducer.TIME_BASIS) - 3;
                 producerGraphLabels.push(labelValue < 0 ? "n/a" : labelValue.toString());
             }
 
@@ -142,13 +145,20 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                     </button>
                     <div className="grid-live-producer-info">
                         <div className="grid-live-producer-info-id">ID: {this.props.producer.id}</div>
-                        <div className="grid-live-producer-info-data"><span>Output</span><span>{this.state.outputTotal}</span></div>
-                        <div className="grid-live-producer-info-data"><span>Received</span><span>{this.state.receivedBalance}</span></div>
+                        <div className="grid-live-producer-info-data">
+                            <span>Output</span><span>{this.state.outputTotal}</span>
+                        </div>
+                        <div className="grid-live-producer-info-data">
+                            <span>Received</span><span>{this.state.receivedBalance}</span>
+                        </div>
                         {this.state.lastIncomingBundle && (
                             <div className="grid-live-producer-info-data">
                                 <span>Confirmed</span>
                                 <span>
-                                    <button className="link" onClick={() => this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
+                                    <button
+                                        className="link"
+                                        onClick={() =>
+                                            this._tangleExplorerService.bundle(this.state.lastIncomingBundle)}>
                                         {this.state.lastIncomingBundle.substr(0, 10)}...
                                     </button>
                                 </span>
@@ -170,14 +180,21 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                 <Button
                                     size="extra-small"
                                     color="secondary"
-                                    onClick={() => this._tangleExplorerService.mam(this.state.mamRoot, "restricted", this.state.sideKey)}
+                                    onClick={
+                                        () => this._tangleExplorerService.mam(
+                                            this.state.mamRoot,
+                                            "restricted",
+                                            this.state.sideKey)}
                                 >
                                     MAM Output
                                 </Button>
                             )}
                         </div>
                         {this.state.producerGraphSeries.length === 0 && (
-                            <div>There is no combined power data for the producer.<br />The graph lags behind the sources, as it takes time to gather the data.</div>
+                            <div>There is no combined power data for the producer.
+                                <br />
+                                The graph lags behind the sources, as it takes time to gather the data.
+                            </div>
                         )}
                         {this.state.producerGraphSeries.length > 0 && (
                             <div className="charts">
@@ -224,16 +241,19 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                                     key={idx2}
                                     source={s}
                                     isSelected={this.state.selectedSources[s.id] !== undefined}
-                                    onSourceSelected={(source, isSelected) => this.handleSelectSource(source, isSelected)}
+                                    onSourceSelected={(source, isSelected) =>
+                                        this.handleSelectSource(source, isSelected)}
                                 />
                             ))}
                         </div>
-                        {this.props.producer.sources.length > 0 && Object.keys(this.state.selectedSources).length === 0 && (
-                            <div>Please select some sources to view their output.</div>
-                        )}
-                        {Object.keys(this.state.selectedSources).length > 0 && this.state.sourceGraphSeries.length === 0 && (
-                            <div>There is no power data for the selected sources.</div>
-                        )}
+                        {this.props.producer.sources.length > 0 &&
+                            Object.keys(this.state.selectedSources).length === 0 && (
+                                <div>Please select some sources to view their output.</div>
+                            )}
+                        {Object.keys(this.state.selectedSources).length > 0 &&
+                            this.state.sourceGraphSeries.length === 0 && (
+                                <div>There is no power data for the selected sources.</div>
+                            )}
                         {this.state.sourceGraphSeries.length > 0 && (
                             <div className="charts">
                                 <ChartistGraph
@@ -268,7 +288,7 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
      */
     private handleSelectSource(source: ISource, isSelected: boolean): void {
         if (isSelected && !this.state.selectedSources[source.id]) {
-            this._demoGridManager.subscribeSource("liveProducer", source.id, (sourceState) => {
+            this._demoGridManager.subscribeSource("liveProducer", source.id, sourceState => {
                 if (sourceState) {
                     const newSelected = this.state.selectedSources;
                     newSelected[source.id] = sourceState;
@@ -297,8 +317,11 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
                 if (firstSourceValueTime === 0) {
                     firstSourceValueTime = this.state.selectedSources[sourceId].outputCommands[0].endTime;
                 }
-                if (this.state.selectedSources[sourceId].outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime > newestTime) {
-                    newestTime = this.state.selectedSources[sourceId].outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime;
+                if (this.state.selectedSources[sourceId]
+                    .outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime
+                    > newestTime) {
+                    newestTime = this.state.selectedSources[sourceId]
+                        .outputCommands[this.state.selectedSources[sourceId].outputCommands.length - 1].endTime;
                 }
             }
         }
@@ -314,7 +337,11 @@ class GridLiveProducer extends Component<GridLiveProducerProps, GridLiveProducer
 
                     // Now for each source find a corresponding value from the output
                     for (let s = 0; s < sourceKeys.length; s++) {
-                        const found = this.state.selectedSources[sourceKeys[s]].outputCommands.find(o => Math.floor((o.endTime - firstSourceValueTime) / GridLiveProducer.TIME_BASIS) === thisTime);
+                        const found = this.state.selectedSources[sourceKeys[s]]
+                            .outputCommands
+                            .find(o =>
+                                Math.floor((o.endTime - firstSourceValueTime) / GridLiveProducer.TIME_BASIS)
+                                === thisTime);
                         graphSeries[s] = graphSeries[s] || [];
                         graphSeries[s].push(found ? found.output : 0);
                     }

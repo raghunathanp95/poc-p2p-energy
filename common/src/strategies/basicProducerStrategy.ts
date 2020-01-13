@@ -1,4 +1,5 @@
 import { ServiceFactory } from "../factories/serviceFactory";
+import { IProducerConfiguration } from "../models/config/producer/IProducerConfiguration";
 import { ISourceStoreOutput } from "../models/db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../models/mam/IProducerOutputCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
@@ -41,10 +42,9 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
 
     /**
      * Initialise the state.
-     * @param producerId The id of the producer.
      * @returns The producer state.
      */
-    public async init(producerId: string): Promise<IBasicProducerStrategyState> {
+    public async initState(): Promise<IBasicProducerStrategyState> {
         return {
             lastOutputTime: Date.now(),
             outputTotal: 0,
@@ -55,13 +55,13 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
 
     /**
      * Collated sources output.
-     * @param producerId The id of the producer.
+     * @param config The id of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
     public async sources(
-        producerId: string,
+        config: IProducerConfiguration,
         sourceOutputById: { [id: string]: ISourceStoreOutput[] },
         producerState: IProducerManagerState<IBasicProducerStrategyState>):
         Promise<{
@@ -125,7 +125,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                     // as all payments are handled by the central wallet which can
                     // perform transfers using the ids, this could equally
                     // be populated as an IOTA address
-                    paymentIdOrAddress: producerId
+                    paymentIdOrAddress: config.id
                 });
 
                 producerState.strategyState.outputTotal += producerTotal;
@@ -143,12 +143,12 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
 
     /**
      * Collated payments.
-     * @param producerId The id of the producer.
+     * @param config The config of the producer.
      * @param producerState The current state of the producer.
      * @returns If the state was updated.
      */
     public async payments(
-        producerId: string,
+        config: IProducerConfiguration,
         producerState: IProducerManagerState<IBasicProducerStrategyState>):
         Promise<{
             /**
@@ -165,7 +165,7 @@ export class BasicProducerStrategy implements IProducerStrategy<IBasicProducerSt
                 producerState.strategyState.lastIncomingTransfer.created : 0;
 
             const wallet = await this._walletService.getWallet(
-                producerId,
+                config.id,
                 incomingEpoch,
                 undefined
             );

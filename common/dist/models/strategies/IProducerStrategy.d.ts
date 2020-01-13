@@ -1,3 +1,4 @@
+import { IProducerConfiguration } from "../config/producer/IProducerConfiguration";
 import { ISourceStoreOutput } from "../db/producer/ISourceStoreOutput";
 import { IProducerOutputCommand } from "../mam/IProducerOutputCommand";
 import { IProducerManagerState } from "../state/IProducerManagerState";
@@ -7,17 +8,16 @@ import { IProducerManagerState } from "../state/IProducerManagerState";
 export interface IProducerStrategy<S> {
     /**
      * Initialise the state.
-     * @param producerId The id of the producer.
      */
-    init(producerId: string): Promise<S>;
+    initState(): Promise<S>;
     /**
      * Collated sources output.
-     * @param producerId The id of the producer.
+     * @param config The config of the producer.
      * @param sourceOutputById The unread output from the sources.
      * @param producerState The current state of the producer.
      * @returns The list of commands for the producer to output.
      */
-    sources(producerId: string, sourceOutputById: {
+    sources(config: IProducerConfiguration, sourceOutputById: {
         [id: string]: ISourceStoreOutput[];
     }, producerState: IProducerManagerState<S>): Promise<{
         /**
@@ -31,10 +31,10 @@ export interface IProducerStrategy<S> {
     }>;
     /**
      * Collated payments.
-     * @param producerId The id of the producer.
+     * @param config The config of the producer.
      * @param producerState The current state of the producer.
      */
-    payments(producerId: string, producerState: IProducerManagerState<S>): Promise<{
+    payments(config: IProducerConfiguration, producerState: IProducerManagerState<S>): Promise<{
         /**
          * Has the state been updated.
          */

@@ -176,7 +176,7 @@ export class GridManager<S> {
     public async updateStrategy(): Promise<{ [id: string]: IMamCommand[] }> {
         const updatedState1 = await this.updateConsumers();
         const updatedState2 = await this.updateProducers();
-        const updatedState3 = await this._strategy.payments(this._config.id, this._state);
+        const updatedState3 = await this._strategy.payments(this._config, this._state);
 
         if (updatedState1.updatedState || updatedState2 || updatedState3.updatedState) {
             await this.saveState();
@@ -219,7 +219,7 @@ export class GridManager<S> {
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        const result = await this._strategy.consumers(this._config.id, consumerUsageById, this._state);
+        const result = await this._strategy.consumers(this._config, consumerUsageById, this._state);
 
         // Remove all the consumed usage data from the storage
         for (const consumerId in consumerUsageById) {
@@ -265,7 +265,7 @@ export class GridManager<S> {
             pageSize = pageResponse.pageSize;
         } while (pageResponse && pageResponse.ids && pageResponse.ids.length > 0);
 
-        const result = await this._strategy.producers(this._config.id, producerOutputById, this._state);
+        const result = await this._strategy.producers(this._config, producerOutputById, this._state);
 
         for (const producerId in producerOutputById) {
             if (producerOutputById[producerId].length === 0) {
@@ -289,7 +289,7 @@ export class GridManager<S> {
         this._loggingService.log("grid", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init(this._config.id)
+            strategyState: await this._strategy.initState()
         };
     }
 

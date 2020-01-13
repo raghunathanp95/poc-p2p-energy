@@ -1,4 +1,5 @@
-import { LoadBalancerSettings, Mam } from "@iota/client-load-balancer";
+import { composeAPI, LoadBalancerSettings } from "@iota/client-load-balancer";
+import { channelRoot, createChannel, createMessage, IMamFetchedMessage, mamAttach, mamFetch } from "@iota/mam.js";
 import { ServiceFactory } from "../factories/serviceFactory";
 import { IMamChannelConfiguration } from "../models/mam/IMamChannelConfiguration";
 import { IMamCommand } from "../models/mam/IMamCommand";
@@ -139,24 +140,27 @@ export class MamCommandChannel {
     public async sendCommand(channelConfiguration: IMamChannelConfiguration, command: IMamCommand): Promise<void> {
         this._loggingService.log("mam", "Send Command", command);
 
-        let mamState = Mam.init(this._loadBalancerSettings, channelConfiguration.seed);
-
-        mamState = Mam.changeMode(mamState, "restricted", channelConfiguration.sideKey);
+        const channelState = createChannel(channelConfiguration.seed, 2, "restricted", channelConfiguration.sideKey);
 
         if (!channelConfiguration.initialRoot) {
-            channelConfiguration.initialRoot = Mam.getRoot(mamState);
+            channelConfiguration.initialRoot = channelRoot(channelState);
         }
 
         channelConfiguration.mostRecentRoot = channelConfiguration.nextRoot || channelConfiguration.initialRoot;
 
-        mamState.channel.next_root = channelConfiguration.nextRoot;
-        mamState.channel.start = channelConfiguration.start;
+        channelState.nextRoot = channelConfiguration.nextRoot;
+        channelState.start = channelConfiguration.start;
 
-        const message = Mam.create(mamState, TrytesHelper.toTrytes(command));
-        await Mam.attach(message.payload, message.address);
+        const message = createMessage(channelState, TrytesHelper.toTrytes(command));
 
-        channelConfiguration.nextRoot = mamState.channel.next_root;
-        channelConfiguration.start = mamState.channel.start;
+        const iota = composeAPI(
+            this._loadBalancerSettings
+        );
+
+        await mamAttach(iota, message, 0, 0);
+
+        channelConfiguration.nextRoot = channelState.nextRoot;
+        channelConfiguration.start = channelState.start;
     }
 
     /**
@@ -173,21 +177,23 @@ export class MamCommandChannel {
         if (channelConfiguration) {
             let nextRoot = channelConfiguration.nextRoot || channelConfiguration.initialRoot;
             if (nextRoot) {
-                Mam.init(this._loadBalancerSettings);
+                const iota = composeAPI(
+                    this._loadBalancerSettings
+                );
 
-                let fetchResponse;
+                let fetchResponse: IMamFetchedMessage | undefined;
 
                 do {
                     channelConfiguration.mostRecentRoot = nextRoot;
 
                     try {
-                        fetchResponse = await Mam.fetchSingle(nextRoot, "restricted", channelConfiguration.sideKey);
+                        fetchResponse = await mamFetch(iota, nextRoot, "restricted", channelConfiguration.sideKey);
 
                         if (fetchResponse) {
                             nextRoot = fetchResponse.nextRoot;
 
-                            if (fetchResponse.payload) {
-                                const command = TrytesHelper.fromTrytes<IMamCommand>(fetchResponse.payload);
+                            if (fetchResponse.message) {
+                                const command = TrytesHelper.fromTrytes<IMamCommand>(fetchResponse.message);
 
                                 this._loggingService.log("mam", "Received Command", command);
 
@@ -203,7 +209,7 @@ export class MamCommandChannel {
                         this._loggingService.error("mam", "Failed to fetch", err);
                         fetchResponse = undefined;
                     }
-                } while (fetchResponse && fetchResponse.payload && channelConfiguration.sideKey);
+                } while (fetchResponse && fetchResponse.message && channelConfiguration.sideKey);
 
                 if (channelConfiguration.sideKey) {
                     channelConfiguration.nextRoot = nextRoot;

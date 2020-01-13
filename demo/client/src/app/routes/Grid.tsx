@@ -42,7 +42,8 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
         this._apiClient = new DemoApiClient(config.apiEndpoint);
 
         this.state = {
-            gridName: this.props.match.params && this.props.match.params.gridName === undefined ? "" : this.props.match.params.gridName,
+            gridName: this.props.match.params && this.props.match.params.gridName === undefined
+                ? "" : this.props.match.params.gridName,
             status: "",
             view: "live"
         };
@@ -73,25 +74,40 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                 {this.state.grid && (
                     <React.Fragment>
                         <ButtonContainer>
-                            <Button size="small" color="secondary" onClick={() => this.loadCreateGrid()}>Load/Create Grid</Button>
-                            <Button size="small" color={this.state.view === "live" ? "primary" : "secondary"} onClick={() => this.liveView()}>Live</Button>
-                            <Button size="small" color={this.state.view === "configure" ? "primary" : "secondary"} onClick={() => this.configureView()}>Configure</Button>
+                            <Button
+                                size="small"
+                                color="secondary"
+                                onClick={() => this.loadCreateGrid()}>Load/Create Grid</Button>
+                            <Button
+                                size="small"
+                                color={this.state.view === "live" ? "primary" : "secondary"}
+                                onClick={() => this.liveView()}>Live</Button>
+                            <Button
+                                size="small"
+                                color={this.state.view === "configure" ? "primary" : "secondary"}
+                                onClick={() => this.configureView()}>Configure</Button>
                             {(this.state.view === "live" || this.state.view === "reset") && (
-                                <Button size="small" color={this.state.view === "reset" ? "primary" : "secondary"} onClick={() => this.gridReset()}>Reset</Button>
+                                <Button
+                                    size="small"
+                                    color={this.state.view === "reset" ? "primary" : "secondary"}
+                                    onClick={() => this.gridReset()}>Reset</Button>
                             )}
                         </ButtonContainer>
                         {this.state.view === "configure" && (
-                            <GridConfigure grid={this.state.grid} onChange={(grid) => this.setState({ grid })} />
+                            <GridConfigure grid={this.state.grid} onChange={grid => this.setState({ grid })} />
                         )}
                         {this.state.view === "live" && (
                             <GridLiveContainer grid={this.state.grid} />
                         )}
                         {this.state.view === "reset" && (
                             <Form>
-                                <br/>
+                                <br />
                                 <h1>Reset Grid</h1>
                                 <p>Are you sure you want to reset the grid ?</p>
-                                <Button size="small" color="primary" onClick={() => this.gridResetConfirmation()}>Yes</Button>
+                                <Button
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => this.gridResetConfirmation()}>Yes</Button>
                                 <Button size="small" color="secondary" onClick={() => this.liveView()}>No</Button>
                             </Form>
                         )}
@@ -111,16 +127,24 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
                                     type="text"
                                     placeholder="Name for the grid between 5 and 30 characters"
                                     value={this.state.gridName}
-                                    onChange={(e) => this.setState({ gridName: e.target.value }, () => this.validateData())}
+                                    onChange={e =>
+                                        this.setState({ gridName: e.target.value }, () => this.validateData())}
                                     readOnly={this.state.isBusy}
                                     maxLength={30}
                                 />
                             </Fieldset>
                             <FormActions>
-                                <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.loadGrid()}>Load</Button>
-                                <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.createGrid()}>Create</Button>
+                                <Button
+                                    disabled={!this.state.isValid || this.state.isBusy}
+                                    onClick={async () => this.loadGrid()}>Load</Button>
+                                <Button
+                                    disabled={!this.state.isValid || this.state.isBusy}
+                                    onClick={async () => this.createGrid()}>Create</Button>
                             </FormActions>
-                            <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} />
+                            <FormStatus
+                                message={this.state.status}
+                                isBusy={this.state.isBusy}
+                                isError={this.state.isErrored} />
                         </Form>
                     </React.Fragment>
                 )}
@@ -132,7 +156,9 @@ class Grid extends Component<RouteComponentProps<GridParams>, GridState> {
      * Validate the form data.
      */
     private validateData(): void {
-        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 && this.state.gridName.trim().length <= 30 ? true : false;
+        const isValid =
+            this.state.gridName && this.state.gridName.trim().length >= 5 &&
+                this.state.gridName.trim().length <= 30 ? true : false;
 
         this.setState({ isValid });
     }

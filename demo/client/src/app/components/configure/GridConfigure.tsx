@@ -88,21 +88,29 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                     <React.Fragment>
                         {!this.state.passwordSupplied && (
                             <React.Fragment>
-                                <p>The grid '{this.props.grid.name}' is password protected, please enter the password configure it.</p>
+                                <p>The grid '{
+                                    this.props.grid.name
+                                }' is password protected, please enter the password configure it.</p>
                                 <Fieldset>
                                     <label>Password</label>
                                     <input
                                         type="password"
                                         placeholder="Enter the password for the grid"
                                         value={this.state.passwordConfigure}
-                                        onChange={(e) => this.setState({ passwordConfigure: e.target.value })}
+                                        onChange={e => this.setState({ passwordConfigure: e.target.value })}
                                         readOnly={this.state.isBusy}
                                     />
                                 </Fieldset>
                                 <FormActions>
-                                    <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.checkPassword()}>Continue</Button>
+                                    <Button
+                                        disabled={!this.state.isValid || this.state.isBusy}
+                                        onClick={async () => this.checkPassword()}>Continue</Button>
                                 </FormActions>
-                                <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
+                                <FormStatus
+                                    message={this.state.status}
+                                    isBusy={this.state.isBusy}
+                                    isError={this.state.isErrored}
+                                    isSuccess={this.state.isSuccess} />
                             </React.Fragment>
                         )}
                     </React.Fragment>
@@ -118,7 +126,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                         type="text"
                                         placeholder="Name for the grid between 5 and 30 characters"
                                         value={this.state.gridName}
-                                        onChange={(e) => this.setState({ gridName: e.target.value }, () => this.validateData())}
+                                        onChange={e => this.setState(
+                                            { gridName: e.target.value }, () => this.validateData())}
                                         readOnly={this.state.isBusy}
                                         maxLength={30}
                                     />
@@ -129,7 +138,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                         type="password"
                                         placeholder="Leave password blank to have no password"
                                         value={this.state.password}
-                                        onChange={(e) => this.setState({ password: e.target.value }, () => this.validateData())}
+                                        onChange={e => this.setState(
+                                            { password: e.target.value }, () => this.validateData())}
                                         readOnly={this.state.isBusy}
                                     />
                                 </Fieldset>
@@ -144,8 +154,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 pluralName="Producers"
                                 newInstance={() => ({ id: "", name: "", sources: [] })}
                                 items={this.state.producers}
-                                onChange={(producers) => this.setState({ producers })}
-                                configure={(props) => {
+                                onChange={producers => this.setState({ producers })}
+                                configure={props => {
                                     this.setState({ configureProducer: props });
                                 }}
                                 maxItems={1}
@@ -164,8 +174,8 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 pluralName="Consumers"
                                 newInstance={() => ({ id: "", name: "" })}
                                 items={this.state.consumers}
-                                onChange={(consumers) => this.setState({ consumers })}
-                                configure={(props) => {
+                                onChange={consumers => this.setState({ consumers })}
+                                configure={props => {
                                     this.setState({ configureConsumer: props });
                                 }}
                                 maxItems={2}
@@ -177,11 +187,23 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                                 <hr />
                                 <br />
                                 <FormActions>
-                                    <Button disabled={!this.state.isValid || this.state.isBusy} onClick={async () => this.gridSave()}>Save</Button>
-                                    <Button disabled={this.state.isBusy} color="secondary" onClick={() => this.setState({redirect: true})}>Cancel</Button>
-                                    <Button disabled={this.state.isBusy} color="secondary" onClick={async () => this.gridDelete()}>Delete</Button>
+                                    <Button
+                                        disabled={!this.state.isValid || this.state.isBusy}
+                                        onClick={async () => this.gridSave()}>Save</Button>
+                                    <Button
+                                        disabled={this.state.isBusy}
+                                        color="secondary"
+                                        onClick={() => this.setState({ redirect: true })}>Cancel</Button>
+                                    <Button
+                                        disabled={this.state.isBusy}
+                                        color="secondary"
+                                        onClick={async () => this.gridDelete()}>Delete</Button>
                                 </FormActions>
-                                <FormStatus message={this.state.status} isBusy={this.state.isBusy} isError={this.state.isErrored} isSuccess={this.state.isSuccess} />
+                                <FormStatus
+                                    message={this.state.status}
+                                    isBusy={this.state.isBusy}
+                                    isError={this.state.isErrored}
+                                    isSuccess={this.state.isSuccess} />
                             </React.Fragment>
                         )}
                     </React.Fragment>
@@ -189,7 +211,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 {this.state.configureProducer && (
                     <ProducerConfigure
                         item={this.state.configureProducer.item}
-                        onChange={(item) => {
+                        onChange={item => {
                             if (this.state.configureProducer) {
                                 this.state.configureProducer.onChange(item);
                                 this.setState({ configureProducer: undefined });
@@ -200,7 +222,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 {this.state.configureConsumer && (
                     <ConsumerConfigure
                         item={this.state.configureConsumer.item}
-                        onChange={(item) => {
+                        onChange={item => {
                             if (this.state.configureConsumer) {
                                 this.state.configureConsumer.onChange(item);
                                 this.setState({ configureConsumer: undefined });
@@ -211,7 +233,7 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
                 {this.state.showDeleteConfirmation && (
                     <Modal
                         title="Confirmation"
-                        onClose={(id) => this.gridDeleteConfirmation(id)}
+                        onClose={id => this.gridDeleteConfirmation(id)}
                         buttons={[
                             {
                                 id: "yes",
@@ -234,7 +256,9 @@ class GridConfigure extends Component<GridConfigureProps, GridConfigureState> {
      * Validate the form data.
      */
     private validateData(): void {
-        const isValid = this.state.gridName && this.state.gridName.trim().length >= 5 && this.state.gridName.trim().length <= 30 ? true : false;
+        const isValid =
+            this.state.gridName && this.state.gridName.trim().length >= 5 &&
+                this.state.gridName.trim().length <= 30 ? true : false;
 
         this.setState({ isValid });
     }

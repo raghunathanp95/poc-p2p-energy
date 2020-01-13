@@ -152,7 +152,10 @@ class App extends Component<RouteComponentProps, AppState> {
                 />
                 <section className="content">
                     <LayoutAppSingle>
-                        <StatusMessage status={this.state.status} color={this.state.statusColor} isBusy={this.state.isBusy} />
+                        <StatusMessage
+                            status={this.state.status}
+                            color={this.state.statusColor}
+                            isBusy={this.state.isBusy} />
                         {!this.state.status && (
                             <Switch>
                                 <Route exact={true} path="/" component={() => (<Introduction hash={Date.now()} />)} />
@@ -165,7 +168,10 @@ class App extends Component<RouteComponentProps, AppState> {
                         )}
                     </LayoutAppSingle>
                 </section>
-                <Footer history={this.props.history} sections={contentHomePage.footerSections} staticContent={contentHomePage.footerStaticContent} />
+                <Footer
+                    history={this.props.history}
+                    sections={contentHomePage.footerSections}
+                    staticContent={contentHomePage.footerStaticContent} />
                 <GoogleAnalytics id={this._configuration && this._configuration.googleAnalyticsId} />
             </React.Fragment>
         );

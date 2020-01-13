@@ -1,5 +1,6 @@
 import { ISourceOutputCommand } from "../../models/mam/ISourceOutputCommand";
 import { ISourceManagerState } from "../../models/state/ISourceManagerState";
+import { ISourceConfiguration } from "../config/source/ISourceConfiguration";
 
 /**
  * Interface definition for source strategy for calculating outputs
@@ -7,17 +8,16 @@ import { ISourceManagerState } from "../../models/state/ISourceManagerState";
 export interface ISourceStrategy<S> {
     /**
      * Initialise the state.
-     * @param sourceId The id of the source.
      */
-    init(sourceId: string): Promise<S>;
+    initState(): Promise<S>;
 
     /**
      * Gets the output values.
-     * @param sourceId The id of the source.
+     * @param config The config of the source.
      * @param sourceState The state for the manager calling the strategy
      * @returns List of output commands.
      */
-    value(sourceId: string, sourceState: ISourceManagerState<S>): Promise<{
+    value(config: ISourceConfiguration, sourceState: ISourceManagerState<S>): Promise<{
         /**
          * Has the state been updated.
          */

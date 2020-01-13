@@ -152,7 +152,8 @@ export class DemoGridManager {
     constructor(loadBalancerSettings: LoadBalancerSettings) {
         this._loadBalancerSettings = loadBalancerSettings;
 
-        this._demoGridStateStorageService = ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
+        this._demoGridStateStorageService =
+            ServiceFactory.get<IStorageService<IDemoGridState>>("demo-grid-state-storage");
         this._loggingService = ServiceFactory.get<ILoggingService>("logging");
 
         this._producerStrategy = new BasicProducerStrategy();
@@ -238,7 +239,10 @@ export class DemoGridManager {
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeProducer(context: string, id: string, callback: (state: IDemoProducerState | undefined) => void): void {
+    public subscribeProducer(
+        context: string,
+        id: string,
+        callback: (state: IDemoProducerState | undefined) => void): void {
         this._subscriptionsProducer[`${id}/${context}`] = callback;
         callback(this.getProducerState(id));
     }
@@ -258,7 +262,10 @@ export class DemoGridManager {
      * @param id The id of the item to subscribe to.
      * @param callback The callback for the subscription.
      */
-    public subscribeConsumer(context: string, id: string, callback: (state: IDemoConsumerState | undefined) => void): void {
+    public subscribeConsumer(
+        context: string,
+        id: string,
+        callback: (state: IDemoConsumerState | undefined) => void): void {
         this._subscriptionsConsumer[`${id}/${context}`] = callback;
         callback(this.getConsumerState(id));
     }
@@ -413,7 +420,8 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "producer-storage-manager-state",
-            () => new BrowserStorageService<IProducerManagerState<IBasicProducerStrategyState>>(`${grid.id}/producer-state`));
+            () => new BrowserStorageService<IProducerManagerState<IBasicProducerStrategyState>>(
+                `${grid.id}/producer-state`));
 
         ServiceFactory.register(
             "registration-storage",
@@ -421,7 +429,10 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "registration-management",
-            () => new RegistrationManagementService(this._loadBalancerSettings, (registration) => registration.itemType === "consumer"));
+            () => new RegistrationManagementService(
+                this._loadBalancerSettings,
+                registration => registration.itemType === "consumer"
+            ));
 
         ServiceFactory.register(
             "producer-registration",
@@ -433,7 +444,8 @@ export class DemoGridManager {
 
         ServiceFactory.register(
             "consumer-storage-manager-state",
-            () => new BrowserStorageService<IConsumerManagerState<IBasicConsumerStrategyState>>(`${grid.id}/consumer-state`));
+            () => new BrowserStorageService<IConsumerManagerState<IBasicConsumerStrategyState>>(
+                `${grid.id}/consumer-state`));
 
         ServiceFactory.register(
             "consumer-registration",
@@ -474,12 +486,17 @@ export class DemoGridManager {
     private async constructManagers(grid: IGrid, progressCallback: (status: string) => void): Promise<void> {
         await this.initialiseServices(grid);
 
-        const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+        const registrationManagementService =
+            ServiceFactory.get<IRegistrationManagementService>("registration-management");
         await registrationManagementService.loadRegistrations();
 
         progressCallback("Initializing Grid.");
         if (!this._gridManager) {
-            this._gridManager = new GridManager({ name: grid.name, id: grid.id }, this._loadBalancerSettings, this._gridStrategy);
+            this._gridManager = new GridManager(
+                grid,
+                this._loadBalancerSettings,
+                this._gridStrategy
+            );
             await this._gridManager.initialise();
         }
 
@@ -493,7 +510,7 @@ export class DemoGridManager {
             progressCallback(`Initializing Producer '${producer.name}' [${producer.id}].`);
             if (!this._producerManagers[producer.id]) {
                 this._producerManagers[producer.id] = new ProducerManager(
-                    { name: producer.name, id: producer.id },
+                    producer,
                     this._loadBalancerSettings,
                     this._producerStrategy
                 );
@@ -512,7 +529,7 @@ export class DemoGridManager {
                     this._sourceManagers[source.id] = {
                         producerId: producer.id,
                         sourceManager: new SourceManager(
-                            { name: source.name, id: source.id, type: source.type },
+                            source,
                             this._loadBalancerSettings,
                             this._sourceStrategy)
                     };
@@ -531,7 +548,7 @@ export class DemoGridManager {
             progressCallback(`Initializing Consumer '${consumer.name}' [${consumer.id}].`);
             if (!this._consumerManagers[consumer.id]) {
                 this._consumerManagers[consumer.id] = new ConsumerManager(
-                    { name: consumer.name, id: consumer.id },
+                    consumer,
                     this._loadBalancerSettings,
                     this._consumerStrategy);
                 await this._consumerManagers[consumer.id].initialise();
@@ -584,7 +601,8 @@ export class DemoGridManager {
     private async updateNewCommands(): Promise<void> {
         // First step on an update is to check all the mam registrations for new
         // commands in their channels
-        const registrationManagementService = ServiceFactory.get<IRegistrationManagementService>("registration-management");
+        const registrationManagementService =
+            ServiceFactory.get<IRegistrationManagementService>("registration-management");
         await registrationManagementService.pollCommands(
             async (registration: IRegistration, commands: IMamCommand[]) => {
                 // Producers and consumers are registered with the grid, so hand the commands to the grid manager
@@ -596,8 +614,10 @@ export class DemoGridManager {
                     // All other registrations are sources with producers, so find which
                     // producer the source belongs to.
                     if (this._sourceManagers && this._sourceManagers[registration.id]) {
-                        if (this._producerManagers && this._producerManagers[this._sourceManagers[registration.id].producerId]) {
-                            await this._producerManagers[this._sourceManagers[registration.id].producerId].handleCommands(registration, commands);
+                        if (this._producerManagers &&
+                            this._producerManagers[this._sourceManagers[registration.id].producerId]) {
+                            await this._producerManagers[this._sourceManagers[registration.id].producerId]
+                                .handleCommands(registration, commands);
                         }
                     }
                 }
@@ -630,8 +650,10 @@ export class DemoGridManager {
 
                 if (outputCommands.length > 0) {
                     // Add the output to the local state and keep just the most recent 10
-                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.concat(outputCommands);
-                    this._gridState.sourceStates[sourceId].outputCommands = this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
+                    this._gridState.sourceStates[sourceId].outputCommands =
+                        this._gridState.sourceStates[sourceId].outputCommands.concat(outputCommands);
+                    this._gridState.sourceStates[sourceId].outputCommands =
+                        this._gridState.sourceStates[sourceId].outputCommands.slice(-10);
                 }
             }
             // Notify any local subscribers of the source updates
@@ -649,8 +671,10 @@ export class DemoGridManager {
 
                 if (commands.length > 0) {
                     // Add the output to the local state and keep just the most recent 10
-                    this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.concat(commands);
-                    this._gridState.producerStates[producerId].outputCommands = this._gridState.producerStates[producerId].outputCommands.slice(-10);
+                    this._gridState.producerStates[producerId].outputCommands =
+                        this._gridState.producerStates[producerId].outputCommands.concat(commands);
+                    this._gridState.producerStates[producerId].outputCommands =
+                        this._gridState.producerStates[producerId].outputCommands.slice(-10);
                 }
             }
             // Notify any local subscribers of the producer updates
@@ -668,8 +692,10 @@ export class DemoGridManager {
 
                 if (usageCommands.length > 0) {
                     // Add the usage to the local state and keep just the most recent 10
-                    this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.concat(usageCommands);
-                    this._gridState.consumerStates[consumerId].usageCommands = this._gridState.consumerStates[consumerId].usageCommands.slice(-10);
+                    this._gridState.consumerStates[consumerId].usageCommands =
+                        this._gridState.consumerStates[consumerId].usageCommands.concat(usageCommands);
+                    this._gridState.consumerStates[consumerId].usageCommands =
+                        this._gridState.consumerStates[consumerId].usageCommands.slice(-10);
                 }
             }
 

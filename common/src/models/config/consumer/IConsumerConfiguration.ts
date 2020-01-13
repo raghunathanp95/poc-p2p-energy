@@ -11,4 +11,9 @@ export interface IConsumerConfiguration {
      * The name of the consumer.
      */
     name: string;
+
+    /**
+     * Extended properties for the source.
+     */
+    extendedProperties?: { [id: string]: any };
 }

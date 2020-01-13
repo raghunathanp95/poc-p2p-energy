@@ -1,4 +1,5 @@
 import { ServiceFactory } from "../factories/serviceFactory";
+import { IConsumerConfiguration } from "../models/config/consumer/IConsumerConfiguration";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
 import { IConsumerUsageCommand } from "../models/mam/IConsumerUsageCommand";
 import { ILoggingService } from "../models/services/ILoggingService";
@@ -41,10 +42,9 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
 
     /**
      * Initialise the state.
-     * @param consumerId The id of the consumer
      * @returns The state of the consumer.
      */
-    public async init(consumerId: string): Promise<IBasicConsumerStrategyState> {
+    public async initState(): Promise<IBasicConsumerStrategyState> {
         return {
             lastUsageTime: Date.now(),
             usageTotal: 0,
@@ -57,12 +57,12 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
 
     /**
      * Gets the usage values.
-     * @param consumerId The id of the consumer
+     * @param config The config of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @returns List of usage commands.
      */
     public async usage(
-        consumerId: string,
+        config: IConsumerConfiguration,
         consumerState: IConsumerManagerState<IBasicConsumerStrategyState>):
         Promise<{
             /**
@@ -89,8 +89,13 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
         } else {
             while ((Date.now() - consumerState.strategyState.lastUsageTime) > BasicConsumerStrategy.TIME_BASIS) {
                 const endTime = consumerState.strategyState.lastUsageTime + BasicConsumerStrategy.TIME_BASIS;
-                // tslint:disable-next-line:insecure-random
-                const usage = Math.random();
+
+                const extProps = config.extendedProperties || {};
+                const usage = extProps.usageType === "fixed" && extProps.usageValue !== undefined
+                    ? extProps.usageValue
+                    // tslint:disable-next-line:insecure-random
+                    : Math.random();
+
                 commands.push({
                     command: "usage",
                     startTime: consumerState.strategyState.lastUsageTime + 1,
@@ -112,13 +117,13 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
 
     /**
      * Processes payment requests.
-     * @param consumerId The id of the consumer
+     * @param config The config of the consumer
      * @param consumerState The state for the manager calling the strategy
      * @param paymentRequests Payment requests to process.
      * @returns If the state was updated.
      */
     public async paymentRequests(
-        consumerId: string,
+        config: IConsumerConfiguration,
         consumerState: IConsumerManagerState<IBasicConsumerStrategyState>,
         paymentRequests: IConsumerPaymentRequestCommand[]):
         Promise<{
@@ -138,7 +143,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             const payableBalance = Math.floor(consumerState.strategyState.outstandingBalance / 25) * 25;
             if (payableBalance > 0) {
                 await this._walletService.transfer(
-                    consumerId,
+                    config.id,
                     paymentRequests[paymentRequests.length - 1].paymentIdOrAddress,
                     payableBalance);
 
@@ -158,7 +163,7 @@ export class BasicConsumerStrategy implements IConsumerStrategy<IBasicConsumerSt
             const lastOutgoingEpoch = consumerState.strategyState.lastOutgoingTransfer ?
                 consumerState.strategyState.lastOutgoingTransfer.created : 0;
 
-            const wallet = await this._walletService.getWallet(consumerId, undefined, lastOutgoingEpoch);
+            const wallet = await this._walletService.getWallet(config.id, undefined, lastOutgoingEpoch);
 
             if (wallet && wallet.outgoingTransfers && wallet.outgoingTransfers.length > 0) {
                 consumerState.strategyState.lastOutgoingTransfer =

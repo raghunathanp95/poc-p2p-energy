@@ -245,7 +245,7 @@ export class ProducerManager<S> {
                 pageSize = pageResponse.pageSize;
             } while (pageResponse && pageResponse.items && pageResponse.items.length > 0);
 
-            const result1 = await this._strategy.sources(this._config.id, sourceOutputById, this._state);
+            const result1 = await this._strategy.sources(this._config, sourceOutputById, this._state);
 
             this._state.unsentCommands = this._state.unsentCommands.concat(result1.commands);
 
@@ -263,7 +263,7 @@ export class ProducerManager<S> {
                 }
             }
 
-            const result2 = await this._strategy.payments(this._config.id, this._state);
+            const result2 = await this._strategy.payments(this._config, this._state);
 
             if (result1.updatedState || result2.updatedState) {
                 await this.saveState();
@@ -287,7 +287,7 @@ export class ProducerManager<S> {
         this._loggingService.log("producer", `Loaded State`);
 
         this._state = this._state || {
-            strategyState: await this._strategy.init(this._config.id),
+            strategyState: await this._strategy.initState(),
             unsentCommands: []
         };
     }

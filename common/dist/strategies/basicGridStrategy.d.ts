@@ -1,3 +1,4 @@
+import { IGridConfiguration } from "../models/config/grid/IGridConfiguration";
 import { IConsumerUsageEntry } from "../models/db/grid/IConsumerUsageEntry";
 import { IProducerOutputEntry } from "../models/db/grid/IProducerOutputEntry";
 import { IConsumerPaymentRequestCommand } from "../models/mam/IConsumerPaymentRequestCommand";
@@ -22,18 +23,17 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     constructor();
     /**
      * Initialise the state.
-     * @param gridId The id of the grid.
      * @returns The state of the grid.
      */
-    init(gridId: string): Promise<IBasicGridStrategyState>;
+    initState(): Promise<IBasicGridStrategyState>;
     /**
      * Collated consumers usage.
-     * @param gridId The id of the grid.
+     * @param config The id of the grid.
      * @param consumerUsageById The unread output from the consumers.
      * @param gridState The current state of the grid.
      * @returns If the state has been updated and any payment requests to send.
      */
-    consumers(gridId: string, consumerUsageById: {
+    consumers(config: IGridConfiguration, consumerUsageById: {
         [id: string]: IConsumerUsageEntry[];
     }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
         /**
@@ -49,12 +49,12 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     }>;
     /**
      * Collated producer output.
-     * @param gridId The id of the grid.
+     * @param config The config of the grid.
      * @param producerUsageById The unread output from the producers.
      * @param gridState The current state of the grid.
      * @returns If the state was updated.
      */
-    producers(gridId: string, producerUsageById: {
+    producers(config: IGridConfiguration, producerUsageById: {
         [id: string]: IProducerOutputEntry[];
     }, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
         /**
@@ -64,11 +64,11 @@ export declare class BasicGridStrategy implements IGridStrategy<IBasicGridStrate
     }>;
     /**
      * Collated payments.
-     * @param gridId The id of the grid.
+     * @param config The config of the grid.
      * @param gridState The current state of the grid.
      * @returns If the state was updated.
      */
-    payments(gridId: string, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
+    payments(config: IGridConfiguration, gridState: IGridManagerState<IBasicGridStrategyState>): Promise<{
         /**
          * Has the state been updated.
          */
