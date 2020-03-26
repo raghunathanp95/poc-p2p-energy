@@ -39,6 +39,8 @@ The standalone folder contains examples of how to write `grid`, `producer`, `con
 
 See [./standalone/README.md](./standalone/README.md) for more details.
 
+An explanation of the interaction between these modules can be found here [./docs/workflow.md](./docs/workflow.md)
+
 ## Common
 
 Both the `demonstration` and the `standalone` packages share a large percentage of their code, the shared code can be found in the `common` library.
