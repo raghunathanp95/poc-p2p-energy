@@ -11,7 +11,6 @@ import { storageDelete, storageGet, storageList, storageSet } from "p2p-energy-c
 import { AmazonS3RegistrationService } from "p2p-energy-common/dist/services/amazon/amazonS3RegistrationService";
 import { AmazonS3StorageService } from "p2p-energy-common/dist/services/amazon/amazonS3StorageService";
 import { ConsumerUsageStoreService } from "p2p-energy-common/dist/services/db/consumerUsageStoreService";
-import { ProducerOutputPaymentService } from "p2p-energy-common/dist/services/db/producerOutputPaymentService";
 import { ProducerOutputStoreService } from "p2p-energy-common/dist/services/db/producerOutputStoreService";
 import { GridManager } from "p2p-energy-common/dist/services/gridManager";
 import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
@@ -104,9 +103,6 @@ app.build(routes, async (_1, config, _2) => {
         ServiceFactory.register(
             "grid-consumer-usage-store",
             () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/consumer`));
-        ServiceFactory.register(
-            "producer-output-payment",
-            () => new LocalFileStorageService(`${config.localStorageFolder}/${config.grid.id}/producer-paid`));
     } else if (config.dynamoDbConnection) {
         ServiceFactory.register(
             "grid-producer-output-store",
@@ -114,9 +110,6 @@ app.build(routes, async (_1, config, _2) => {
         ServiceFactory.register(
             "grid-consumer-usage-store",
             () => new ConsumerUsageStoreService(config.dynamoDbConnection));
-        ServiceFactory.register(
-            "producer-output-payment",
-            () => new ProducerOutputPaymentService(config.dynamoDbConnection));
     }
 
     await gridManager.initialise();

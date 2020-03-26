@@ -6,7 +6,7 @@ const amazonDynamoDbService_1 = require("../amazon/amazonDynamoDbService");
  */
 class ProducerOutputStoreService extends amazonDynamoDbService_1.AmazonDynamoDbService {
     /**
-     * Create a new instance of ProducerOutputPaymentService.
+     * Create a new instance of ProducerOutputStoreService.
      * @param config Configuration for DB.
      */
     constructor(config) {
