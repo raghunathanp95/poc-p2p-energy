@@ -11,8 +11,7 @@ config.dev.json
 config.prod.json
 config.staging.json
 build
-demo/**/dist
-standalone/**/dist
+dist
 http-test
 
 .vercel
