@@ -1,0 +1,27 @@
+{
+    "nodes": [
+        {
+            "provider": "https://altnodes.devnet.iota.org:443",
+            "depth": 3,
+            "mwm": 9
+        },
+        {
+            "provider": "https://nodes.devnet.iota.org:443",
+            "depth": 3,
+            "mwm": 9
+        }
+    ],
+    "dynamoDbConnection": {
+        "region": "eu-central-1",
+        "accessKeyId": "AKIA4DZQJJPEXHHEYJPM",
+        "secretAccessKey": "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",
+        "dbTablePrefix": "p2p-energy-demo-prod-"
+    },
+    "s3Connection": {
+        "region": "eu-central-1",
+        "accessKeyId": "AKIA4DZQJJPEXHHEYJPM",
+        "secretAccessKey": "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",
+        "bucketPrefix": "p2p-energy-demo-prod-"
+    },
+    "walletSeed": "WCJEWDZPKHHCAQJAGTGKROXUAEIPXHXAJHVKGBNO9IBGMLLYHQAQKMMEXBGLT9QK99PK9CAFXPDDFTHVR"
+}
