@@ -15,7 +15,7 @@
         "classnames": "^2.2.6",
         "iota-css-theme": "github:iotaledger/iota-css-theme",
         "iota-react-components": "github:iotaledger/iota-react-components",
-        "p2p-energy-common": "github:iotaledger/poc-p2p-energy",
+        "p2p-energy-common": "file:../../common",
         "react": "^16.13.1",
         "react-chartist": "^0.14.3",
         "react-dom": "^16.13.1",
