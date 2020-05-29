@@ -6,28 +6,10 @@ node_modules
 
 /.local-storage
 
-/standalone/grid/src/data/config.local.json
-/standalone/grid/src/data/config.dev.json
-/standalone/grid/dist
-/standalone/grid/http-test
-
-/standalone/producer/src/data/config.local.json
-/standalone/producer/src/data/config.dev.json
-/standalone/producer/dist
-/standalone/producer/http-test
-
-/standalone/source/src/data/config.local.json
-/standalone/source/src/data/config.dev.json
-/standalone/source/dist
-
-/standalone/consumer/src/data/config.local.json
-/standalone/consumer/src/data/config.dev.json
-/standalone/consumer/dist
-
-/demo/client/public/data/config.local.json
-/demo/client/public/data/config.dev.json
-/demo/client/build
-
-/demo/api/src/data/config.local.json
-/demo/api/src/data/config.dev.json
-/demo/api/dist
+config.local.json
+config.dev.json
+config.prod.json
+config.staging.json
+build
+dist
+http-test
