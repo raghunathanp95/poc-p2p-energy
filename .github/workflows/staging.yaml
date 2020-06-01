@@ -8,20 +8,20 @@ on:
 
 jobs:
   build:
-      env:
-        # Staging specific env vars
-        CONFIG_ID: staging
-        CONFIG_NODE1: ${{ secrets.STAGING_CONFIG_NODE1 }}
-        CONFIG_NODE2: ${{ secrets.STAGING_CONFIG_NODE2 }}
-        CONFIG_API_ENDPOINT: ${{ secrets.STAGING_CONFIG_API_ENDPOINT }}
-        CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}
-        VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN}}
-        # Global Vercel env vars
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID}}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID}}
-        VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME}}
-        
     runs-on: ubuntu-latest
+
+    env:
+      # Staging specific env vars
+      CONFIG_ID: staging
+      CONFIG_NODE1: ${{ secrets.STAGING_CONFIG_NODE1 }}
+      CONFIG_NODE2: ${{ secrets.STAGING_CONFIG_NODE2 }}
+      CONFIG_API_ENDPOINT: ${{ secrets.STAGING_CONFIG_API_ENDPOINT }}
+      CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}
+      VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN }}
+      # Global Vercel env vars
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
 
     steps:
     - uses: actions/checkout@v2
