@@ -2,12 +2,12 @@
 {
     "nodes": [
         {
-            "provider": "https://MYNODE1",
+            "provider": "https://NODE1",
             "depth": 3,
             "mwm": 9
         },
         {
-            "provider": "https://MYNODE2",
+            "provider": "https://NODE2",
             "depth": 3,
             "mwm": 9
         }
