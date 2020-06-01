@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Staging specific env vars
+      # Build specific env vars
       CONFIG_ID: staging
       CONFIG_NODE1: ${{ secrets.STAGING_CONFIG_NODE1 }}
       CONFIG_NODE2: ${{ secrets.STAGING_CONFIG_NODE2 }}
