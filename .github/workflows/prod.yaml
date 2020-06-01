@@ -1,8 +1,8 @@
-name: Build and Deploy Staging
+name: Build and Deploy Production
 
 on:
-  push:
-    branches: [develop]
+  pull_request:
+    branches: [master]
 
 jobs:
   build:
@@ -10,12 +10,12 @@ jobs:
 
     env:
       # Build specific env vars
-      CONFIG_ID: staging
-      CONFIG_NODE1: ${{ secrets.STAGING_CONFIG_NODE1 }}
-      CONFIG_NODE2: ${{ secrets.STAGING_CONFIG_NODE2 }}
-      CONFIG_API_ENDPOINT: ${{ secrets.STAGING_CONFIG_API_ENDPOINT }}
-      CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}
-      VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN }}
+      CONFIG_ID: prod
+      CONFIG_NODE1: ${{ secrets.PROD_CONFIG_NODE1 }}
+      CONFIG_NODE2: ${{ secrets.PROD_CONFIG_NODE2 }}
+      CONFIG_API_ENDPOINT: ${{ secrets.PROD_CONFIG_API_ENDPOINT }}
+      CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.PROD_CONFIG_GOOGLE_ANALYTICS_ID }}
+      VERCEL_DOMAIN: ${{ secrets.VERCEL_PROD_DOMAIN }}
 
       # Global Vercel env vars
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
