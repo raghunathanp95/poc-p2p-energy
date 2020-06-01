@@ -35,4 +35,4 @@ jobs:
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID}}
         VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME}}
         VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN}}
-        CONFIG_ID: staging
+        REACT_APP_CONFIG_ID: staging
