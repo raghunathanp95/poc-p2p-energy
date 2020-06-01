@@ -15,7 +15,7 @@ jobs:
     - name: Client Config
       run: |
         cd demo/client/public/data/
-        cp config.template.json config.staging.json
+        mv config.template.json config.staging.json
         sed -i 's/MYNODE1/${{ secrets.STAGING_CONFIG_NODE1 }}/g' config.staging.json
         sed -i 's/MYNODE2/${{ secrets.STAGING_CONFIG_NODE2 }}/g' config.staging.json
         sed -i 's/API-ENDPOINT/${{ secrets.STAGING_CONFIG_API_ENDPOINT }}/g' config.staging.json
