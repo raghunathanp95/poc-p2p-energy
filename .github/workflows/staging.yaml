@@ -1,0 +1,37 @@
+name: Build and Deploy Production
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Client Config
+      run: |
+        cd demo/client/public/data/
+        cp config.template.json config.staging.json
+        sed -i 's/MYNODE1/${{ secrets.STAGING_CONFIG_NODE1 }}/g' config.staging.json
+        sed -i 's/MYNODE2/${{ secrets.STAGING_CONFIG_NODE2 }}/g' config.staging.json
+        sed -i 's/API-ENDPOINT/${{ secrets.STAGING_CONFIG_API_ENDPOINT }}/g' config.staging.json
+        sed -i 's/GOOGLE-ANALYTICS-ID/${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}/g' config.staging.json
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+    - name: Client Deploy
+      run: |
+        npx vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} --env CONFIG_ID=staging
+        VERCEL_SH_DEPLOYMENT_URL=$(npx vercel ls --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} -m githubCommitSha=${{ github.sha }} | grep $VERCEL_PROJECT_NAME | awk {'print $2'})
+        npx vercel alias --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_SCOPE }} $VERCEL_SH_DEPLOYMENT_URL $VERCEL_DOMAIN
+      env: 
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID}}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID}}
+        VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME}}
+        VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN}}
+        CONFIG_ID: staging
