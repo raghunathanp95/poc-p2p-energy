@@ -18,6 +18,7 @@ jobs:
       CONFIG_API_ENDPOINT: ${{ secrets.STAGING_CONFIG_API_ENDPOINT }}
       CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}
       VERCEL_DOMAIN: ${{ secrets.VERCEL_STAGING_DOMAIN }}
+
       # Global Vercel env vars
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -33,7 +34,6 @@ jobs:
         sed -i 's/NODE2/$CONFIG_NODE2/g' config.$CONFIG_ID.json
         sed -i 's/API-ENDPOINT/$CONFIG_API_ENDPOINT/g' config.$CONFIG_ID.json
         sed -i 's/GOOGLE-ANALYTICS-ID/$CONFIG_GOOGLE_ANALYTICS_ID/g' config.$CONFIG_ID.json
-        cd ../../../../
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
