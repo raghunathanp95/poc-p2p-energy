@@ -20,6 +20,7 @@ jobs:
         sed -i 's/NODE2/${{ secrets.STAGING_CONFIG_NODE2 }}/g' config.staging.json
         sed -i 's/API-ENDPOINT/${{ secrets.STAGING_CONFIG_API_ENDPOINT }}/g' config.staging.json
         sed -i 's/GOOGLE-ANALYTICS-ID/${{ secrets.STAGING_CONFIG_GOOGLE_ANALYTICS_ID }}/g' config.staging.json
+        cd ../../../../
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
