@@ -8,7 +8,7 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
 {
     "nodes": [                                      /* List of node to load balance across */  
         {
-            "provider": "https://MYNODE/",          /* A node to perform Tangle operations */
+            "provider": "NODE1",                    /* A node to perform Tangle operations */
             "depth": 3,                             /* Depth to use for attaches */
             "mwm": 9                                /* MWM to use for attaches */
         }
@@ -18,7 +18,7 @@ To configure the `api` you should copy `./src/data/config.template.json` to `./s
         "id": "CONSUMER-UNIQUE-ID",                 /* Unique ID, has no format */
         "name": "CONSUMER-NAME"                     /* The name of this consumer */
     },
-    "seed": "SEED"                                   /* The seed to use for the consumers wallet */
+    "seed": "WALLET-SEED"                           /* The seed to use for the consumers wallet */
 }
 ```
 

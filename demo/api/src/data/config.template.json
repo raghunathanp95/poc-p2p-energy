@@ -1,12 +1,12 @@
 {
     "nodes": [
         {
-            "provider": "https://NODE1",
+            "provider": "NODE1",
             "depth": 3,
             "mwm": 9
         },
         {
-            "provider": "https://NODE2",
+            "provider": "NODE2",
             "depth": 3,
             "mwm": 9
         }
@@ -23,5 +23,5 @@
         "secretAccessKey": "STORAGE-AWS-SECRET-ACCESS-KEY",
         "bucketPrefix": "STORAGE-BUCKET-PREFIX"
     },
-    "walletSeed": "SEED"
+    "walletSeed": "WALLET-SEED"
 }
