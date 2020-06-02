@@ -15,12 +15,12 @@ jobs:
       CONFIG_NODE2: ${{ secrets.PROD_CONFIG_NODE2 }}
       CONFIG_API_ENDPOINT: ${{ secrets.PROD_CONFIG_API_ENDPOINT }}
       CONFIG_GOOGLE_ANALYTICS_ID: ${{ secrets.PROD_CONFIG_GOOGLE_ANALYTICS_ID }}
-      VERCEL_DOMAIN: ${{ secrets.VERCEL_PROD_DOMAIN }}
+      VERCEL_DOMAIN: ${{ secrets.VERCEL_CLIENT_PROD_DOMAIN }}
 
       # Global Vercel env vars
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_CLIENT_PROJECT_ID }}
+      VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_CLIENT_PROJECT_NAME }}
 
     steps:
       - uses: actions/checkout@v2
