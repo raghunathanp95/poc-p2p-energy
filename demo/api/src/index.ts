@@ -31,6 +31,8 @@ const loggingService = new AggregateLoggingService([new ConsoleLoggingService(),
 const app = new App<IDemoApiConfiguration>(4000, loggingService, __dirname);
 
 app.build(routes, async (_1, config, _2) => {
+    // tslint:disable-next-line: no-console
+    console.log(config);
     ServiceFactory.register("logging", () => loggingService);
     if (config.localStorageFolder) {
         ServiceFactory.register(

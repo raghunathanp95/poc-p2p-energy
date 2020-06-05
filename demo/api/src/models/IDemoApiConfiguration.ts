@@ -29,4 +29,9 @@ export interface IDemoApiConfiguration {
      * Demonstration wallet seed.
      */
     walletSeed: string;
+
+    /**
+     * A list of domains allowed to access the api.
+     */
+    allowedDomains: string[];
 }
