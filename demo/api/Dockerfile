@@ -12,7 +12,7 @@ ARG CONFIG_ID
 RUN echo "CONFIG_ID=$CONFIG_ID"
 
 RUN cd common && npm install && npm run build
-RUN sed -i 's/..\/..\/common/poc-p2p-energy\/common/g' package.json
+RUN sed -i 's/..\/..\/common/common/g' package.json
 
 # Running required steps to prepare the api prod build
 RUN npm install
