@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: [master]
     paths:
-      - "api/**"
+      - "demo/api/**"
+      - "demo/common/**"
       - ".github/workflows/api-prod.yaml"
 
 jobs:

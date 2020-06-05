@@ -1,8 +1,12 @@
-name: Build and Deploy Staging
+name: Client Build and Deploy Staging
 
 on:
   push:
     branches: [develop]
+    paths:
+      - "demo/client/**"
+      - "demo/common/**"
+      - ".github/workflows/api-staging.yaml"
 
 jobs:
   build:
