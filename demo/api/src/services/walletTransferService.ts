@@ -248,72 +248,67 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                             "wallet",
                             `Confirmed transaction ${tailTransactions[confirmedIndex].hash}`);
                     } else {
-                        const tail = tailTransactions[0].hash;
-                        const attachmentTimestamp = tailTransactions[0].attachmentTimestamp;
-                        const timeSinceAttachment = Date.now() - attachmentTimestamp;
+                        let requeue = false;
+                        if (tailTransactions.length === 0) {
+                            requeue = true;
+                            this._loggingService.log(
+                                "wallet",
+                                `No tail transaction requeueing`);
+                        } else {
+                            const tail = tailTransactions[0].hash;
+                            const attachmentTimestamp = tailTransactions[0].attachmentTimestamp;
+                            const timeSinceAttachment = Date.now() - attachmentTimestamp;
 
-                        // If it is taking a long time to attach the bundle (10s)
-                        // try promoting it
-                        if (timeSinceAttachment > 10000) {
-                            // If the bundle is promotable then just spam some transactions
-                            // against it
-                            //const isPromotable = await iota.isPromotable(tail);
-                            //if (isPromotable) {
-                            //   await iota.promoteTransaction(tail, undefined, undefined);
-                            //} else {
-                            const isConsistent = await iota.checkConsistency([tail]);
+                            // If it is taking a long time to attach the bundle (10s)
+                            // try promoting it
+                            if (timeSinceAttachment > 10000) {
+                                const isConsistent = await iota.checkConsistency([tail]);
 
-                            const MILESTONE_INTERVAL = 2 * 60 * 1000;
-                            const ONE_WAY_DELAY = 1 * 60 * 1000;
-                            const DEPTH = 6;
+                                const MILESTONE_INTERVAL = 2 * 60 * 1000;
+                                const ONE_WAY_DELAY = 1 * 60 * 1000;
+                                const DEPTH = 6;
 
-                            const isAboveMaxDepth = (at: number, depth = DEPTH) =>
-                                at < Date.now() && Date.now() - at < depth * MILESTONE_INTERVAL - ONE_WAY_DELAY;
+                                const isAboveMaxDepth = (at: number, depth = DEPTH) =>
+                                    at < Date.now() && Date.now() - at < depth * MILESTONE_INTERVAL - ONE_WAY_DELAY;
 
-                            if (isConsistent && isAboveMaxDepth(attachmentTimestamp)) {
-                                this._loggingService.log(
-                                    "wallet",
-                                    `Promoting bundle ${tail}`);
+                                if (isConsistent && isAboveMaxDepth(attachmentTimestamp)) {
+                                    this._loggingService.log(
+                                        "wallet",
+                                        `Promoting bundle ${tail}`);
 
-                                const spamTransfers: Transfer[] = [
-                                    {
-                                        address: "9".repeat(81),
-                                        value: 0,
-                                        tag: "9".repeat(27),
-                                        message: "9".repeat(27 * 81)
-                                    }
-                                ];
+                                    const spamTransfers: Transfer[] = [
+                                        {
+                                            address: "9".repeat(81),
+                                            value: 0,
+                                            tag: "9".repeat(27),
+                                            message: "9".repeat(27 * 81)
+                                        }
+                                    ];
 
-                                const spamTrytes = await iota.prepareTransfers(
-                                    "9".repeat(81),
-                                    spamTransfers
-                                );
+                                    const spamTrytes = await iota.prepareTransfers(
+                                        "9".repeat(81),
+                                        spamTransfers
+                                    );
 
-                                await iota.sendTrytes(spamTrytes, undefined, undefined, tail);
-                            } else {
-                                // Bundle is not promotable so just requeue it
-                                walletTransferContainer.pending.address = undefined;
-                                walletTransferContainer.pending.created = undefined;
-                                walletTransferContainer.pending.bundle = undefined;
-                                walletTransferContainer.queue.unshift(walletTransferContainer.pending);
-                                walletTransferContainer.pending = undefined;
-                                updated = true;
-
-                                this._loggingService.log(
-                                    "wallet",
-                                    `Requeuing bundle ${tail}`);
-
-                                // // Bundle is not promotable, so replay it and store the new hash
-                                // const sendTrytesResponse: Transaction[] =
-                                //     await iota.replayBundle(tail, undefined, undefined);
-
-                                // walletTransferContainer.pending.bundle = sendTrytesResponse[0].bundle;
-                                // updated = true;
-
-                                // this._loggingService.log(
-                                //     "wallet",
-                                //     `Replaying bundle ${tail} to ${sendTrytesResponse[0].bundle}`);
+                                    await iota.sendTrytes(spamTrytes, undefined, undefined, tail);
+                                } else {
+                                    requeue = true;
+                                }
                             }
+                        }
+
+                        if (requeue) {
+                            // Bundle is not promotable so just requeue it
+                            walletTransferContainer.pending.address = undefined;
+                            walletTransferContainer.pending.created = undefined;
+                            walletTransferContainer.pending.bundle = undefined;
+                            walletTransferContainer.queue.unshift(walletTransferContainer.pending);
+                            walletTransferContainer.pending = undefined;
+                            updated = true;
+
+                            this._loggingService.log(
+                                "wallet",
+                                `Requeuing bundle`);
                         }
                     }
                 }
