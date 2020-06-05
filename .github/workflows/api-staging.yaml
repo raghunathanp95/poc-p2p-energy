@@ -64,14 +64,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12"
-      - name: Build
+      - name: Relocate common
         run: |
-          cd common
-          npm install
-          npm run build
-          cd ../demo/api
-          npm install
-          npm run build
+          mv common demo/api/common
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: latest
