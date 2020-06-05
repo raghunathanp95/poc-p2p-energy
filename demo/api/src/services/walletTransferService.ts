@@ -250,10 +250,13 @@ export class WalletTransferService extends AmazonDynamoDbService<IDemoWalletTran
                     } else {
                         let requeue = false;
                         if (tailTransactions.length === 0) {
-                            requeue = true;
-                            this._loggingService.log(
-                                "wallet",
-                                `No tail transaction requeueing`);
+                            if (walletTransferContainer.pending.created &&
+                                Date.now() - walletTransferContainer.pending.created > 10000) {
+                                requeue = true;
+                                this._loggingService.log(
+                                    "wallet",
+                                    `No tail transaction requeueing`);
+                            }
                         } else {
                             const tail = tailTransactions[0].hash;
                             const attachmentTimestamp = tailTransactions[0].attachmentTimestamp;
