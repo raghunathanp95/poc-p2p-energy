@@ -60,6 +60,15 @@ jobs:
           sed -i "s/%GCP-PROD-SERVICE-ID%/${{ env.GCP_PROD_SERVICE_ID }}/g" dispatch.yaml
           sed -i "s/%GCP-STAGING-DOMAIN%/${{ env.GCP_STAGING_DOMAIN }}/g" dispatch.yaml
           sed -i "s/%GCP-STAGING-SERVICE-ID%/${{ env.GCP_STAGING_SERVICE_ID }}/g" dispatch.yaml
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+      - name: Build
+        run: |
+          cd demo/api
+          npm run install
+          npm run build
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: latest
