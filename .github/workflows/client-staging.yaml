@@ -6,7 +6,7 @@ on:
     paths:
       - "demo/client/**"
       - "demo/common/**"
-      - ".github/workflows/api-staging.yaml"
+      - ".github/workflows/client-staging.yaml"
 
 jobs:
   build:
