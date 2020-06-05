@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import cors from "cors";
 import express, { Application } from "express";
 import path from "path";
 import { IDataResponse } from "../models/api/IDataResponse";
@@ -8,7 +9,12 @@ import { ILoggingService } from "../models/services/ILoggingService";
 /**
  * Class to help with expressjs routing.
  */
-export class App<T> {
+export class App<T extends {
+    /**
+     * Allowed domains.
+     */
+    allowedDomains: string[];
+}> {
     /**
      * The default port to use of not specified in env.
      */
@@ -53,6 +59,14 @@ export class App<T> {
         const config: T = require(path.join(this._workingDirectory, `./data/config.${configId}.json`));
 
         const app: Application = express();
+
+        const corsConfig = {
+            origin: config.allowedDomains && config.allowedDomains.length > 0 ? config.allowedDomains : "*",
+            methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
+            allowedHeaders: ["content-type", "authorization"]
+        };
+
+        app.use(cors(corsConfig));
 
         app.use(bodyParser.json({ limit: "10mb" }));
         app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
