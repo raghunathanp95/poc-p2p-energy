@@ -1,15 +1,6 @@
 {
     "nodes": [
-        {
-            "provider": "NODE1",
-            "depth": 3,
-            "mwm": 9
-        },
-        {
-            "provider": "NODE2",
-            "depth": 3,
-            "mwm": 9
-        }
+        NODES
     ],
     "dynamoDbConnection": {
         "region": "DB-AWS-REGION",
@@ -23,5 +14,8 @@
         "secretAccessKey": "STORAGE-AWS-SECRET-ACCESS-KEY",
         "bucketPrefix": "STORAGE-BUCKET-PREFIX"
     },
-    "walletSeed": "WALLET-SEED"
+    "walletSeed": "WALLET-SEED",
+    "allowedDomains": [
+        "ALLOWED-DOMAIN"
+    ]
 }

@@ -1,15 +1,6 @@
 {
     "nodes": [
-        {
-            "provider": "NODE1",
-            "depth": 3,
-            "mwm": 9
-        },
-        {
-            "provider": "NODE2",
-            "depth": 3,
-            "mwm": 9
-        }
+        NODES
     ],
     "apiEndpoint": "API-ENDPOINT",
     "tangleExplorer": {
