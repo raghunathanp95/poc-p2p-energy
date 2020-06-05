@@ -2,8 +2,6 @@
 .vscode
 node_modules
 
-/common/es6
-
 /.local-storage
 
 config.local.json
