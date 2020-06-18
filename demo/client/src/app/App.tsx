@@ -1,6 +1,6 @@
 import { LoadBalancerSettings, RandomWalkStrategy } from "@iota/client-load-balancer";
 import "iota-css-theme";
-import { Footer, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
+import { Footer, FoundationDataHelper, GoogleAnalytics, Header, LayoutAppSingle, SideMenu, StatusMessage } from "iota-react-components";
 import { ServiceFactory } from "p2p-energy-common/dist/factories/serviceFactory";
 import { AggregateLoggingService } from "p2p-energy-common/dist/services/logging/aggregateLoggingService";
 import { CallbackLoggingService } from "p2p-energy-common/dist/services/logging/callbackLoggingService";
@@ -11,7 +11,6 @@ import { TrytesHelper } from "p2p-energy-common/dist/utils/trytesHelper";
 import React, { Component, ReactNode } from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import logo from "../assets/logo.svg";
-import contentHomePage from "../content/contentHomePage.json";
 import { IConfiguration } from "../models/config/IConfiguration";
 import { IAppState } from "../models/IAppState";
 import { IDemoGridState } from "../models/services/IDemoGridState";
@@ -52,6 +51,8 @@ class App extends Component<RouteComponentProps, AppState> {
      */
     public async componentDidMount(): Promise<void> {
         try {
+            this.setState({ foundationData: await FoundationDataHelper.loadData() });
+
             const configService = new ConfigurationService<IConfiguration>();
             const configId = process.env.REACT_APP_CONFIG_ID || "local";
             const config = await configService.load(`/data/config.${configId}.json`);
@@ -113,7 +114,7 @@ class App extends Component<RouteComponentProps, AppState> {
             <React.Fragment>
                 <Header
                     title="P2P Energy Demonstration"
-                    topLinks={contentHomePage.headerTopLinks}
+                    foundationData={this.state.foundationData}
                     logo={logo}
                     compact={true}
                     hamburgerClick={() => this.setState({ isSideMenuOpen: !this.state.isSideMenuOpen })}
@@ -170,8 +171,32 @@ class App extends Component<RouteComponentProps, AppState> {
                 </section>
                 <Footer
                     history={this.props.history}
-                    sections={contentHomePage.footerSections}
-                    staticContent={contentHomePage.footerStaticContent} />
+                    foundationData={this.state.foundationData}
+                    sections={[
+                        {
+                            heading: "P2P Energy",
+                            links: [
+                                {
+                                    href: "/",
+                                    text: "Introduction"
+                                },
+                                {
+                                    href: "/grid",
+                                    text: "Grid"
+                                },
+                                {
+                                    href: "https://docs.iota.org/docs/blueprints/0.1/p2p-energy/overview",
+                                    text: "Blueprint"
+                                },
+                                {
+                                    href: "https://github.com/iotaledger/poc-p2p-energy",
+                                    text: "GitHub"
+                                }
+                            ]
+                        }]
+                    }
+
+                />
                 <GoogleAnalytics id={this._configuration && this._configuration.googleAnalyticsId} />
             </React.Fragment>
         );
