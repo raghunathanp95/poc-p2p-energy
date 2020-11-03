@@ -15,9 +15,9 @@ You should copy `./public/data/config.template.json` to `./public/data/config.lo
     ],
     "apiEndpoint": "API-ENDPOINT",                  /* URL of the demo API */
      "tangleExplorer": {
-        "transactions": "https://utils.iota.org/transaction/:transactionHash/devnet",
-        "bundles": "https://utils.iota.org/bundle/:bundleHash/devnet",
-        "mam": "https://utils.iota.org/mam/:root/:mode/:key/devnet"
+        "transactions": "https://explorer.iota.org/devnet/transaction/:transactionHash",
+        "bundles": "https://explorer.iota.org/devnet/bundle/:bundleHash",
+        "mam": "https://explorer.iota.org/devnet/streams/0/:root/:mode/:key"
     },
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"      /* Optional, google analytics id */
 }
