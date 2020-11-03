@@ -4,9 +4,9 @@
     ],
     "apiEndpoint": "API-ENDPOINT",
     "tangleExplorer": {
-        "transactions": "https://utils.iota.org/transaction/:transactionHash/devnet",
-        "bundles": "https://utils.iota.org/bundle/:bundleHash/devnet",
-        "mam": "https://utils.iota.org/mam/:root/:mode/:key/devnet"
+        "transactions": "https://explorer.iota.org/devnet/transaction/:transactionHash",
+        "bundles": "https://explorer.iota.org/devnet/bundle/:bundleHash",
+        "mam": "https://explorer.iota.org/devnet/streams/0/:root/:mode/:key"
     },
     "googleAnalyticsId": "GOOGLE-ANALYTICS-ID"
 }
