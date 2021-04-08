@@ -63,7 +63,7 @@ jobs:
       - name: Relocate common
         run: |
           mv common demo/api/common
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@master
         with:
           version: latest
           project_id: ${{ secrets.GCP_PROJECT_ID }}
